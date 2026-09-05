@@ -1,0 +1,310 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg-primary: #050811;
+  --color-bg-header: rgba(2, 6, 23, 0.9);
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-border: #1e293b;
+}
+
+html.light {
+  --color-bg-primary: #f8fafc;
+  --color-bg-header: rgba(255, 255, 255, 0.95);
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-border: #cbd5e1;
+}
+
+/* Light Mode Overrides for pristine typography and crystal clear contrast */
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light .bg-grid-command {
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+}
+
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+html.light .glass-panel-hover:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(6, 182, 212, 0.7);
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.12), 0 0 20px -5px rgba(6, 182, 212, 0.2);
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Geist", "Inter", sans-serif;
+  }
+  .font-mono-tech {
+    font-family: "JetBrains Mono", monospace;
+  }
+  .font-sans {
+    font-family: "Inter", "Geist", sans-serif;
+  }
+  .font-arabic {
+    font-family: "Cairo", "IBM Plex Sans Arabic", sans-serif;
+  }
+  
+  /* Glowing border utilities */
+  .glow-cyan {
+    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .glow-amber {
+    box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .glow-emerald {
+    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  
+  /* Command Center Glass & Inner Shadow */
+  .glass-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+  
+  .glass-panel-hover {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-panel-hover:hover {
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), 0 15px 35px -5px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(6, 182, 212, 0.2);
+    transform: translateY(-3px);
+  }
+
+  .bg-grid-command {
+    background-size: 24px 24px;
+    background-image: 
+      linear-gradient(to right, rgba(51, 65, 85, 0.18) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(51, 65, 85, 0.18) 1px, transparent 1px);
+  }
+  
+  .bg-dots-command {
+    background-size: 20px 20px;
+    background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  }
+
+  .text-stroke-white {
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.3);
+    color: transparent;
+  }
+  .text-stroke-white-thick {
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.45);
+    color: transparent;
+  }
+  .text-stroke-cyan {
+    -webkit-text-stroke: 1.5px rgba(6, 182, 212, 0.5);
+    color: transparent;
+  }
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.6);
+}
+
+/* ══════════════════════════════════════════════════
+   PRINT-FRIENDLY STYLING FOR CERTIFIED DOSSIER
+   ══════════════════════════════════════════════════ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide entire interactive UI during physical print */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Expose only the dedicated dossier print container and its elements */
+  .dossier-print-container,
+  .dossier-print-container * {
+    visibility: visible !important;
+  }
+
+  .dossier-print-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    display: block !important;
+    z-index: 999999 !important;
+  }
+
+  /* Standard print page */
+  .dossier-print-page {
+    width: 100% !important;
+    min-height: 278mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm 10mm !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     CLIENT-READY COVER PAGE PRINT SPECIFICATIONS
+     ══════════════════════════════════════════════════ */
+  .dossier-cover-page {
+    width: 100% !important;
+    min-height: 282mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12mm 12mm 10mm 12mm !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  /* High-Resolution Emblem & Logo Rendering */
+  .dossier-highres-logo img,
+  .dossier-highres-logo svg {
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: crisp-edges !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)) !important;
+  }
+
+  /* Luxury Gold & Sapphire Accent Borders */
+  .dossier-cover-frame {
+    border: 2px solid #0f172a !important;
+    border-radius: 16px !important;
+    padding: 18px 20px !important;
+    position: relative !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  }
+
+  .dossier-cover-inner-border {
+    position: absolute !important;
+    inset: 4px !important;
+    border: 1px solid rgba(14, 116, 144, 0.35) !important;
+    border-radius: 12px !important;
+    pointer-events: none !important;
+  }
+
+  /* Asset Metadata Summary Matrix */
+  .dossier-meta-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .dossier-meta-item {
+    padding: 6px 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 11px !important;
+  }
+
+  .dossier-meta-item strong {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+
+  .dossier-meta-item span {
+    color: #64748b !important;
+  }
+
+  /* Client-Ready Accreditation Badges */
+  .dossier-accreditation-seal {
+    border: 1.5px solid #0e7490 !important;
+    background: #ecfeff !important;
+    border-radius: 9999px !important;
+    padding: 4px 12px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #0e7490 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  /* Subtle watermark */
+  .dossier-cover-watermark {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.035 !important;
+    pointer-events: none !important;
+    font-size: 80px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.2em !important;
+    transform: rotate(-35deg) !important;
+    color: #0f172a !important;
+    z-index: 0 !important;
+  }
+
+  .dossier-print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+

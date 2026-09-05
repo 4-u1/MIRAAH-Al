@@ -1,0 +1,8 @@
+{
+  "name": "Remix MIRAAH · مرآة",
+  "description": "Spatial Asset Intelligence \u0026 Liquidation Readiness Platform for real estate assets, featuring verifiable evidence, coverage analytics, AI defect detection, What-If simulation, and verified buyer transparency.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

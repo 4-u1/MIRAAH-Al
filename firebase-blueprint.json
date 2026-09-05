@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role, organization, and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["judicial_officer", "inspector", "bidder", "infath_admin"] },
+        "organization": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLogin": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "User personal preferences and state bookmarks",
+      "type": "object",
+      "properties": {
+        "selectedAssetId": { "type": "string" },
+        "isArabic": { "type": "boolean" },
+        "soundEnabled": { "type": "boolean" },
+        "bookmarkedAssets": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "InspectionAudit": {
+      "title": "InspectionAudit",
+      "description": "Inspection findings modifications and engineer notes logged per asset",
+      "type": "object",
+      "properties": {
+        "assetId": { "type": "string" },
+        "findingId": { "type": "number" },
+        "inspectorUid": { "type": "string" },
+        "inspectorEmail": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "isResolved": { "type": "boolean" },
+        "actionTaken": { "type": "string" },
+        "notes": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["assetId", "findingId", "inspectorUid", "timestamp"]
+    },
+    "UserNotification": {
+      "title": "UserNotification",
+      "description": "User-specific saved or read notifications",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "notificationId": { "type": "string" },
+        "read": { "type": "boolean" },
+        "dismissed": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "notificationId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document owned by the user"
+    },
+    "/users/{userId}/preferences/{prefId}": {
+      "schema": "UserPreferences",
+      "description": "User preferences subcollection"
+    },
+    "/users/{userId}/notifications/{notifId}": {
+      "schema": "UserNotification",
+      "description": "User-specific notifications tracking"
+    },
+    "/inspections/{inspectionId}": {
+      "schema": "InspectionAudit",
+      "description": "Inspection action and verification logs submitted by authenticated users"
+    }
+  }
+}
