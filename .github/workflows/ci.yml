@@ -156,3 +156,18 @@ jobs:
         with:
           name: e2e-screenshots
           path: e2e-shots/
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t miraah:ci .
+      - name: Run image and check health
+        run: |
+          docker run -d --name m -p 8080:8080 -e WORKSPACE_ENABLED=false miraah:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/api/health && break; sleep 1; done
+          H=$(curl -sf http://127.0.0.1:8080/api/health)
+          echo "::notice title=Docker::$H"
+          curl -sf http://127.0.0.1:8080/ | grep -q "<div id=\"root\"" && echo "::notice title=Docker::index.html served" || { echo "::error::index not served"; docker logs m; exit 1; }
