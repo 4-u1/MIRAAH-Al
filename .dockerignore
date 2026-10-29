@@ -8,3 +8,5 @@ smoke-shots
 e2e-shots
 *.log
 server-dist
+data
+backups

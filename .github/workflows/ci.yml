@@ -171,7 +171,7 @@ jobs:
         run: docker build -t miraah:ci .
       - name: Run image and check health
         run: |
-          if ! docker run -d --name miraah-ci -p 8080:8080 -e WORKSPACE_ENABLED=false miraah:ci > run.out 2> run.err; then
+          if ! docker run -d --name miraah-ci -p 8080:8080 -v miraah-ci-data:/app/data miraah:ci > run.out 2> run.err; then
             echo "::error title=docker run::$(tr '\n' ' ' < run.err | cut -c1-400)"; exit 1
           fi
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/api/health && break; sleep 1; done
@@ -181,3 +181,7 @@ jobs:
           H=$(curl -sf http://127.0.0.1:8080/api/health)
           echo "::notice title=Docker::$H"
           curl -sf http://127.0.0.1:8080/ | grep -q "<div id=\"root\"" && echo "::notice title=Docker::index.html served" || { echo "::error::index not served"; docker logs miraah-ci; exit 1; }
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/workspace/me)
+          [ "$code" = "401" ] && echo "::notice title=Docker::workspace (SQLite) mounted, anonymous → 401" || { echo "::error::workspace returned $code"; docker logs miraah-ci; exit 1; }
+          docker exec miraah-ci test -f /app/data/miraah.db && echo "::notice title=Docker::SQLite database created on the volume" || { echo "::error::no database on volume"; exit 1; }
+          docker exec miraah-ci node scripts/backup.mjs && echo "::notice title=Docker::backup script ran" || { echo "::error::backup failed"; exit 1; }
