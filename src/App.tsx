@@ -20,6 +20,7 @@ import { InteractiveTourModal } from "./components/Tour/InteractiveTourModal";
 import { SaudiOpenDataJuly2026Modal } from "./components/MarketTrends/SaudiOpenDataJuly2026Modal";
 import { ProjectDossierModal } from "./components/Presentation/ProjectDossierModal";
 import { DemoDataBanner } from "./components/common/DemoDataBanner";
+import { WorkspaceView } from "./components/Workspace/WorkspaceView";
 import { AssetSearchDropdown } from "./components/Navigation/AssetSearchDropdown";
 import { useNotificationSystem } from "./hooks/useNotificationSystem";
 import { NotificationToast } from "./components/Notifications/NotificationToast";
@@ -241,6 +242,7 @@ export default function App() {
   };
 
   const TABS = [
+    { id: "workspace", label: "Live Workspace", labelArabic: "مساحة العمل الفعلية", icon: Database, emoji: "🗂" },
     { id: "passport", label: "Asset Passport", labelArabic: "جواز الأصل والمناطق", icon: Home, emoji: "🏠" },
     { id: "proptech", label: "PropTech 2.0 OS", labelArabic: "منظومة PropTech المعرفية", icon: Cpu, emoji: "🤖" },
     { id: "findings", label: "Findings", labelArabic: "الملاحظات", icon: Search, emoji: "🔍" },
@@ -270,7 +272,7 @@ export default function App() {
       <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] rounded-full bg-radial from-blue-600/10 via-transparent to-transparent pointer-events-none z-0" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <DemoDataBanner isArabic={isArabic} />
+        <DemoDataBanner isArabic={isArabic} live={activeTab === "workspace"} />
         {/* ══ COMMAND CENTER TOP NAVIGATION BAR ══ */}
         <header className={`sticky top-0 z-40 backdrop-blur-2xl border-b px-4 sm:px-8 py-3 flex items-center justify-between gap-4 flex-wrap transition-colors duration-200 ${
           isDark
@@ -595,6 +597,8 @@ export default function App() {
               isArabic={isArabic}
             />
           )}
+
+          {activeTab === "workspace" && <WorkspaceView isArabic={isArabic} />}
 
           {activeTab === "buyer" && (
             <BuyerView

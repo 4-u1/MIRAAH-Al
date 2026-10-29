@@ -226,7 +226,7 @@ describe("Firebase ID token verifier", () => {
         .setExpirationTime(claims.exp ?? Math.floor(Date.now() / 1000) + 600)
         .sign(privateKey);
 
-    await expect(verify(await sign({}))).resolves.toEqual({ uid: "user-1", email: undefined });
+    await expect(verify(await sign({}))).resolves.toEqual({ uid: "user-1", email: undefined, emailVerified: false });
     await expect(verify(await sign({ aud: "other" }))).rejects.toThrow();
     await expect(verify(await sign({ iss: "https://securetoken.google.com/other" }))).rejects.toThrow();
     await expect(verify(await sign({ exp: Math.floor(Date.now() / 1000) - 3600 }))).rejects.toThrow();

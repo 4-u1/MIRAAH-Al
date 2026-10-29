@@ -1,10 +1,11 @@
 # مرآة | MIRAAH
-### منصة المعاينة الفراغية وجواز الأصل العقاري للتصفية القضائية — نموذج أولي
-**Spatial Asset Inspection & Digital Asset Passport for Judicial Liquidation — prototype**
+### منصة المعاينة وجواز الأصل العقاري للتصفية القضائية
+**Spatial Asset Inspection & Digital Asset Passport for Judicial Liquidation — working MVP**
 
 > **مقدَّم لبرنامج "ابتكار إنفاذ" (Infath Innovation)** — جامعة القصيم ومركز الإسناد والتصفية (إنفاذ)، مسار معاينة الأصول.
 >
-> **تنبيه:** هذا نموذج أولي يعمل **ببيانات توضيحية**. ليس نظاماً رسمياً لإنفاذ أو لأي جهة حكومية، ولا يصدر مستندات أو تقييمات أو شهادات معتمدة.
+> **الحالة:** منصة عملية (MVP) تغطي دورة المعاينة كاملة ببيانات حقيقية في **مساحة العمل الفعلية**: تسجيل الأصل، رفع الصور، اقتراح العيوب بالذكاء الاصطناعي بتأكيد المفتش، المراجعة، وتصدير جواز موقّع رقمياً. باقي التبويبات عرض توضيحي ببيانات تجريبية ومعلّمة بذلك.
+> ليست نظاماً رسمياً لإنفاذ أو لأي جهة حكومية، ولا يوجد ربط بأنظمتهم، ولا تصدر مستندات أو تقييمات معتمدة.
 
 ---
 
@@ -15,6 +16,24 @@
 ---
 
 ## ما هو منفّذ، وما هو محاكاة، وما هو مخطط
+
+### 🟢 مساحة العمل الفعلية (Live Workspace) — بيانات حقيقية
+| الخطوة | ما يحدث | الدليل |
+|---|---|---|
+| الأدوار | المسؤول (`ADMIN_EMAILS`) يعيّن: مفتش، مراجع، مطّلع. الدور مرتبط ببريد موثّق، ولا يستطيع المستخدم منح نفسه دوراً | `server/workspace/routes.ts`، `tests/workspace.test.ts` |
+| تسجيل الأصل | المفتش يدخل بيانات العقار ومناطق التغطية | Firestore (عبر الخادم فقط) |
+| رفع الصور | JPEG/PNG/WebP حتى 8MB، يُتحقق من النوع من محتوى الملف، وتُحفظ بصمة SHA-256 لكل صورة في Cloud Storage | `sniffImage`، اختبارات الرفع |
+| اقتراح العيب | Gemini Vision يعيد تصنيفاً منظّماً (نوع، خطورة، ثقة، تعليل) يُتحقق منه بـ zod. **المفتش يقرر**: يقبل أو يعدّل أو يتجاهل | `server/workspace/vision.ts` |
+| المراجعة | المراجع فقط يتحقق من الملاحظة أو يغلقها، ويُسجَّل اسمه | اختبارات الصلاحيات |
+| المؤشرات | نفس معادلات `scoring.ts` على البيانات الحقيقية | `src/utils/workspaceScores.ts` |
+| الجواز الموقّع | يبنيه الخادم من بياناته (لا من المتصفح)، ببصمة SHA-256 وتوقيع **Ed25519** (الموقّع والوقت ومعرّف المفتاح). التحقق عبر `POST /api/passport/verify` أو المفتاح العام `GET /api/passport/public-key` | `server/workspace/signing.ts`، اختبارات التلاعب |
+| سجل التدقيق | كل إنشاء وتعديل ورفع وتحليل وتحقق وتصدير يُسجَّل بالفاعل والوقت | `auditLog` |
+
+التحقق: اختبار متصفح كامل (`scripts/e2e.mjs`) يمر بالخطوات كلها بثلاثة حسابات (مسؤول، مفتش، مراجع) على محاكيات Firebase في كل تحديث.
+
+**ضوابط إضافية:** لا أحد يراجع ملاحظة سجّلها بنفسه. إذا غيّر المفتش نوع العيب عن اقتراح النموذج تُسجَّل الملاحظة يدوية بدون نسبة ثقة. نسبة الثقة تقدير النموذج لنفسه وغير معايرة، والملاحظة اليدوية تُحسب في المعادلات بثقة 100 (حكم بشري) وتُصدَّر بدون نسبة. التوقيع لا يُعتبر صحيحاً إلا إذا طابقت بيانات الجواز بصمتها. ملف JSON وحده قابل للتحقق، وPDF نسخة للقراءة.
+
+**حدود معروفة (MVP):** مستأجر واحد (كل الأدوار ترى كل الأصول والصور)، الصور تُحفظ كما هي بما فيها بيانات EXIF، سجل التدقيق غير ذري مع التعديل، الحساب الموقوف يبقى له وصول حتى انتهاء توكنه (ساعة)، وحدود الطلبات في الذاكرة لنسخة واحدة. التفاصيل في [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ### ✅ منفّذ ويعمل (Implemented)
 | الميزة | التفاصيل | الدليل |
@@ -39,9 +58,9 @@
 
 ### 🗺️ مخطط (Planned — غير موجود حالياً)
 - ربط بأنظمة إنفاذ وناجز والبورصة العقارية وبلدي والهيئة العامة للعقار وتقييم، بعد الموافقات اللازمة.
-- تحليل آلي للصور (رؤية حاسوبية) لاكتشاف العيوب.
-- صفحة تحقق عامة للمشترين (رابط/QR).
-- أدوار وصلاحيات متعددة (مفتش، مراجع، جهة تصفية).
+- صفحة تحقق عامة للمشترين (رابط/QR) — نقطة التحقق `/api/passport/verify` جاهزة، والصفحة نفسها مخططة.
+- كشف العيوب داخل الفيديو، وحساب التغطية آلياً من الصور.
+- حدود طلبات مشتركة بين عدة نسخ من الخادم.
 
 > **بيانات السوق:** جدول "العمليات العقارية المسجلة – يوليو 2026" في `src/data/open_data_sa_july_2026.csv` منسوب في الملف إلى منصة البيانات المفتوحة (مورد `c4eb90eb-…`). تحققنا أن أرقام التطبيق تطابق الملف (345 سجلاً، 65,702 عملية)، لكن **لم نتمكن من التحقق من المصدر نفسه** من بيئة المراجعة؛ يجب تأكيده قبل أي استخدام رسمي.
 
@@ -74,7 +93,8 @@
 
 ```bash
 npm install
-cp .env.example .env    # ضع GEMINI_API_KEY إن أردت تفعيل المساعد
+cp .env.example .env    # GEMINI_API_KEY و ADMIN_EMAILS و PASSPORT_SIGNING_KEY
+node scripts/gen-signing-key.mjs   # لتوليد مفتاح التوقيع
 npm run dev             # http://localhost:3000
 ```
 
@@ -85,6 +105,7 @@ npm run dev             # http://localhost:3000
 | `npm run test:rules` | اختبارات قواعد Firestore على المحاكي (يتطلب Java) |
 | `npm run eval:live` | تقييم سلوك المساعد على نموذج حقيقي (يتطلب `GEMINI_API_KEY`؛ لا يعمل في CI) |
 | `npm run build` | بناء الإنتاج (`dist/`) |
+| `docker build -t miraah .` | صورة الإنتاج (Cloud Run) — النشر خطوة بخطوة في [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 | `npm start` | تشغيل نسخة الإنتاج (`NODE_ENV=production`، بيئة Linux) |
 
 متغيرات البيئة موثقة في [`.env.example`](.env.example). يشغّل CI ‏(GitHub Actions) فحص الأنواع والاختبارات والبناء وفحص الأسرار في ملفات البناء واختبارات قواعد Firestore على كل دفع.
@@ -97,6 +118,7 @@ npm run dev             # http://localhost:3000
 server.ts                 # تشغيل الخادم (Express + Vite/الملفات الثابتة)
 server/
   app.ts                  # مسارات API، الحماية، معالجة الأخطاء
+  workspace/              # مساحة العمل: النطاق، التخزين (Firestore/Storage)، الصلاحيات، الرؤية، التوقيع
   auth.ts                 # التحقق من توكن Firebase
   rateLimit.ts            # حدود الطلبات (لحظي + يومي)
   schemas.ts              # تحقق المدخلات (zod)
@@ -121,7 +143,7 @@ docs/                     # المعادلات وسجل الادعاءات
 
 ## English summary
 
-MIRAAH is a **prototype** built for the Infath Innovation program. It consolidates inspection data for assets in judicial liquidation into a digital asset passport: recorded findings with evidence, inspection coverage, deterministic scores (Condition Index, Coverage, Inspection Confidence, Liquidation Readiness Index), a What-If simulator, and JSON/CSV/PDF exports carrying a real SHA-256 fingerprint of the canonical passport data. An authenticated, rate-limited Gemini assistant answers questions about the displayed data and states plainly what is not available. All data is demo data. IoT, BIM, blockchain, AVM, legal audits, drone views and the specimen documents are simulated and labelled as such in the UI. No integration with Infath, Najiz, Balady, REGA or Taqeem exists yet. This is not an official system and issues no certified documents.
+MIRAAH is a **working MVP** built for the Infath Innovation program. Its **Live Workspace** runs the full inspection cycle on real data: role-based access (admin / inspector / reviewer / viewer, bound to verified emails), asset records, photo uploads to Cloud Storage with per-file SHA-256, Gemini Vision defect suggestions that an inspector must confirm, reviewer verification, deterministic scores (Condition Index, Coverage, Inspection Confidence, Liquidation Readiness Index), an audit log of every change, and a passport export built by the server and signed with Ed25519 (public verify endpoint and public key). An end-to-end browser test exercises the whole flow on Firebase emulators on every change. The other tabs are a demo with illustrative data; IoT, BIM, blockchain, AVM, legal audits, drone views and the specimen documents are simulated and labelled. There is no integration with Infath, Najiz, Balady, REGA or Taqeem. MIRAAH is not an official system and issues no certified documents.
 
 ## الحقوق
 

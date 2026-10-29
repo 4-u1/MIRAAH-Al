@@ -27,6 +27,8 @@ export interface AppConfig {
   /** JSON body limit for API routes. */
   bodyLimit: string;
   now?: () => number;
+  /** Extra routers mounted before the API 404/error handlers (live workspace, passport verify). */
+  mount?: (app: express.Express) => void;
 }
 
 export function parseTrustProxy(raw: string | undefined): string | number | boolean {
@@ -69,7 +71,9 @@ export function createApp(cfg: AppConfig) {
   app.disable("x-powered-by");
   app.set("trust proxy", cfg.trustProxy);
   app.use(securityHeaders);
-  app.use("/api", express.json({ limit: cfg.bodyLimit }));
+  // /api/passport has its own (larger) JSON limit for verifying exports.
+  const jsonParser = express.json({ limit: cfg.bodyLimit });
+  app.use("/api", (req, res, next) => (req.path.startsWith("/passport/") ? next() : jsonParser(req, res, next)));
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", ai: cfg.generator ? "enabled" : "disabled", authRequired: cfg.requireAuth });
@@ -147,6 +151,8 @@ export function createApp(cfg: AppConfig) {
       next(err);
     }
   });
+
+  cfg.mount?.(app);
 
   app.use("/api", (_req, res) => res.status(404).json({ error: "not_found" }));
 

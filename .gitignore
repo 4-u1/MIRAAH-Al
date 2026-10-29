@@ -12,3 +12,6 @@ audit.json
 smoke-shots/
 server.log
 server.pid
+e2e-shots/
+e2e-server.log
+server-dist/

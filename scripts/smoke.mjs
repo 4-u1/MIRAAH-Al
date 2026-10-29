@@ -87,6 +87,22 @@ for (const [i, label] of tabs.entries()) {
   }
 }
 
+// Live workspace: requires sign-in, shows the live banner, and its API rejects anonymous calls.
+try {
+  await page.getByRole("button", { name: "Live Workspace" }).first().click({ timeout: 5000 });
+  await page.waitForTimeout(800);
+  const t = await page.innerText("body");
+  t.includes("Sign in with Google") ? note("workspace", "asks for sign-in") : fail("workspace", "sign-in prompt not shown");
+  t.includes("Live workspace: data is entered by signed-in users") ? note("workspace", "live banner shown") : fail("workspace", "live banner missing");
+  await page.screenshot({ path: "smoke-shots/40-workspace.png" });
+  const r = await fetch(`${BASE}/api/workspace/assets`);
+  r.status === 401 ? note("workspace api", "anonymous → 401") : fail("workspace api", `expected 401, got ${r.status}`);
+  const pk = await fetch(`${BASE}/api/passport/public-key`);
+  [200, 503].includes(pk.status) ? note("passport api", `public-key → ${pk.status}`) : fail("passport api", `public-key → ${pk.status}`);
+} catch (e) {
+  fail("workspace", e.message.split("\n")[0]);
+}
+
 // What-If must start from the asset's computed readiness (asset 20481 → 54), not a constant.
 try {
   await page.getByRole("button", { name: "What-If Simulator" }).first().click();

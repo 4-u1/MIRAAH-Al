@@ -5,7 +5,7 @@ import { FlaskConical } from "lucide-react";
  * Persistent disclosure shown on every screen: this is a prototype running on demo data,
  * not an official Infath (or other government) system.
  */
-export const DemoDataBanner: React.FC<{ isArabic: boolean }> = ({ isArabic }) => (
+export const DemoDataBanner: React.FC<{ isArabic: boolean; live?: boolean }> = ({ isArabic, live = false }) => (
   <>
   {/* Spacer so page content is not hidden behind the fixed banner. */}
   <div aria-hidden="true" className="h-12 sm:h-8 order-last" />
@@ -16,7 +16,11 @@ export const DemoDataBanner: React.FC<{ isArabic: boolean }> = ({ isArabic }) =>
   >
     <FlaskConical className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
     <span>
-      {isArabic
+      {live
+        ? isArabic
+          ? "مساحة العمل الفعلية: البيانات يُدخلها مستخدمون مسجلون وتُحفظ — ليست نظاماً رسمياً لمركز الإسناد والتصفية (إنفاذ) أو أي جهة حكومية."
+          : "Live workspace: data is entered by signed-in users and stored — not an official system of Infath or any government body."
+        : isArabic
         ? "نموذج تجريبي ببيانات توضيحية — ليس نظاماً رسمياً لمركز الإسناد والتصفية (إنفاذ) أو أي جهة حكومية. المستندات والأختام والتكاملات المعروضة محاكاة."
         : "Prototype with demo data — not an official system of Infath or any government body. Documents, seals and integrations shown are simulated."}
     </span>
