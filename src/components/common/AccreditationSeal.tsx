@@ -13,11 +13,11 @@ interface AccreditationSealProps {
 }
 
 export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
-  serialNumber = "SRE-CERT-2026-8942",
+  serialNumber = "SPECIMEN",
   inspectorName = "م. فهد السديري · Eng. Fahad Al-Sudairi",
-  licenseNumber = "TAQEEM-LIC-1210008432",
+  licenseNumber = "SPECIMEN",
   issueDate = "2026-03-15",
-  verificationHash = "0x7F9A...4B21",
+  verificationHash = "—",
   size = "md",
   isArabic = false,
   variant = "gold",
@@ -130,7 +130,7 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           opacity="0.8"
         />
 
-        {/* Circular Top Text: Saudi Accreditation & Verification */}
+        {/* Circular top text */}
         <text
           fill={isGold ? "#FDE68A" : isEmerald ? "#6EE7B7" : "#7DD3FC"}
           fontSize="11.5"
@@ -139,11 +139,11 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           fontFamily="system-ui, sans-serif"
         >
           <textPath href={`#topCurve-${variant}`} startOffset="50%" textAnchor="middle">
-            KINGDOM OF SAUDI ARABIA · VERIFIED
+            MIRAAH PROTOTYPE · SPECIMEN
           </textPath>
         </text>
 
-        {/* Circular Bottom Text: Official Accreditation Body */}
+        {/* Circular bottom text */}
         <text
           fill={isGold ? "#FDE68A" : isEmerald ? "#6EE7B7" : "#7DD3FC"}
           fontSize="11.5"
@@ -152,7 +152,7 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           fontFamily="system-ui, sans-serif"
         >
           <textPath href={`#bottomCurve-${variant}`} startOffset="50%" textAnchor="middle">
-            TAQEEM · INFATH · SBC ACCREDITED
+            NOT AN SPECIMEN · DEMO
           </textPath>
         </text>
 
@@ -166,7 +166,7 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           strokeWidth="2"
         />
 
-        {/* Center Decorative Emblem: Saudi Palm & Swords Motif + Shield */}
+        {/* Center decorative star */}
         <g transform="translate(150, 108)" textAnchor="middle">
           {/* Emblem Crown / Palm Star */}
           <polygon
@@ -187,7 +187,7 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           fontFamily="sans-serif"
           letterSpacing="1"
         >
-          معتمد رسمياً
+          نموذج توضيحي
         </text>
 
         <text
@@ -200,7 +200,7 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           fontFamily="monospace"
           letterSpacing="2"
         >
-          OFFICIAL SEAL
+          SPECIMEN
         </text>
 
         {/* Horizontal Divider Line with Stars */}
@@ -232,14 +232,14 @@ export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
           fontFamily="monospace"
           opacity="0.9"
         >
-          {issueDate} · VALIDATED
+          {issueDate} · DEMO
         </text>
       </svg>
 
       {/* Floating Holographic Badge in Bottom-Right Corner */}
       <div className="absolute -bottom-2 -right-2 bg-slate-950/90 border border-amber-400/60 rounded-full px-2.5 py-0.5 text-[9px] font-mono text-amber-300 font-bold flex items-center gap-1 shadow-lg backdrop-blur-md">
         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-        <span>SBC 201/304</span>
+        <span>DEMO</span>
       </div>
     </div>
   );
