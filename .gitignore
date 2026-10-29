@@ -9,3 +9,6 @@ coverage/
 vitest-report.json
 rules-report.json
 audit.json
+smoke-shots/
+server.log
+server.pid

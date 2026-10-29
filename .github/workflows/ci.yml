@@ -85,3 +85,33 @@ jobs:
             for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
               console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
           '
+
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Browser
+        run: npx playwright install --with-deps chromium
+      - name: Start production server (no AI key, auth required)
+        run: |
+          NODE_ENV=production AI_REQUIRE_AUTH=true node dist/server.cjs > server.log 2>&1 &
+          echo $! > server.pid
+      - name: Smoke test
+        run: node scripts/smoke.mjs http://127.0.0.1:3000
+      - name: Server log tail
+        if: always()
+        run: tail -n 20 server.log | sed 's/^/::notice title=server log::/' | head -20
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: smoke-shots/
