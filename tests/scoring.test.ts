@@ -126,3 +126,12 @@ describe("Readiness blockers", () => {
     expect(r.readinessBlockers.some((b) => b.code === "COVERAGE_GAP")).toBe(false);
   });
 });
+
+describe("docs/READINESS_INDEX.md worked example", () => {
+  it("matches computeAssetScores for demo asset #20481", async () => {
+    const { MOCK_ASSETS } = await import("../src/data/mockAssets");
+    const a = MOCK_ASSETS.find((x) => x.id === "20481")!;
+    const s = computeAssetScores(a.findings, a.coverageAreas, a.missingFieldsCount);
+    expect([s.conditionIndex, s.coveragePct, s.inspectionConfidence, s.liquidationReadiness, s.riskLevel]).toEqual([69, 97, 95, 54, "High"]);
+  });
+});

@@ -38,7 +38,7 @@ import { MiraahLogo } from "../common/MiraahLogo";
 import { CoverPageAISummarySection } from "./CoverPageAISummarySection";
 import { extractCoverPageAISummary } from "../../utils/aiCoverSummary";
 import { sanitizeElementForCanvas } from "../../utils/canvasSanitizer";
-import { buildPassportData, buildPassportExport, buildPassportCsv, type PassportExport } from "../../utils/passport";
+import { buildPassportData, buildPassportExport, buildPassportCsv, verifyPassportExport, type PassportExport } from "../../utils/passport";
 
 interface ExportPassportModalProps {
   isOpen: boolean;
@@ -69,6 +69,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
   // Single source of truth for JSON / CSV / PDF; fingerprint = SHA-256 of canonical passport JSON.
   const passportData = useMemo(() => buildPassportData(asset, scores), [asset, scores]);
   const [passportExport, setPassportExport] = useState<PassportExport | null>(null);
+  const [verifyResult, setVerifyResult] = useState<string>("");
   useEffect(() => {
     let alive = true;
     buildPassportExport(passportData).then((e) => {
@@ -89,6 +90,28 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
     navigator.clipboard?.writeText?.(jsonString);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleVerifyCurrent = async () => {
+    if (!passportExport) return;
+    const ok = await verifyPassportExport(passportExport);
+    setVerifyResult(ok ? (isArabic ? "✓ البصمة مطابقة" : "✓ Fingerprint matches") : (isArabic ? "✗ غير مطابقة" : "✗ Mismatch"));
+  };
+
+  const handleVerifyFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as PassportExport;
+      if (!parsed?.passport || !parsed?.fingerprint?.sha256) throw new Error("not a passport export");
+      const ok = await verifyPassportExport(parsed);
+      setVerifyResult(
+        ok
+          ? isArabic ? `✓ الملف سليم (${file.name})` : `✓ File unchanged (${file.name})`
+          : isArabic ? `✗ الملف عُدِّل بعد التصدير (${file.name})` : `✗ File was modified after export (${file.name})`
+      );
+    } catch {
+      setVerifyResult(isArabic ? "✗ ليس ملف تصدير جواز صالح" : "✗ Not a valid passport export file");
+    }
   };
 
   const handleCopyHash = () => {
@@ -875,7 +898,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
           {/* ══ ACTION BAR ══ */}
           <div className="flex items-center justify-between px-5 py-2.5 bg-slate-900/90 border-b border-slate-800 text-xs font-mono shrink-0 flex-wrap gap-2">
-            {/* Left: Document Metadata & Blockchain Seal */}
+            {/* Left: SHA-256 fingerprint, copy and verify */}
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 text-cyan-400 font-semibold">
                 <ShieldCheck className="w-4 h-4" />
@@ -890,6 +913,25 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
               >
                 {copiedHash ? "Copied!" : "Copy Hash"}
               </button>
+              <button
+                onClick={handleVerifyCurrent}
+                className="text-[10px] text-slate-400 hover:text-cyan-300 underline cursor-pointer"
+              >
+                {isArabic ? "تحقق" : "Verify"}
+              </button>
+              <label className="text-[10px] text-slate-400 hover:text-cyan-300 underline cursor-pointer">
+                {isArabic ? "تحقق من ملف JSON" : "Verify a JSON file"}
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={(e) => {
+                    handleVerifyFile(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {verifyResult && <span className="text-[10px] text-slate-200">{verifyResult}</span>}
             </div>
 
             {/* Right: Multi-Format Export, PDF Download & Print Action Buttons */}
