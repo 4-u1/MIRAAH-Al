@@ -171,7 +171,8 @@ jobs:
         run: docker build -t miraah:ci .
       - name: Run image and check health
         run: |
-          if ! sudo mkdir -p bk && sudo chown root:root bk && docker run -d --name miraah-ci -p 8080:8080 -v miraah-ci-data:/app/data -v "$PWD/bk":/app/backups miraah:ci > run.out 2> run.err; then
+          sudo mkdir -p bk && sudo chown root:root bk
+          if ! docker run -d --name miraah-ci -p 8080:8080 -v miraah-ci-data:/app/data -v "$PWD/bk":/app/backups miraah:ci > run.out 2> run.err; then
             echo "::error title=docker run::$(tr '\n' ' ' < run.err | cut -c1-400)"; exit 1
           fi
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/api/health && break; sleep 1; done
