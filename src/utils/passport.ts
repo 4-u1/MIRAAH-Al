@@ -16,7 +16,7 @@ export interface PassportFinding {
   type: string;
   severity: string;
   area: string;
-  ai_confidence_pct: number;
+  confidence_pct: number;
   verified_by_inspector: boolean;
   resolved: boolean;
   evidence_frames: number;
@@ -96,7 +96,7 @@ export function buildPassportData(asset: AssetRecord, scores: ScoreResults): Pas
       type: f.type,
       severity: f.severity,
       area: f.area,
-      ai_confidence_pct: f.conf,
+      confidence_pct: f.conf,
       verified_by_inspector: f.verified,
       resolved: f.isResolved,
       evidence_frames: f.evidence?.length ?? 0,
@@ -179,7 +179,7 @@ export const CSV_HEADERS = [
   "finding_type",
   "severity",
   "area",
-  "ai_confidence_pct",
+  "confidence_pct",
   "verified_by_inspector",
   "resolved",
   "evidence_frames",
@@ -205,7 +205,7 @@ export function buildPassportCsv(data: PassportData, sha256: string): string {
     f?.type ?? "",
     f?.severity ?? "",
     f?.area ?? "",
-    f?.ai_confidence_pct ?? "",
+    f?.confidence_pct ?? "",
     f ? f.verified_by_inspector : "",
     f ? f.resolved : "",
     f?.evidence_frames ?? "",

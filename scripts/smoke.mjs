@@ -22,6 +22,8 @@ const FORBIDDEN = [
   "Gemini 3.8", "LIVE VERIFIED", "SCE VERIFIED", "OFFICIAL ACCREDITED", "Enforcement Order", "ISO/IEC 17020",
   "Certified Valuation", "AUTO-SYNC", "VLM 2.5", "Merkle", "InfathRegistry", "Accredited Liquidation", "معتمد رسمي",
   "100% Verified", "9.14x", "844%", "Plot #419", "IMMUTABLE PROOF", "Taqeem Certified", "VERIFIED · GENUINE",
+  "Verified by: Ministry", "Verified by: Civil", "Verified by: Jeddah", "Zero-Trust", "Computer Vision detected", "رصد مباشر بالذكاء الاصطناعي",
+  "مطابقة فورية", "multi-spectral", "SCE Certified", "AI confidence",
 ];
 
 function checkText(where, text) {
