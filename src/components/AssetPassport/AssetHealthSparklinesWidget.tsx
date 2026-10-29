@@ -349,8 +349,8 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
             </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
               {isArabic
-                ? `مراقبة مستمرة لـ 5 متجهات رئيسية للأصل #${asset.id} · تردد 1.8 هرتز`
-                : `Continuous multi-spectral telemetry streams for Asset #${asset.id} · 1.8 Hz polling`}
+                ? `موجات عشوائية للعرض للأصل #${asset.id} (لا توجد حساسات متصلة)`
+                : `Randomly generated demo waves for Asset #${asset.id} (no sensors connected)`}
             </p>
           </div>
         </div>
