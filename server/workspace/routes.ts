@@ -284,7 +284,7 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
     wrap(async (req, res) => {
       const a = await loadAsset(req.params.id);
       const body = findingCreateSchema.parse(req.body);
-      const evs = await Promise.all(body.evidenceIds.map((id) => d.repo.getEvidence(id)));
+      const evs = await Promise.all((body.evidenceIds ?? []).map((id) => d.repo.getEvidence(id)));
       if (evs.some((e) => !e || e.assetId !== a.id)) throw new HttpError(400, "evidence_not_on_asset");
       let confidence: number | null = null;
       let source = body.source;
@@ -299,6 +299,8 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
       const t = nowIso();
       const f = await d.repo.createFinding({
         ...body,
+        description: body.description ?? "",
+        evidenceIds: body.evidenceIds ?? [],
         source,
         assetId: a.id,
         confidence,
