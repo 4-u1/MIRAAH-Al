@@ -36,7 +36,23 @@ export const assetCreateSchema = z
   })
   .strip();
 
-export const assetUpdateSchema = assetCreateSchema.partial().strip();
+/** PATCH schema: no defaults, so fields absent from the request are never touched. */
+export const assetUpdateSchema = z
+  .object({
+    name: text(160).min(2),
+    nameArabic: text(160),
+    type: z.enum(ASSET_TYPES),
+    city: text(80).min(1),
+    district: text(80),
+    location: text(200),
+    sizeSqm: z.number().positive().max(10_000_000),
+    buildYear: z.number().int().min(1900).max(2100),
+    valuationSar: z.number().min(0).max(1e12),
+    caseReference: text(80),
+    coverageAreas: z.array(coverageAreaSchema).max(60),
+  })
+  .partial()
+  .strip();
 
 export const findingCreateSchema = z
   .object({
@@ -44,7 +60,12 @@ export const findingCreateSchema = z
     severity: z.enum(SEVERITIES),
     area: text(120).min(1),
     description: text(1000).optional().default(""),
-    evidenceIds: z.array(text(64).min(1)).max(20).optional().default([]),
+    evidenceIds: z
+      .array(text(64).min(1))
+      .max(20)
+      .optional()
+      .default([])
+      .transform((ids) => Array.from(new Set(ids))),
     /** "ai-confirmed": inspector accepted (possibly edited) an AI suggestion on one of the evidence items. */
     source: z.enum(["manual", "ai-confirmed"]).default("manual"),
   })
@@ -66,8 +87,8 @@ export const visionSuggestionSchema = z
     defect_type: z.enum([...DEFECT_TYPES, "None"]),
     severity: z.enum([...SEVERITIES, "None"]),
     confidence: z.number().min(0).max(1),
-    location_hint: text(200),
-    rationale: text(600),
+    location_hint: z.string().transform((v) => v.trim().slice(0, 200)),
+    rationale: z.string().transform((v) => v.trim().slice(0, 600)),
   })
   .strip();
 
@@ -86,8 +107,8 @@ export interface Asset extends AssetCreate {
 export interface Finding extends FindingCreate {
   id: string;
   assetId: string;
-  /** Model confidence 0–100 for ai-confirmed findings; 100 for manual (human) findings. */
-  confidence: number;
+  /** Model self-reported confidence 0–100 (uncalibrated) for ai-confirmed findings; null for manual findings. */
+  confidence: number | null;
   verified: boolean;
   verifiedBy: string | null;
   resolved: boolean;

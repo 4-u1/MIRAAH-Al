@@ -43,6 +43,7 @@ jobs:
           fi
           # The Vite config must not inject server env vars into the client bundle.
           if grep -nE "define[[:space:]]*:|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
+          if ls dist | grep -q "server.cjs"; then echo "::error::server bundle is inside the public dist/ folder"; exit 1; fi
           # Emulator test hooks must not be in the production bundle.
           if grep -rq "__miraahTest\|127.0.0.1:9099" dist/assets; then echo "::error::emulator test hooks found in production bundle"; exit 1; fi
           echo "::notice title=Bundle scan::no API key values in dist/ besides the public Firebase web key; Vite config injects no env vars"
@@ -104,7 +105,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Start production server (no AI key, auth required)
         run: |
-          NODE_ENV=production AI_REQUIRE_AUTH=true node dist/server.cjs > server.log 2>&1 &
+          NODE_ENV=production AI_REQUIRE_AUTH=true node server-dist/server.cjs > server.log 2>&1 &
           echo $! > server.pid
       - name: Smoke test
         run: node scripts/smoke.mjs http://127.0.0.1:3000

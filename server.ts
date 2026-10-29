@@ -40,6 +40,11 @@ const projectId = process.env.FIREBASE_PROJECT_ID || fb.projectId || null;
 const apiKey = process.env.GEMINI_API_KEY?.trim();
 // FIREBASE_AUTH_EMULATOR_HOST is set only by the end-to-end test job. Never set it in production.
 const authEmulator = Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST);
+// Fail closed: emulator tokens are unsigned, so test mode must be explicit and never on Cloud Run.
+if ((authEmulator || process.env.E2E_FAKE_VISION) && (process.env.MIRAAH_E2E !== "1" || process.env.K_SERVICE)) {
+  console.error("Refusing to start: FIREBASE_AUTH_EMULATOR_HOST / E2E_FAKE_VISION are test-only (need MIRAAH_E2E=1, never on Cloud Run).");
+  process.exit(1);
+}
 const verifyToken: TokenVerifier | null = !projectId
   ? null
   : authEmulator
@@ -52,6 +57,10 @@ const verifyToken: TokenVerifier | null = !projectId
 if (authEmulator) console.warn("⚠ FIREBASE_AUTH_EMULATOR_HOST is set: accepting Auth-emulator tokens (test mode only)");
 
 const pem = readPem(process.env.PASSPORT_SIGNING_KEY);
+if (process.env.PASSPORT_SIGNING_KEY?.trim() && !pem) {
+  console.error("Refusing to start: PASSPORT_SIGNING_KEY is set but is not a readable PEM (or base64 PEM).");
+  process.exit(1);
+}
 const signer = pem ? createSigner(pem) : null;
 const nodeEnv = process.env.NODE_ENV;
 const aiDailyLimit = Number(process.env.AI_DAILY_LIMIT) || 100;
@@ -90,7 +99,8 @@ const app = createApp({
         aiDailyLimit,
       })
     );
-    console.log(`Live workspace enabled · signing ${signer ? `on (key ${signer.keyId})` : "off"} · vision ${apiKey ? "on" : "off"}`);
+    const visionMode = authEmulator && process.env.E2E_FAKE_VISION === "true" ? "fake (test)" : apiKey ? "on" : "off";
+    console.log(`Live workspace enabled · signing ${signer ? `on (key ${signer.keyId})` : "off"} · vision ${visionMode}`);
   },
 });
 

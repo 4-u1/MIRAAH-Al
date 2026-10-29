@@ -1,6 +1,6 @@
 import type { AssetRecord, Finding as DemoFinding, CoverageArea } from "../types";
 import { computeAssetScores, type ScoreResults } from "./scoring";
-import { buildPassportData, type PassportData } from "./passport";
+import { buildPassportData, PASSPORT_SCHEMA_RECORDED, type PassportData } from "./passport";
 
 /**
  * Maps live-workspace records (server/workspace/domain.ts) onto the shapes used by the scoring
@@ -30,7 +30,11 @@ export interface WsFinding {
   severity: DemoFinding["severity"];
   area: string;
   description?: string;
-  confidence: number;
+  /** null for manual findings; in the formulas a manual (human-recorded) finding counts as 100. */
+  confidence: number | null;
+  source?: "manual" | "ai-confirmed";
+  verifiedBy?: string | null;
+  resolvedBy?: string | null;
   verified: boolean;
   resolved: boolean;
   evidenceIds: string[];
@@ -54,7 +58,7 @@ export function toAssetRecord(a: WsAsset, findings: WsFinding[]): AssetRecord {
     type: f.type,
     area: f.area,
     severity: f.severity,
-    conf: f.confidence,
+    conf: f.confidence ?? 100,
     frames: f.evidenceIds.length,
     verified: f.verified,
     isResolved: f.resolved,
@@ -64,7 +68,7 @@ export function toAssetRecord(a: WsAsset, findings: WsFinding[]): AssetRecord {
       thumbnailUrl: "",
       timestampSec: j,
       timestampFormatted: "",
-      confidence: f.confidence / 100,
+      confidence: (f.confidence ?? 100) / 100,
       cameraAngle: "",
       roomArea: f.area,
     })),
@@ -114,7 +118,25 @@ export function scoreWorkspaceAsset(a: WsAsset, findings: WsFinding[]): { record
   return { record, scores: computeAssetScores(record.findings, record.coverageAreas, record.missingFieldsCount) };
 }
 
-export function workspacePassport(a: WsAsset, findings: WsFinding[]): PassportData {
+export function workspacePassport(a: WsAsset, findings: WsFinding[], evidence: { id: string; sha256: string }[] = []): PassportData {
   const { record, scores } = scoreWorkspaceAsset(a, findings);
-  return buildPassportData(record, scores, "recorded");
+  const base = buildPassportData(record, scores, "recorded");
+  const sha = new Map(evidence.map((e) => [e.id, e.sha256]));
+  return {
+    ...base,
+    schema: PASSPORT_SCHEMA_RECORDED,
+    asset: { ...base.asset, case_reference: a.caseReference ?? "" },
+    findings: base.findings.map((pf, i) => {
+      const f = findings[i];
+      return {
+        ...pf,
+        confidence_pct: f.confidence,
+        finding_id: f.id,
+        source: f.source ?? "manual",
+        verified_by: f.verifiedBy ?? null,
+        resolved_by: f.resolvedBy ?? null,
+        evidence_sha256: f.evidenceIds.map((id) => sha.get(id) ?? "missing"),
+      };
+    }),
+  };
 }

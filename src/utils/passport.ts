@@ -10,16 +10,25 @@ import type { ScoreResults } from "./scoring";
  */
 
 export const PASSPORT_SCHEMA = "miraah-passport/1.0";
+/** Recorded (live-workspace) exports add evidence hashes, finding sources and reviewers. */
+export const PASSPORT_SCHEMA_RECORDED = "miraah-passport/1.1";
 
 export interface PassportFinding {
   id: number;
   type: string;
   severity: string;
   area: string;
-  confidence_pct: number;
+  /** Model self-reported confidence (uncalibrated); null for manual findings in recorded exports. */
+  confidence_pct: number | null;
   verified_by_inspector: boolean;
   resolved: boolean;
   evidence_frames: number;
+  // Recorded exports only (schema 1.1)
+  finding_id?: string;
+  source?: "manual" | "ai-confirmed";
+  verified_by?: string | null;
+  resolved_by?: string | null;
+  evidence_sha256?: string[];
 }
 
 export interface PassportData {
@@ -38,6 +47,7 @@ export interface PassportData {
     build_year: number;
     entered_valuation_sar: number;
     inspection_date: string;
+    case_reference?: string;
   };
   scores: {
     liquidation_readiness_index: number;

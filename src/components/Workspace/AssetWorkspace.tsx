@@ -17,20 +17,47 @@ const SEVERITIES = ["Critical", "Moderate", "Low"] as const;
 type Detail = Awaited<ReturnType<typeof ws.asset>>;
 type SignedExport = PassportExport & { signature?: { algorithm: string; key_id: string; signed_by: { email: string | null; uid: string }; value: string } };
 
-const Thumb: React.FC<{ id: string }> = ({ id }) => {
+const Thumb: React.FC<{ id: string; isArabic: boolean }> = ({ id, isArabic }) => {
   const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
+    let cancelled = false;
     let u: string | null = null;
-    ws.imageUrl(id).then((x) => {
-      u = x;
-      setUrl(x);
-    }).catch(() => setUrl(null));
+    ws.imageUrl(id)
+      .then((x) => {
+        if (cancelled) URL.revokeObjectURL(x);
+        else {
+          u = x;
+          setUrl(x);
+        }
+      })
+      .catch(() => !cancelled && setFailed(true));
     return () => {
+      cancelled = true;
       if (u) URL.revokeObjectURL(u);
     };
   }, [id]);
+  if (failed) return <div className="flex h-36 w-full items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-400">{isArabic ? "تعذّر تحميل الصورة" : "Could not load image"}</div>;
   return url ? <img src={url} alt="" className="h-36 w-full rounded-lg object-cover" /> : <div className="h-36 w-full animate-pulse rounded-lg bg-slate-800" />;
 };
+
+const AR: Record<string, string> = {
+  Crack: "تشقق",
+  Moisture: "رطوبة",
+  "Surface Damage": "تلف سطحي",
+  "Paint Peeling": "تقشر دهان",
+  Critical: "حرج",
+  Moderate: "متوسط",
+  Low: "منخفض",
+  High: "مرتفع",
+  "Requires Expert Review": "يتطلب مراجعة خبير",
+  None: "لا يوجد",
+  "Residential Villa": "فيلا سكنية",
+  "Commercial Tower": "برج تجاري",
+  "Residential Compound": "مجمع سكني",
+  "Logistics Warehouse": "مستودع لوجستي",
+};
+export const label = (v: string, ar: boolean) => (ar ? AR[v] ?? v : v);
 
 export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boolean; onBack: () => void }> = ({ assetId, me, isArabic, onBack }) => {
   const t = (en: string, ar: string) => (isArabic ? ar : en);
@@ -47,6 +74,8 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
   const [verifyMsg, setVerifyMsg] = useState("");
   const pdfRef = useRef<HTMLDivElement>(null);
 
+  const arRef = useRef(isArabic);
+  arRef.current = isArabic;
   const load = useCallback(async () => {
     try {
       const x = await ws.asset(assetId);
@@ -54,9 +83,9 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
       setCoverage(x.asset.coverageAreas);
       setAudit(await ws.audit(assetId));
     } catch (e) {
-      setError(errorText(e, isArabic));
+      setError(errorText(e, arRef.current));
     }
-  }, [assetId, isArabic]);
+  }, [assetId]);
 
   useEffect(() => {
     load();
@@ -159,7 +188,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
           <div>
             <h2 className="text-lg font-black text-white">{isArabic ? a.nameArabic || a.name : a.name}</h2>
             <p className="text-xs text-slate-400">
-              {a.type} · {a.city}
+              {label(a.type, isArabic)} · {a.city}
               {a.district ? ` / ${a.district}` : ""} · {a.sizeSqm.toLocaleString()} m² · {a.buildYear}
               {a.caseReference ? ` · ${a.caseReference}` : ""}
             </p>
@@ -178,7 +207,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
           [t("Condition", "الحالة"), `${s.conditionIndex}/100`],
           [t("Coverage", "التغطية"), `${s.coveragePct}%`],
           [t("Confidence", "الثقة"), `${s.inspectionConfidence}`],
-          [t("Risk", "المخاطر"), s.riskLevel],
+          [t("Risk", "المخاطر"), label(s.riskLevel, isArabic)],
         ].map(([k, v]) => (
           <div key={k} className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-center">
             <div className="text-[11px] text-slate-400">{k}</div>
@@ -263,7 +292,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {d.evidence.map((ev) => (
             <div key={ev.id} className="space-y-2 rounded-xl border border-slate-800 p-2">
-              <Thumb id={ev.id} />
+              <Thumb id={ev.id} isArabic={isArabic} />
               <div className="font-mono text-[10px] text-slate-500" dir="ltr">
                 SHA-256 {ev.sha256.slice(0, 16)}… · {(ev.sizeBytes / 1024).toFixed(0)} KB · {ev.uploadedBy}
               </div>
@@ -271,7 +300,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
                 <div className="rounded-lg bg-slate-900 p-2 text-xs text-slate-200">
                   <div className="font-bold">
                     {t("AI suggestion", "اقتراح الذكاء الاصطناعي")} ({ev.aiSuggestion.model}):{" "}
-                    {ev.aiSuggestion.defect_present ? `${ev.aiSuggestion.defect_type} · ${ev.aiSuggestion.severity}` : t("no defect seen", "لا يظهر عيب")} · {Math.round(ev.aiSuggestion.confidence * 100)}%
+                    {ev.aiSuggestion.defect_present ? `${label(ev.aiSuggestion.defect_type, isArabic)} · ${label(ev.aiSuggestion.severity, isArabic)}` : t("no defect seen", "لا يظهر عيب")} · {Math.round(ev.aiSuggestion.confidence * 100)}% {t("(model self-reported)", "(تقدير النموذج لنفسه)")}
                   </div>
                   <div className="text-slate-400">{ev.aiSuggestion.rationale}</div>
                   <div className="mt-1 text-[10px] text-amber-300">{t("A suggestion only — the inspector decides.", "اقتراح فقط — القرار للمفتش.")}</div>
@@ -305,12 +334,16 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
           <div className="grid gap-2 sm:grid-cols-3">
             <select className={input} value={finding.type} onChange={(e) => setFinding({ ...finding, type: e.target.value as (typeof DEFECTS)[number] })}>
               {DEFECTS.map((x) => (
-                <option key={x}>{x}</option>
+                <option key={x} value={x}>
+                  {label(x, isArabic)}
+                </option>
               ))}
             </select>
             <select className={input} value={finding.severity} onChange={(e) => setFinding({ ...finding, severity: e.target.value as (typeof SEVERITIES)[number] })}>
               {SEVERITIES.map((x) => (
-                <option key={x}>{x}</option>
+                <option key={x} value={x}>
+                  {label(x, isArabic)}
+                </option>
               ))}
             </select>
             <input data-testid="finding-area" className={input} placeholder={t("Area / location *", "المنطقة *")} value={finding.area} onChange={(e) => setFinding({ ...finding, area: e.target.value })} />
@@ -377,10 +410,10 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               <tbody>
                 {d.findings.map((f: WsFinding) => (
                   <tr key={f.id} className="border-t border-slate-800">
-                    <td className="p-2">{f.type}</td>
-                    <td className="p-2">{f.severity}</td>
+                    <td className="p-2">{label(f.type, isArabic)}</td>
+                    <td className="p-2">{label(f.severity, isArabic)}</td>
                     <td className="p-2">{f.area}</td>
-                    <td className="p-2">{f.confidence}%</td>
+                    <td className="p-2">{f.confidence === null ? "—" : `${f.confidence}%`}</td>
                     <td className="p-2">{f.source === "ai-confirmed" ? t("AI + inspector", "ذكاء اصطناعي + مفتش") : t("Inspector", "مفتش")}</td>
                     <td className="p-2">{f.verified ? `✓ ${f.verifiedBy}` : "—"}</td>
                     <td className="p-2">{f.resolved ? `✓ ${f.resolvedBy}` : "—"}</td>
@@ -419,7 +452,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               <button onClick={downloadJson} className={`${btn} border border-slate-700 text-slate-200`}>
                 <FileDown className="h-4 w-4" /> JSON
               </button>
-              <button data-testid="verify-export" onClick={async () => showVerify(await verifyExport(exp))} className={`${btn} border border-slate-700 text-slate-200`}>
+              <button data-testid="verify-export" onClick={async () => { try { showVerify(await verifyExport(exp)); } catch (e) { setVerifyMsg(`✗ ${errorText(e, isArabic)}`); } }} className={`${btn} border border-slate-700 text-slate-200`}>
                 <ShieldCheck className="h-4 w-4" /> {t("Verify", "تحقق")}
               </button>
               <label className={`${btn} cursor-pointer border border-slate-700 text-slate-200`}>
@@ -428,6 +461,9 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               </label>
             </div>
           </div>
+          <p className="mb-2 text-[11px] text-amber-300">
+            {t("Only the JSON export can be verified. The PDF is a rendering for reading; its signature text cannot be checked.", "ملف JSON وحده قابل للتحقق. ملف PDF نسخة للقراءة، ولا يمكن التحقق من نص التوقيع فيه.")}
+          </p>
           {verifyMsg && <div data-testid="verify-msg" className="mb-2 text-xs text-slate-200">{verifyMsg}</div>}
           <div className="mb-2 flex flex-wrap gap-1">
             {PASSPORT_PAGE_TITLES.map((pt, i) => (
