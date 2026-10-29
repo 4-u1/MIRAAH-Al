@@ -67,6 +67,8 @@ const signer = pem ? createSigner(pem) : null;
 const nodeEnv = process.env.NODE_ENV;
 const aiDailyLimit = Number(process.env.AI_DAILY_LIMIT) || 100;
 
+let closeStore: () => void = () => {};
+
 const app = createApp({
   ...configFromEnv(process.env, {
     generator: apiKey ? createGeminiGenerator(apiKey, modelChain()) : null,
@@ -93,8 +95,14 @@ const app = createApp({
       repo = FirestoreRepo.create(fbApp, authEmulator ? undefined : process.env.FIRESTORE_DATABASE_ID || fb.firestoreDatabaseId);
       blobs = new CloudStorageBlobStore(fbApp, bucket);
     } else if (backend === "sqlite") {
+      if (process.env.K_SERVICE) {
+        console.error("Refusing to start: SQLite needs a persistent disk; Cloud Run's filesystem is temporary. Set WORKSPACE_STORE=firebase.");
+        process.exit(1);
+      }
       const dataDir = path.resolve(process.env.DATA_DIR || "data");
-      repo = new SqliteRepo(path.join(dataDir, "miraah.db"));
+      const sqlite = new SqliteRepo(path.join(dataDir, "miraah.db"));
+      repo = sqlite;
+      closeStore = () => sqlite.close();
       blobs = new FsBlobStore(dataDir);
     } else {
       console.error(`Refusing to start: unknown WORKSPACE_STORE "${backend}" (use sqlite or firebase)`);
@@ -135,9 +143,30 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`MIRAAH server on http://0.0.0.0:${PORT} · AI ${apiKey ? "enabled" : "disabled"}`);
   });
+
+  // Graceful shutdown: finish in-flight requests, then close the database (checkpoints the WAL).
+  const shutdown = (signal: string) => {
+    console.log(`${signal} received, shutting down`);
+    server.close(() => {
+      try {
+        closeStore();
+      } finally {
+        process.exit(0);
+      }
+    });
+    setTimeout(() => {
+      try {
+        closeStore();
+      } finally {
+        process.exit(0);
+      }
+    }, 15_000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer();

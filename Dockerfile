@@ -16,9 +16,11 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/server-dist ./server-dist
 COPY firebase-applet-config.json ./
 COPY scripts/backup.mjs ./scripts/backup.mjs
+COPY scripts/docker-entrypoint.sh /usr/local/bin/miraah-entrypoint
 RUN mkdir -p /app/data /app/backups && chown -R node:node /app/data /app/backups
-USER node
 ENV PORT=8080 DATA_DIR=/app/data WORKSPACE_STORE=sqlite
 VOLUME ["/app/data"]
 EXPOSE 8080
+# The entrypoint fixes volume ownership as root, then runs the app as the "node" user.
+ENTRYPOINT ["/usr/local/bin/miraah-entrypoint"]
 CMD ["node", "server-dist/server.cjs"]

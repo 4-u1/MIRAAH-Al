@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { randomUUID } from "crypto";
-import { mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, existsSync } from "fs";
+import { mkdirSync, readFileSync, unlinkSync, renameSync, existsSync, openSync, writeSync, fsyncSync, closeSync } from "fs";
 import path from "path";
 import type { Asset, AuditEntry, Evidence, Finding, Role } from "./domain";
 import { ROLES } from "./domain";
@@ -77,7 +77,7 @@ export class SqliteRepo implements Repo {
   }
 
   async listAssets() {
-    return this.many<Asset>("SELECT doc FROM assets ORDER BY created_at, id");
+    return this.many<Asset>("SELECT doc FROM assets ORDER BY created_at, rowid");
   }
   async getAsset(id: string) {
     return this.one<Asset>("SELECT doc FROM assets WHERE id = ?", id);
@@ -99,7 +99,7 @@ export class SqliteRepo implements Repo {
   }
 
   async listFindings(assetId: string) {
-    return this.many<Finding>("SELECT doc FROM findings WHERE asset_id = ? ORDER BY created_at, id", assetId);
+    return this.many<Finding>("SELECT doc FROM findings WHERE asset_id = ? ORDER BY created_at, rowid", assetId);
   }
   async getFinding(id: string) {
     return this.one<Finding>("SELECT doc FROM findings WHERE id = ?", id);
@@ -121,7 +121,7 @@ export class SqliteRepo implements Repo {
   }
 
   async listEvidence(assetId: string) {
-    return this.many<Evidence>("SELECT doc FROM evidence WHERE asset_id = ? ORDER BY uploaded_at, id", assetId);
+    return this.many<Evidence>("SELECT doc FROM evidence WHERE asset_id = ? ORDER BY uploaded_at, rowid", assetId);
   }
   async getEvidence(id: string) {
     return this.one<Evidence>("SELECT doc FROM evidence WHERE id = ?", id);
@@ -167,8 +167,19 @@ export class FsBlobStore implements BlobStore {
     const full = this.resolve(p);
     mkdirSync(path.dirname(full), { recursive: true });
     const tmp = `${full}.${randomUUID()}.tmp`;
-    writeFileSync(tmp, bytes, { flag: "wx" });
-    renameSync(tmp, full); // atomic on the same filesystem
+    try {
+      const fd = openSync(tmp, "wx", 0o640);
+      try {
+        writeSync(fd, bytes);
+        fsyncSync(fd); // durable before it becomes visible
+      } finally {
+        closeSync(fd);
+      }
+      renameSync(tmp, full); // atomic on the same filesystem
+    } catch (e) {
+      if (existsSync(tmp)) unlinkSync(tmp);
+      throw e;
+    }
   }
   async get(p: string) {
     return readFileSync(this.resolve(p));
