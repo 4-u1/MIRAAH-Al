@@ -75,7 +75,8 @@ export interface WsFinding {
   description: string;
   evidenceIds: string[];
   source: "manual" | "ai-confirmed";
-  confidence: number;
+  /** Model self-reported confidence for ai-confirmed findings; null for manual findings. */
+  confidence: number | null;
   verified: boolean;
   verifiedBy: string | null;
   resolved: boolean;
