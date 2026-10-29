@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import dotenv from "dotenv";
 import { createApp, configFromEnv } from "./server/app";
 import { createGeminiGenerator, modelChain } from "./server/llm";
-import { createFirebaseTokenVerifier } from "./server/auth";
+import { createFirebaseTokenVerifier, type TokenVerifier } from "./server/auth";
 import { createWorkspaceRouter, createPassportPublicRouter } from "./server/workspace/routes";
 import { adminApp, FirestoreRepo, CloudStorageBlobStore } from "./server/workspace/firebaseStore";
 import { createSigner } from "./server/workspace/signing";
@@ -38,7 +38,18 @@ function readPem(raw: string | undefined): string | null {
 const fb = firebaseConfig();
 const projectId = process.env.FIREBASE_PROJECT_ID || fb.projectId || null;
 const apiKey = process.env.GEMINI_API_KEY?.trim();
-const verifyToken = projectId ? createFirebaseTokenVerifier(projectId) : null;
+// FIREBASE_AUTH_EMULATOR_HOST is set only by the end-to-end test job. Never set it in production.
+const authEmulator = Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST);
+const verifyToken: TokenVerifier | null = !projectId
+  ? null
+  : authEmulator
+  ? async (token) => {
+      const { getAuth } = await import("firebase-admin/auth");
+      const d = await getAuth(adminApp(projectId, process.env.STORAGE_BUCKET || fb.storageBucket)).verifyIdToken(token);
+      return { uid: d.uid, email: d.email?.toLowerCase(), emailVerified: d.email_verified === true };
+    }
+  : createFirebaseTokenVerifier(projectId);
+if (authEmulator) console.warn("⚠ FIREBASE_AUTH_EMULATOR_HOST is set: accepting Auth-emulator tokens (test mode only)");
 
 const pem = readPem(process.env.PASSPORT_SIGNING_KEY);
 const signer = pem ? createSigner(pem) : null;
@@ -65,10 +76,15 @@ const app = createApp({
     a.use(
       "/api/workspace",
       createWorkspaceRouter({
-        repo: FirestoreRepo.create(fbApp, process.env.FIRESTORE_DATABASE_ID || fb.firestoreDatabaseId),
+        repo: FirestoreRepo.create(fbApp, authEmulator ? undefined : process.env.FIRESTORE_DATABASE_ID || fb.firestoreDatabaseId),
         blobs: new CloudStorageBlobStore(fbApp, bucket),
         verifyToken,
-        vision: apiKey ? createGeminiVision(apiKey, modelChain()) : null,
+        vision:
+          authEmulator && process.env.E2E_FAKE_VISION === "true"
+            ? async () => ({ defect_present: true, defect_type: "Crack", severity: "Moderate", confidence: 0.81, location_hint: "upper wall", rationale: "E2E fake model output.", model: "e2e-fake" } as const)
+            : apiKey
+            ? createGeminiVision(apiKey, modelChain())
+            : null,
         signer,
         adminEmails: (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
         aiDailyLimit,

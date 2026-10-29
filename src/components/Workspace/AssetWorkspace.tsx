@@ -165,7 +165,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
             </p>
           </div>
         </div>
-        <button onClick={exportPassport} disabled={!!busy} className={`${btn} bg-cyan-500 text-slate-950 hover:bg-cyan-400`}>
+        <button data-testid="export-passport" onClick={exportPassport} disabled={!!busy} className={`${btn} bg-cyan-500 text-slate-950 hover:bg-cyan-400`}>
           <ShieldCheck className="h-4 w-4" /> {me.signing ? t("Signed passport", "جواز موقّع") : t("Passport export", "تصدير الجواز")}
         </button>
       </div>
@@ -200,8 +200,9 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
         <div className="space-y-2">
           {coverage.map((c, i) => (
             <div key={c.id} className="flex items-center gap-2">
-              <input className={input} value={c.area} disabled={!canWrite} onChange={(e) => setCoverage(coverage.map((x, j) => (j === i ? { ...x, area: e.target.value } : x)))} />
+              <input data-testid="coverage-name" className={input} value={c.area} disabled={!canWrite} onChange={(e) => setCoverage(coverage.map((x, j) => (j === i ? { ...x, area: e.target.value } : x)))} />
               <input
+                data-testid="coverage-pct"
                 className={`${input} max-w-[90px]`}
                 type="number"
                 min={0}
@@ -221,10 +222,11 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
         </div>
         {canWrite && (
           <div className="mt-3 flex gap-2">
-            <button onClick={() => setCoverage([...coverage, { id: crypto.randomUUID().slice(0, 8), area: "", pct: 0 }])} className={`${btn} border border-slate-700 text-slate-200`}>
+            <button data-testid="add-area" onClick={() => setCoverage([...coverage, { id: crypto.randomUUID().slice(0, 8), area: "", pct: 0 }])} className={`${btn} border border-slate-700 text-slate-200`}>
               <Plus className="h-4 w-4" /> {t("Add area", "إضافة منطقة")}
             </button>
             <button
+              data-testid="save-coverage"
               onClick={() => run("coverage", () => ws.updateAsset(a.id, { coverageAreas: coverage.filter((c) => c.area.trim()) }))}
               disabled={!!busy}
               className={`${btn} bg-emerald-500 text-slate-950`}
@@ -245,6 +247,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
             <label className={`${btn} cursor-pointer bg-cyan-500 text-slate-950`}>
               <Upload className="h-4 w-4" /> {busy === "upload" ? t("Uploading…", "جارٍ الرفع…") : t("Upload photo", "رفع صورة")}
               <input
+                data-testid="upload-input"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
@@ -273,7 +276,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
                   <div className="text-slate-400">{ev.aiSuggestion.rationale}</div>
                   <div className="mt-1 text-[10px] text-amber-300">{t("A suggestion only — the inspector decides.", "اقتراح فقط — القرار للمفتش.")}</div>
                   {canWrite && ev.aiSuggestion.defect_present && (
-                    <button onClick={() => useSuggestion(ev)} className={`${btn} mt-2 border border-cyan-600 text-cyan-200`}>
+                    <button data-testid="use-suggestion" onClick={() => useSuggestion(ev)} className={`${btn} mt-2 border border-cyan-600 text-cyan-200`}>
                       {t("Use as a finding (review first)", "استخدمه كملاحظة (راجعه أولاً)")}
                     </button>
                   )}
@@ -281,7 +284,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               ) : (
                 canWrite &&
                 me.ai && (
-                  <button onClick={() => run(`ai-${ev.id}`, () => ws.analyze(ev.id))} disabled={!!busy} className={`${btn} border border-slate-700 text-slate-200`}>
+                  <button data-testid="ai-suggest" onClick={() => run(`ai-${ev.id}`, () => ws.analyze(ev.id))} disabled={!!busy} className={`${btn} border border-slate-700 text-slate-200`}>
                     <Sparkles className="h-4 w-4" /> {busy === `ai-${ev.id}` ? t("Analysing…", "جارٍ التحليل…") : t("Suggest with AI", "اقتراح بالذكاء الاصطناعي")}
                   </button>
                 )
@@ -310,7 +313,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
                 <option key={x}>{x}</option>
               ))}
             </select>
-            <input className={input} placeholder={t("Area / location *", "المنطقة *")} value={finding.area} onChange={(e) => setFinding({ ...finding, area: e.target.value })} />
+            <input data-testid="finding-area" className={input} placeholder={t("Area / location *", "المنطقة *")} value={finding.area} onChange={(e) => setFinding({ ...finding, area: e.target.value })} />
             <textarea className={`${input} sm:col-span-3`} rows={2} placeholder={t("Description", "الوصف")} value={finding.description} onChange={(e) => setFinding({ ...finding, description: e.target.value })} />
           </div>
           {d.evidence.length > 0 && (
@@ -331,6 +334,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
           )}
           <div className="mt-3 flex gap-2">
             <button
+              data-testid="save-finding"
               onClick={() =>
                 run("finding", async () => {
                   await ws.createFinding(a.id, finding);
@@ -383,10 +387,10 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
                     <td className="p-2">
                       {canReview && (
                         <div className="flex gap-1">
-                          <button onClick={() => run(`v-${f.id}`, () => ws.review(f.id, "verify", !f.verified))} className="rounded border border-slate-700 px-2 py-1 hover:bg-white/10">
+                          <button data-testid="verify-finding" onClick={() => run(`v-${f.id}`, () => ws.review(f.id, "verify", !f.verified))} className="rounded border border-slate-700 px-2 py-1 hover:bg-white/10">
                             {f.verified ? t("Unverify", "إلغاء التحقق") : t("Verify", "تحقق")}
                           </button>
-                          <button onClick={() => run(`r-${f.id}`, () => ws.review(f.id, "resolve", !f.resolved))} className="rounded border border-slate-700 px-2 py-1 hover:bg-white/10">
+                          <button data-testid="resolve-finding" onClick={() => run(`r-${f.id}`, () => ws.review(f.id, "resolve", !f.resolved))} className="rounded border border-slate-700 px-2 py-1 hover:bg-white/10">
                             {f.resolved ? t("Reopen", "إعادة فتح") : t("Resolve", "معالجة")}
                           </button>
                         </div>
@@ -415,7 +419,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               <button onClick={downloadJson} className={`${btn} border border-slate-700 text-slate-200`}>
                 <FileDown className="h-4 w-4" /> JSON
               </button>
-              <button onClick={async () => showVerify(await verifyExport(exp))} className={`${btn} border border-slate-700 text-slate-200`}>
+              <button data-testid="verify-export" onClick={async () => showVerify(await verifyExport(exp))} className={`${btn} border border-slate-700 text-slate-200`}>
                 <ShieldCheck className="h-4 w-4" /> {t("Verify", "تحقق")}
               </button>
               <label className={`${btn} cursor-pointer border border-slate-700 text-slate-200`}>
@@ -424,7 +428,7 @@ export const AssetWorkspace: React.FC<{ assetId: string; me: Me; isArabic: boole
               </label>
             </div>
           </div>
-          {verifyMsg && <div className="mb-2 text-xs text-slate-200">{verifyMsg}</div>}
+          {verifyMsg && <div data-testid="verify-msg" className="mb-2 text-xs text-slate-200">{verifyMsg}</div>}
           <div className="mb-2 flex flex-wrap gap-1">
             {PASSPORT_PAGE_TITLES.map((pt, i) => (
               <button key={pt.en} onClick={() => setPage((i + 1) as 1 | 2 | 3 | 4)} className={`rounded px-2 py-1 text-xs ${page === i + 1 ? "bg-cyan-900 text-cyan-100" : "text-slate-400 hover:bg-white/5"}`}>
