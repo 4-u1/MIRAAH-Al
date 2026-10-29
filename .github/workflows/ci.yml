@@ -41,8 +41,9 @@ jobs:
           if grep -rEo "AIza[0-9A-Za-z_-]{35}" dist/ | grep -v "$(node -p "require('./firebase-applet-config.json').apiKey")" ; then
             echo "::error::Possible API key in dist/ other than the public Firebase web key"; exit 1
           fi
-          if grep -rq "GEMINI_API_KEY" dist/assets 2>/dev/null; then echo "::error::GEMINI_API_KEY referenced in client bundle"; exit 1; fi
-          echo "::notice title=Bundle scan::no server secrets found in dist/"
+          # The Vite config must not inject server env vars into the client bundle.
+          if grep -nE "define|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
+          echo "::notice title=Bundle scan::no API key values in dist/ besides the public Firebase web key; Vite config injects no env vars"
       - name: Audit (production deps)
         run: |
           npm audit --omit=dev --json > audit.json || true
