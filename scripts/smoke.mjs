@@ -6,7 +6,12 @@ import { mkdirSync } from "fs";
 
 const BASE = process.argv[2] || "http://127.0.0.1:3000";
 const failures = [];
-const note = (t, m) => console.log(`::notice title=${t}::${m}`);
+// GitHub shows at most 10 annotations per type per step: passes are collected and printed once.
+const passes = [];
+const note = (t, m) => {
+  passes.push(`${t}: ${m}`);
+  console.log(`PASS ${t}: ${m}`);
+};
 const fail = (t, m) => {
   failures.push(`${t}: ${m}`);
   console.log(`::error title=${t}::${m}`);
@@ -127,5 +132,5 @@ try {
 
 await browser.close();
 if (pageErrors.length) for (const e of pageErrors.slice(0, 10)) fail("page error", e.slice(0, 300));
-console.log(`::notice title=Smoke summary::${failures.length} failure(s)`);
+console.log(`::notice title=Smoke summary::${failures.length} failure(s), ${passes.length} passed — ${passes.join(" | ").slice(0, 900)}`);
 process.exit(failures.length ? 1 : 0);

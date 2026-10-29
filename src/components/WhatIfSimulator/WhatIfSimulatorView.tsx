@@ -1138,7 +1138,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
                 className="w-full accent-[#EF4444] cursor-pointer"
               />
               <div className={`flex justify-between text-[10px] font-mono ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
-                <span>0 (100% Verified)</span>
+                <span>0 (all resolved)</span>
                 <span>5 (Missing Docs)</span>
               </div>
             </div>
