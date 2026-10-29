@@ -171,7 +171,7 @@ export const PassportDocument: React.FC<Props> = ({ page, data, exp, isArabic, e
                 <td className="border border-slate-300 px-2 py-1">{f.type}</td>
                 <td className="border border-slate-300 px-2 py-1">{f.severity}</td>
                 <td className="border border-slate-300 px-2 py-1">{f.area}</td>
-                <td className="border border-slate-300 px-2 py-1">{f.confidence_pct}%</td>
+                <td className="border border-slate-300 px-2 py-1">{f.confidence_pct === null ? t("manual", "يدوي") : `${f.confidence_pct}%`}</td>
                 <td className="border border-slate-300 px-2 py-1">{f.verified_by_inspector ? t("Yes", "نعم") : t("No", "لا")}</td>
                 <td className="border border-slate-300 px-2 py-1">{f.resolved ? t("Yes", "نعم") : t("No", "لا")}</td>
               </tr>
@@ -190,8 +190,8 @@ export const PassportDocument: React.FC<Props> = ({ page, data, exp, isArabic, e
             <div className="break-all font-mono text-[9.5px] text-slate-600">{signature.value}</div>
             <div className="mt-1 text-[10px] text-slate-600">
               {t(
-                "Proves this export (fingerprint, time and signer) came from this MIRAAH server. Verify at /api/passport/verify or with the public key at /api/passport/public-key. It is not an official seal.",
-                "يثبت أن هذا التصدير (البصمة والوقت والموقّع) صادر من خادم مرآة هذا. للتحقق: ‎/api/passport/verify أو بالمفتاح العام ‎/api/passport/public-key. ليس ختماً رسمياً."
+                "Applies to the JSON export: proves its fingerprint, time and signer came from this MIRAAH server (verify at /api/passport/verify or with the key at /api/passport/public-key). This PDF is only a rendering and cannot be verified. Not an official seal.",
+                "ينطبق على ملف JSON: يثبت أن بصمته ووقته وموقّعه صادرة من خادم مرآة هذا (للتحقق: ‎/api/passport/verify أو بالمفتاح ‎/api/passport/public-key). ملف PDF هذا نسخة للقراءة ولا يمكن التحقق منه. ليس ختماً رسمياً."
               )}
             </div>
           </div>

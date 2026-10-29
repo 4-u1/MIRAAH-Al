@@ -126,4 +126,7 @@ export class CloudStorageBlobStore implements BlobStore {
     const [buf] = await this.bucket().file(path).download();
     return buf;
   }
+  async delete(path: string) {
+    await this.bucket().file(path).delete({ ignoreNotFound: true });
+  }
 }

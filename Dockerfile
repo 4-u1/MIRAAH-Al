@@ -12,8 +12,9 @@ ENV NODE_ENV=production
 COPY package.json ./
 RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/server-dist ./server-dist
 COPY firebase-applet-config.json ./
 USER node
 EXPOSE 8080
 ENV PORT=8080
-CMD ["node", "dist/server.cjs"]
+CMD ["node", "server-dist/server.cjs"]

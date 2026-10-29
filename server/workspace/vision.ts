@@ -44,7 +44,7 @@ export function createGeminiVision(apiKey: string, models: string[]): VisionAnal
             responseMimeType: "application/json",
             responseSchema,
             temperature: 0,
-            maxOutputTokens: 512,
+            maxOutputTokens: 2048,
           },
         });
         const parsed = visionSuggestionSchema.parse(JSON.parse(res.text ?? ""));

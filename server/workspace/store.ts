@@ -30,6 +30,7 @@ export interface Repo {
 export interface BlobStore {
   put(path: string, bytes: Buffer, contentType: string): Promise<void>;
   get(path: string): Promise<Buffer>;
+  delete(path: string): Promise<void>;
 }
 
 const byCreated = <T extends { createdAt?: string; uploadedAt?: string; at?: string }>(a: T, b: T) =>
@@ -123,5 +124,8 @@ export class MemoryBlobStore implements BlobStore {
     const b = this.files.get(path);
     if (!b) throw new Error("blob not found");
     return b;
+  }
+  async delete(path: string) {
+    this.files.delete(path);
   }
 }

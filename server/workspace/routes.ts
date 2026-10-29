@@ -66,10 +66,12 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
   });
 
   // Per-IP burst limit before auth protects token verification and storage reads.
-  const ipLimiter = createRateLimiter({ burstLimit: 60, burstWindowMs: 10_000, dailyLimit: Infinity, now: d.now });
+  const ipLimiter = createRateLimiter({ burstLimit: 200, burstWindowMs: 10_000, dailyLimit: Infinity, now: d.now });
   r.use(ipLimiter.middleware);
   r.use(express.json({ limit: "100kb" }));
   r.use(requireAuth(d.verifyToken));
+  // Route ids are server-generated (Firestore ids / UUIDs). Reject anything else early.
+  r.param("id", (_req, _res, next, id: string) => next(/^[A-Za-z0-9_-]{1,64}$/.test(id) ? undefined : new HttpError(400, "invalid_id")));
 
   // Resolve role. Roles are keyed by verified email and can only be set by an admin.
   r.use(async (req: AuthedRequest, res, next) => {
@@ -215,7 +217,8 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
       const sha = createHash("sha256").update(file.buffer).digest("hex");
       const storagePath = `evidence/${a.id}/${id}.${ALLOWED_IMAGES[type].ext}`;
       await d.blobs.put(storagePath, file.buffer, type);
-      const ev = await d.repo.createEvidence({
+      const ev = await d.repo
+        .createEvidence({
         id,
         assetId: a.id,
         storagePath,
@@ -224,9 +227,13 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
         sha256: sha,
         originalName: String(file.originalname || "").slice(0, 120),
         uploadedBy: actor(req),
-        uploadedAt: nowIso(),
-        aiSuggestion: null,
-      });
+          uploadedAt: nowIso(),
+          aiSuggestion: null,
+        })
+        .catch(async (e) => {
+          await d.blobs.delete(storagePath).catch(() => undefined); // do not leave an orphan file
+          throw e;
+        });
       await audit(req, a.id, "evidence.upload", ev.id, { sha256: sha, bytes: ev.sizeBytes });
       res.status(201).json(ev);
     })
@@ -252,6 +259,8 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
       if (!d.vision) throw new HttpError(503, "ai_not_configured");
       const ev = await d.repo.getEvidence(req.params.id);
       if (!ev) throw new HttpError(404, "evidence_not_found");
+      // One suggestion per photo: findings created from it keep a stable reference.
+      if (ev.aiSuggestion) throw new HttpError(409, "already_analyzed");
       const bytes = await d.blobs.get(ev.storagePath);
       let suggestion;
       try {
@@ -277,15 +286,20 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
       const body = findingCreateSchema.parse(req.body);
       const evs = await Promise.all(body.evidenceIds.map((id) => d.repo.getEvidence(id)));
       if (evs.some((e) => !e || e.assetId !== a.id)) throw new HttpError(400, "evidence_not_on_asset");
-      let confidence = 100;
+      let confidence: number | null = null;
+      let source = body.source;
       if (body.source === "ai-confirmed") {
-        const s = evs.map((e) => e!.aiSuggestion).find((x) => x && x.defect_present);
-        if (!s) throw new HttpError(400, "no_ai_suggestion_on_evidence");
-        confidence = Math.round(s.confidence * 100);
+        const suggestions = evs.map((e) => e!.aiSuggestion).filter((x) => x && x.defect_present);
+        if (!suggestions.length) throw new HttpError(400, "no_ai_suggestion_on_evidence");
+        // The model's confidence only applies if the inspector kept the model's defect type.
+        const match = suggestions.find((x) => x!.defect_type === body.type);
+        if (match) confidence = Math.round(match.confidence * 100);
+        else source = "manual";
       }
       const t = nowIso();
       const f = await d.repo.createFinding({
         ...body,
+        source,
         assetId: a.id,
         confidence,
         verified: false,
@@ -310,6 +324,8 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
       wrap(async (req, res) => {
         const f = await d.repo.getFinding(req.params.id);
         if (!f) throw new HttpError(404, "finding_not_found");
+        // Separation of duties: nobody reviews a finding they recorded.
+        if (f.createdBy === actor(req)) throw new HttpError(403, "self_review");
         const body = findingReviewSchema.parse(req.body);
         const updated = await d.repo.updateFinding(f.id, { [field]: body.value, [byField]: body.value ? actor(req) : null, updatedAt: nowIso() });
         await audit(req, f.assetId, `finding.${path}`, f.id, { value: body.value, note: body.note });
@@ -324,8 +340,8 @@ export function createWorkspaceRouter(d: WorkspaceDeps): Router {
     need("read"),
     wrap(async (req, res) => {
       const a = await loadAsset(req.params.id);
-      const findings = await d.repo.listFindings(a.id);
-      const passport: PassportData = workspacePassport(a, findings);
+      const [findings, evidence] = await Promise.all([d.repo.listFindings(a.id), d.repo.listEvidence(a.id)]);
+      const passport: PassportData = workspacePassport(a, findings, evidence);
       const sha = await sha256Hex(canonicalJson(passport));
       const generated_at = nowIso();
       const exp: Record<string, unknown> = {
@@ -383,9 +399,11 @@ export function createPassportPublicRouter(signer: Signer | null, now?: () => nu
     } catch {
       fingerprintValid = false;
     }
+    // The signature only counts if it signs the hash of the passport data actually in this file.
     let signatureValid: boolean | null = null;
     if (exp.signature) {
       signatureValid =
+        fingerprintValid &&
         Boolean(signer) &&
         exp.signature.key_id === signer!.keyId &&
         typeof exp.signature.value === "string" &&
@@ -395,6 +413,7 @@ export function createPassportPublicRouter(signer: Signer | null, now?: () => nu
         );
     }
     res.json({
+      valid: fingerprintValid && signatureValid === true,
       fingerprintValid,
       signatureValid,
       keyId: signer?.keyId ?? null,

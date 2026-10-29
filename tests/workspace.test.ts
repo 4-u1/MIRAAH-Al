@@ -145,6 +145,21 @@ describe("assets", () => {
     const { app } = build();
     expect((await request(app).get("/api/workspace/assets/nope").set(as("view"))).status).toBe(404);
   });
+  it("PATCH changes only the fields sent (saving coverage keeps the rest)", async () => {
+    const { app } = build();
+    const id = await newAsset(app);
+    await request(app).patch(`/api/workspace/assets/${id}`).set(as("insp")).send({ coverageAreas: [{ id: "r", area: "Roof", pct: 90 }] });
+    const a = (await request(app).get(`/api/workspace/assets/${id}`).set(as("view"))).body.asset;
+    expect(a).toMatchObject({ district: "Olaya", location: "King Fahd Rd", valuationSar: 10_000_000, caseReference: "CASE-1" });
+    expect(a.coverageAreas).toEqual([{ id: "r", area: "Roof", areaArabic: "", pct: 90 }]);
+    await request(app).patch(`/api/workspace/assets/${id}`).set(as("insp")).send({ district: "Malqa" });
+    const b = (await request(app).get(`/api/workspace/assets/${id}`).set(as("view"))).body.asset;
+    expect(b).toMatchObject({ district: "Malqa", valuationSar: 10_000_000, coverageAreas: a.coverageAreas });
+  });
+  it("rejects malformed ids", async () => {
+    const { app } = build();
+    expect((await request(app).get("/api/workspace/assets/a%2Fb").set(as("view"))).status).toBe(400);
+  });
   it("records who created it, and edits are audited", async () => {
     const { app } = build();
     const id = await newAsset(app);
@@ -219,9 +234,23 @@ describe("AI suggestion and findings", () => {
       .send({ type: "Crack", severity: "Critical", area: "Roof", evidenceIds: [ev.id], source: "ai-confirmed" });
     expect(f.status).toBe(201);
     expect(f.body).toMatchObject({ confidence: 82, source: "ai-confirmed", severity: "Critical", verified: false });
+    expect((await request(app).post(`/api/workspace/evidence/${ev.id}/analyze`).set(as("insp"))).status).toBe(409);
   });
 
-  it("ai-confirmed requires an actual suggestion; manual findings get confidence 100", async () => {
+  it("if the inspector changes the defect type, the finding is manual and carries no model confidence", async () => {
+    const { app } = build({ vision });
+    const id = await newAsset(app);
+    const ev = (await upload(app, id)).body;
+    await request(app).post(`/api/workspace/evidence/${ev.id}/analyze`).set(as("insp"));
+    const f = await request(app)
+      .post(`/api/workspace/assets/${id}/findings`)
+      .set(as("insp"))
+      .send({ type: "Moisture", severity: "Low", area: "Roof", evidenceIds: [ev.id, ev.id], source: "ai-confirmed" });
+    expect(f.body).toMatchObject({ source: "manual", confidence: null });
+    expect(f.body.evidenceIds).toEqual([ev.id]);
+  });
+
+  it("ai-confirmed requires an actual suggestion; manual findings carry no model confidence", async () => {
     const { app } = build();
     const id = await newAsset(app);
     const ev = (await upload(app, id)).body;
@@ -229,7 +258,7 @@ describe("AI suggestion and findings", () => {
       (await request(app).post(`/api/workspace/assets/${id}/findings`).set(as("insp")).send({ type: "Crack", severity: "Low", area: "Roof", evidenceIds: [ev.id], source: "ai-confirmed" })).body.error
     ).toBe("no_ai_suggestion_on_evidence");
     const f = await request(app).post(`/api/workspace/assets/${id}/findings`).set(as("insp")).send({ type: "Moisture", severity: "Low", area: "Kitchen", evidenceIds: [ev.id] });
-    expect(f.body.confidence).toBe(100);
+    expect(f.body.confidence).toBeNull();
   });
 
   it("evidence must belong to the same asset", async () => {
@@ -260,10 +289,19 @@ describe("AI suggestion and findings", () => {
     let t = 0;
     const { app } = build({ vision, aiDailyLimit: 1, now: () => t });
     const id = await newAsset(app);
-    const ev = (await upload(app, id)).body;
-    expect((await request(app).post(`/api/workspace/evidence/${ev.id}/analyze`).set(as("insp"))).status).toBe(200);
+    const ev1 = (await upload(app, id)).body;
+    const ev2 = (await upload(app, id)).body;
+    expect((await request(app).post(`/api/workspace/evidence/${ev1.id}/analyze`).set(as("insp"))).status).toBe(200);
     t += 60_000;
-    expect((await request(app).post(`/api/workspace/evidence/${ev.id}/analyze`).set(as("insp"))).status).toBe(429);
+    expect((await request(app).post(`/api/workspace/evidence/${ev2.id}/analyze`).set(as("insp"))).status).toBe(429);
+  });
+
+  it("nobody reviews a finding they recorded (separation of duties)", async () => {
+    const { app } = build();
+    const id = (await request(app).post("/api/workspace/assets").set(as("admin")).send(assetBody)).body.id;
+    const f = (await request(app).post(`/api/workspace/assets/${id}/findings`).set(as("admin")).send({ type: "Crack", severity: "Low", area: "Roof" })).body;
+    expect((await request(app).post(`/api/workspace/findings/${f.id}/verify`).set(as("admin")).send({ value: true })).body.error).toBe("self_review");
+    expect((await request(app).post(`/api/workspace/findings/${f.id}/verify`).set(as("rev")).send({ value: true })).status).toBe(200);
   });
 });
 
@@ -284,7 +322,19 @@ describe("signed passport export", () => {
     expect(exp.passport.findings).toHaveLength(1);
     expect(exp.signature).toMatchObject({ algorithm: "Ed25519", signed_by: { email: "view@example.com" } });
     const v = (await request(app).post("/api/passport/verify").send(exp)).body;
-    expect(v).toMatchObject({ fingerprintValid: true, signatureValid: true });
+    expect(v).toMatchObject({ valid: true, fingerprintValid: true, signatureValid: true });
+  });
+
+  it("covers evidence hashes and finding provenance (schema 1.1)", async () => {
+    const { app } = build();
+    const id = await newAsset(app);
+    const ev = (await upload(app, id)).body;
+    await request(app).post(`/api/workspace/assets/${id}/findings`).set(as("insp")).send({ type: "Crack", severity: "Low", area: "Roof", evidenceIds: [ev.id] });
+    const exp = (await request(app).get(`/api/workspace/assets/${id}/passport`).set(as("view"))).body;
+    expect(exp.passport.schema).toBe("miraah-passport/1.1");
+    expect(exp.passport.asset.case_reference).toBe("CASE-1");
+    expect(exp.passport.findings[0]).toMatchObject({ source: "manual", confidence_pct: null, evidence_sha256: [ev.sha256], verified_by: null });
+    expect(exp.passport.findings[0].finding_id).toMatch(/.+/);
   });
 
   it("detects edits to the data, the signer or the time", async () => {
@@ -292,7 +342,8 @@ describe("signed passport export", () => {
     const exp = await exportFor(app);
     const t1 = structuredClone(exp);
     t1.passport.scores.liquidation_readiness_index = 99;
-    expect((await request(app).post("/api/passport/verify").send(t1)).body.fingerprintValid).toBe(false);
+    const r1 = (await request(app).post("/api/passport/verify").send(t1)).body;
+    expect(r1).toMatchObject({ valid: false, fingerprintValid: false, signatureValid: false });
 
     // Re-hash the edited data: the fingerprint matches again, but the signature does not.
     const t2 = structuredClone(t1);

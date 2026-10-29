@@ -71,7 +71,9 @@ export function createApp(cfg: AppConfig) {
   app.disable("x-powered-by");
   app.set("trust proxy", cfg.trustProxy);
   app.use(securityHeaders);
-  app.use("/api", express.json({ limit: cfg.bodyLimit }));
+  // /api/passport has its own (larger) JSON limit for verifying exports.
+  const jsonParser = express.json({ limit: cfg.bodyLimit });
+  app.use("/api", (req, res, next) => (req.path.startsWith("/passport/") ? next() : jsonParser(req, res, next)));
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", ai: cfg.generator ? "enabled" : "disabled", authRequired: cfg.requireAuth });

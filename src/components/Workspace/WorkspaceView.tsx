@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Plus, RefreshCw, ShieldCheck, Users, LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { ws, ApiError, type Me, type Role, type WsAsset } from "../../lib/workspaceApi";
-import { AssetWorkspace } from "./AssetWorkspace";
+import { AssetWorkspace, label } from "./AssetWorkspace";
 
 export const ASSET_TYPES: WsAsset["type"][] = ["Residential Villa", "Commercial Tower", "Residential Compound", "Logistics Warehouse"];
 
@@ -25,6 +25,9 @@ export const errorText = (e: unknown, ar: boolean): string => {
     daily_limit: ["Daily AI limit reached.", "وصلت للحد اليومي للتحليل."],
     rate_limited: ["Too many requests. Wait a moment.", "طلبات كثيرة. انتظر قليلاً."],
     no_ai_suggestion_on_evidence: ["Run AI analysis on the image first.", "شغّل التحليل على الصورة أولاً."],
+    already_analyzed: ["This photo was already analysed.", "هذه الصورة حُلّلت مسبقاً."],
+    self_review: ["You cannot review a finding you recorded.", "لا يمكنك مراجعة ملاحظة سجّلتها بنفسك."],
+    invalid_id: ["Invalid reference.", "مرجع غير صالح."],
     not_found: ["The live workspace is not enabled on this server.", "مساحة العمل غير مفعّلة على هذا الخادم."],
   };
   const v = m[code];
@@ -47,6 +50,8 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
   const [roleValue, setRoleValue] = useState<Role | "none">("inspector");
   const [roles, setRoles] = useState<{ email: string; role: Role }[]>([]);
 
+  const arRef = React.useRef(isArabic);
+  arRef.current = isArabic;
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -56,11 +61,11 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
       if (m.role || m.isAdmin) setAssets(await ws.assets());
       if (m.isAdmin) setRoles(await ws.roles());
     } catch (e) {
-      setError(errorText(e instanceof ApiError && e.status === 404 ? new ApiError(404, "not_found") : e, isArabic));
+      setError(errorText(e instanceof ApiError && e.status === 404 ? new ApiError(404, "not_found") : e, arRef.current));
     } finally {
       setLoading(false);
     }
-  }, [isArabic]);
+  }, []);
 
   // Reset everything when the signed-in user changes (sign-out / switch account).
   useEffect(() => {
@@ -211,7 +216,7 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
               <select className={input} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as WsAsset["type"] })}>
                 {ASSET_TYPES.map((x) => (
                   <option key={x} value={x}>
-                    {x}
+                    {label(x, isArabic)}
                   </option>
                 ))}
               </select>
@@ -251,7 +256,7 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
                       <td className="p-2">{a.city}</td>
                       <td className="p-2">{a.findingsCount ?? 0}</td>
                       <td className="p-2">{a.liquidationReadiness ?? "—"}</td>
-                      <td className="p-2">{a.riskLevel ?? "—"}</td>
+                      <td className="p-2">{a.riskLevel ? label(a.riskLevel, isArabic) : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
