@@ -55,6 +55,7 @@ jobs:
               const via = (x.via || []).map(v => typeof v === "string" ? v : `${v.title} ${v.range||""}`).join("; ").slice(0, 200);
               console.log(`::notice title=vuln ${x.severity} ${name}::range=${x.range} fix=${JSON.stringify(x.fixAvailable)} via=${via}`);
             }
+            if ((v.high||0) + (v.critical||0) > 0) { console.log("::error::high/critical vulnerabilities in production dependencies"); process.exit(1); }
           '
 
   firestore-rules:
