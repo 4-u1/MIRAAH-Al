@@ -56,7 +56,8 @@ gcloud run deploy miraah --source . --region $REGION --project $PROJECT \
 ```
 - `--max-instances 1` is needed because rate limits are held in memory.
 - Leave `TRUST_PROXY` unset. It defaults to 1 on Cloud Run.
-- Never set `FIREBASE_AUTH_EMULATOR_HOST`, `E2E_FAKE_VISION` or `MIRAAH_E2E` in production. The server refuses to start on Cloud Run if any of them is set.
+- Never set `FIREBASE_AUTH_EMULATOR_HOST`, `E2E_FAKE_VISION` or `MIRAAH_E2E` in production. On Cloud Run the server refuses to start if `FIREBASE_AUTH_EMULATOR_HOST` or `E2E_FAKE_VISION` is set.
+- `--source` builds with Cloud Build. In newer projects, grant the Cloud Build service account `roles/run.builder` first if the build is denied.
 
 After deploying, go to Firebase **Authentication**, then **Settings**, then **Authorized domains**, and add the Cloud Run URL's domain.
 
@@ -70,11 +71,14 @@ After deploying, go to Firebase **Authentication**, then **Settings**, then **Au
 4. Upload a few real inspection photos and confirm the AI suggestions are sensible. The model only suggests; inspectors decide.
 
 ## 7. Restrict the public Firebase web key
-In Google Cloud Console, go to **APIs & Services**, then **Credentials**. Restrict the browser key to your domain.
+In Google Cloud Console, go to **APIs & Services**, then **Credentials**. Restrict the browser key to your Cloud Run domain **and** `PROJECT.firebaseapp.com`. Google sign-in needs the second one.
 
 ## Known limits (MVP)
 - **Single tenant.** Every role can see every asset and every photo in the deployment. Use one deployment per organisation until per-case access is added.
 - **Photo metadata.** Photos are stored as uploaded, including any EXIF metadata such as GPS.
 - **Audit log.** Entries are written right after each change and are not in the same transaction, so a failure between the two steps could leave a change without an audit entry.
 - **Revoked users.** A disabled user keeps access until their token expires, up to 1 hour.
+- **Manual findings.** In the formulas a manual (inspector-recorded) finding counts with confidence 100. Its stored and exported confidence is empty.
+- **Role changes.** These are written to the audit log, but no screen shows them yet.
+- **Asset list.** It shows up to 500 assets.
 - **Rate limits.** These are per instance. Keep `--max-instances 1`, or move the limits to a shared store.
