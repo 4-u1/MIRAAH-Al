@@ -62,9 +62,14 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
     }
   }, [isArabic]);
 
+  // Reset everything when the signed-in user changes (sign-out / switch account).
   useEffect(() => {
+    setSelected(null);
+    setMe(null);
+    setAssets([]);
+    setRoles([]);
     if (user) load();
-  }, [user, load]);
+  }, [user?.uid, load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) {
     return (
@@ -83,8 +88,8 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
     );
   }
 
-  if (selected) {
-    return <AssetWorkspace assetId={selected} me={me!} isArabic={isArabic} onBack={() => { setSelected(null); load(); }} />;
+  if (selected && me) {
+    return <AssetWorkspace assetId={selected} me={me} isArabic={isArabic} onBack={() => { setSelected(null); load(); }} />;
   }
 
   const canWrite = me?.role === "inspector" || me?.isAdmin;
@@ -162,14 +167,14 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
             <Users className="h-4 w-4" /> {t("Roles", "الأدوار")}
           </h3>
           <div className="flex flex-wrap gap-2">
-            <input className={`${input} max-w-xs`} placeholder="email@example.com" value={roleEmail} onChange={(e) => setRoleEmail(e.target.value)} />
-            <select className={`${input} max-w-[160px]`} value={roleValue} onChange={(e) => setRoleValue(e.target.value as Role | "none")}>
+            <input data-testid="role-email" className={`${input} max-w-xs`} placeholder="email@example.com" value={roleEmail} onChange={(e) => setRoleEmail(e.target.value)} />
+            <select data-testid="role-select" className={`${input} max-w-[160px]`} value={roleValue} onChange={(e) => setRoleValue(e.target.value as Role | "none")}>
               <option value="inspector">{t("Inspector", "مفتش")}</option>
               <option value="reviewer">{t("Reviewer", "مراجع")}</option>
               <option value="viewer">{t("Viewer", "مطّلع")}</option>
               <option value="none">{t("Remove role", "إزالة الدور")}</option>
             </select>
-            <button onClick={assign} disabled={!roleEmail} className={`${btn} bg-cyan-500 text-slate-950`}>
+            <button data-testid="role-save" onClick={assign} disabled={!roleEmail} className={`${btn} bg-cyan-500 text-slate-950`}>
               {t("Save", "حفظ")}
             </button>
           </div>
@@ -193,7 +198,7 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-white">{t("Assets", "الأصول")} ({assets.length})</h3>
             {canWrite && (
-              <button onClick={() => setShowNew((v) => !v)} className={`${btn} bg-cyan-500 text-slate-950 hover:bg-cyan-400`}>
+              <button data-testid="new-asset" onClick={() => setShowNew((v) => !v)} className={`${btn} bg-cyan-500 text-slate-950 hover:bg-cyan-400`}>
                 <Plus className="h-4 w-4" /> {t("New asset", "أصل جديد")}
               </button>
             )}
@@ -218,7 +223,7 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
               <input className={input} type="number" placeholder={t("Valuation SAR (as provided)", "القيمة بالريال (كما وردت)")} value={form.valuationSar} onChange={(e) => setForm({ ...form, valuationSar: e.target.value })} />
               <input className={input} placeholder={t("Case reference", "رقم القضية/الطلب")} value={form.caseReference} onChange={(e) => setForm({ ...form, caseReference: e.target.value })} />
               <div className="sm:col-span-2">
-                <button onClick={create} disabled={!form.name || !form.city || !form.sizeSqm || !form.buildYear} className={`${btn} bg-emerald-500 text-slate-950`}>
+                <button data-testid="create-asset" onClick={create} disabled={!form.name || !form.city || !form.sizeSqm || !form.buildYear} className={`${btn} bg-emerald-500 text-slate-950`}>
                   {t("Create", "إنشاء")}
                 </button>
               </div>
@@ -241,7 +246,7 @@ export const WorkspaceView: React.FC<{ isArabic: boolean }> = ({ isArabic }) => 
                 </thead>
                 <tbody>
                   {assets.map((a) => (
-                    <tr key={a.id} onClick={() => setSelected(a.id)} className="cursor-pointer border-t border-slate-800 text-slate-200 hover:bg-white/5">
+                    <tr data-testid="asset-row" key={a.id} onClick={() => setSelected(a.id)} className="cursor-pointer border-t border-slate-800 text-slate-200 hover:bg-white/5">
                       <td className="p-2 font-semibold">{isArabic ? a.nameArabic || a.name : a.name}</td>
                       <td className="p-2">{a.city}</td>
                       <td className="p-2">{a.findingsCount ?? 0}</td>
