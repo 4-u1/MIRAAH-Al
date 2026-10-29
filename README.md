@@ -20,9 +20,9 @@
 ### 🟢 مساحة العمل الفعلية (Live Workspace) — بيانات حقيقية
 | الخطوة | ما يحدث | الدليل |
 |---|---|---|
-| الأدوار | المسؤول (`ADMIN_EMAILS`) يعيّن: مفتش، مراجع، مطّلع. الدور مرتبط ببريد موثّق، ولا يستطيع المستخدم منح نفسه دوراً | `server/workspace/routes.ts`، `tests/workspace.test.ts` |
-| تسجيل الأصل | المفتش يدخل بيانات العقار ومناطق التغطية | Firestore (عبر الخادم فقط) |
-| رفع الصور | JPEG/PNG/WebP حتى 8MB، يُتحقق من النوع من محتوى الملف، وتُحفظ بصمة SHA-256 لكل صورة في Cloud Storage | `sniffImage`، اختبارات الرفع |
+| الأدوار | المسؤول (`ADMIN_EMAILS`) يعيّن: مفتش، مراجع، مطّلع. الدور مرتبط ببريد موثّق، ولا يستطيع المستخدم منح نفسه دوراً | `server/workspace/routes.ts`، `tests/workspaceSuite.ts` |
+| تسجيل الأصل | المفتش يدخل بيانات العقار ومناطق التغطية | قاعدة **SQLite** على الخادم (افتراضياً) أو Firestore — عبر الخادم فقط |
+| رفع الصور | JPEG/PNG/WebP حتى 8MB، يُتحقق من النوع من محتوى الملف، وتُحفظ بصمة SHA-256 لكل صورة على قرص الخادم (أو Cloud Storage) | `sniffImage`، اختبارات الرفع |
 | اقتراح العيب | Gemini Vision يعيد تصنيفاً منظّماً (نوع، خطورة، ثقة، تعليل) يُتحقق منه بـ zod. **المفتش يقرر**: يقبل أو يعدّل أو يتجاهل | `server/workspace/vision.ts` |
 | المراجعة | المراجع فقط يتحقق من الملاحظة أو يغلقها، ويُسجَّل اسمه | اختبارات الصلاحيات |
 | المؤشرات | نفس معادلات `scoring.ts` على البيانات الحقيقية | `src/utils/workspaceScores.ts` |
@@ -32,6 +32,8 @@
 التحقق: اختبار متصفح كامل (`scripts/e2e.mjs`) يمر بالخطوات كلها بثلاثة حسابات (مسؤول، مفتش، مراجع) على محاكيات Firebase في كل تحديث.
 
 **ضوابط إضافية:** لا أحد يراجع ملاحظة سجّلها بنفسه. إذا غيّر المفتش نوع العيب عن اقتراح النموذج تُسجَّل الملاحظة يدوية بدون نسبة ثقة. نسبة الثقة تقدير النموذج لنفسه وغير معايرة، والملاحظة اليدوية تُحسب في المعادلات بثقة 100 (حكم بشري) وتُصدَّر بدون نسبة. التوقيع لا يُعتبر صحيحاً إلا إذا طابقت بيانات الجواز بصمتها. ملف JSON وحده قابل للتحقق، وPDF نسخة للقراءة.
+
+**التخزين:** الافتراضي **SQLite** (ملف قاعدة بيانات + مجلد صور على قرص دائم)، فيمكن الاستضافة على خادم واحد داخل المملكة. سجل التدقيق محمي من التعديل والحذف داخل قاعدة البيانات نفسها، والنسخ الاحتياطي بأمر واحد (`npm run backup`). تسجيل الدخول عبر Firebase Authentication (حسابات Google، الخطة المجانية تكفي). البديل `WORKSPACE_STORE=firebase` (Firestore + Cloud Storage).
 
 **حدود معروفة (MVP):** مستأجر واحد (كل الأدوار ترى كل الأصول والصور)، الصور تُحفظ كما هي بما فيها بيانات EXIF، سجل التدقيق غير ذري مع التعديل، الحساب الموقوف يبقى له وصول حتى انتهاء توكنه (ساعة)، وحدود الطلبات في الذاكرة لنسخة واحدة. التفاصيل في [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
@@ -105,7 +107,8 @@ npm run dev             # http://localhost:3000
 | `npm run test:rules` | اختبارات قواعد Firestore على المحاكي (يتطلب Java) |
 | `npm run eval:live` | تقييم سلوك المساعد على نموذج حقيقي (يتطلب `GEMINI_API_KEY`؛ لا يعمل في CI) |
 | `npm run build` | بناء الإنتاج (`dist/`) |
-| `docker build -t miraah .` | صورة الإنتاج (Cloud Run) — النشر خطوة بخطوة في [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| `docker compose up -d --build` | تشغيل الإنتاج على خادم واحد مع HTTPS (Caddy) وقرص دائم للبيانات — الخطوات في [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| `docker compose exec -u node miraah node scripts/backup.mjs` | نسخة احتياطية للقاعدة والصور (آمنة أثناء التشغيل)؛ الاسترجاع: `scripts/restore.sh` |
 | `npm start` | تشغيل نسخة الإنتاج (`NODE_ENV=production`، بيئة Linux) |
 
 متغيرات البيئة موثقة في [`.env.example`](.env.example). يشغّل CI ‏(GitHub Actions) فحص الأنواع والاختبارات والبناء وفحص الأسرار في ملفات البناء واختبارات قواعد Firestore على كل دفع.
@@ -118,7 +121,7 @@ npm run dev             # http://localhost:3000
 server.ts                 # تشغيل الخادم (Express + Vite/الملفات الثابتة)
 server/
   app.ts                  # مسارات API، الحماية، معالجة الأخطاء
-  workspace/              # مساحة العمل: النطاق، التخزين (Firestore/Storage)، الصلاحيات، الرؤية، التوقيع
+  workspace/              # مساحة العمل: النطاق، التخزين (SQLite/قرص أو Firestore/Storage)، الصلاحيات، الرؤية، التوقيع
   auth.ts                 # التحقق من توكن Firebase
   rateLimit.ts            # حدود الطلبات (لحظي + يومي)
   schemas.ts              # تحقق المدخلات (zod)
@@ -143,7 +146,7 @@ docs/                     # المعادلات وسجل الادعاءات
 
 ## English summary
 
-MIRAAH is a **working MVP** built for the Infath Innovation program. Its **Live Workspace** runs the full inspection cycle on real data: role-based access (admin / inspector / reviewer / viewer, bound to verified emails), asset records, photo uploads to Cloud Storage with per-file SHA-256, Gemini Vision defect suggestions that an inspector must confirm, reviewer verification, deterministic scores (Condition Index, Coverage, Inspection Confidence, Liquidation Readiness Index), an audit log of every change, and a passport export built by the server and signed with Ed25519 (public verify endpoint and public key). An end-to-end browser test exercises the whole flow on Firebase emulators on every change. The other tabs are a demo with illustrative data; IoT, BIM, blockchain, AVM, legal audits, drone views and the specimen documents are simulated and labelled. There is no integration with Infath, Najiz, Balady, REGA or Taqeem. MIRAAH is not an official system and issues no certified documents.
+MIRAAH is a **working MVP** built for the Infath Innovation program. Its **Live Workspace** runs the full inspection cycle on real data: role-based access (admin / inspector / reviewer / viewer, bound to verified emails), asset records, photo uploads with per-file SHA-256, stored by default in SQLite plus a folder on the server disk (Firestore/Cloud Storage optional), Gemini Vision defect suggestions that an inspector must confirm, reviewer verification, deterministic scores (Condition Index, Coverage, Inspection Confidence, Liquidation Readiness Index), an audit log of every change, and a passport export built by the server and signed with Ed25519 (public verify endpoint and public key). An end-to-end browser test exercises the whole flow on Firebase emulators on every change. The other tabs are a demo with illustrative data; IoT, BIM, blockchain, AVM, legal audits, drone views and the specimen documents are simulated and labelled. There is no integration with Infath, Najiz, Balady, REGA or Taqeem. MIRAAH is not an official system and issues no certified documents.
 
 ## الحقوق
 

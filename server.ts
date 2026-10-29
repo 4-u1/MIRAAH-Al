@@ -7,6 +7,8 @@ import { createGeminiGenerator, modelChain } from "./server/llm";
 import { createFirebaseTokenVerifier, type TokenVerifier } from "./server/auth";
 import { createWorkspaceRouter, createPassportPublicRouter } from "./server/workspace/routes";
 import { adminApp, FirestoreRepo, CloudStorageBlobStore } from "./server/workspace/firebaseStore";
+import { SqliteRepo, FsBlobStore } from "./server/workspace/sqliteStore";
+import type { BlobStore, Repo } from "./server/workspace/store";
 import { createSigner } from "./server/workspace/signing";
 import { createGeminiVision } from "./server/workspace/vision";
 
@@ -50,7 +52,7 @@ const verifyToken: TokenVerifier | null = !projectId
   : authEmulator
   ? async (token) => {
       const { getAuth } = await import("firebase-admin/auth");
-      const d = await getAuth(adminApp(projectId, process.env.STORAGE_BUCKET || fb.storageBucket)).verifyIdToken(token);
+      const d = await getAuth(adminApp(projectId, process.env.STORAGE_BUCKET || fb.storageBucket || undefined)).verifyIdToken(token);
       return { uid: d.uid, email: d.email?.toLowerCase(), emailVerified: d.email_verified === true };
     }
   : createFirebaseTokenVerifier(projectId);
@@ -65,6 +67,8 @@ const signer = pem ? createSigner(pem) : null;
 const nodeEnv = process.env.NODE_ENV;
 const aiDailyLimit = Number(process.env.AI_DAILY_LIMIT) || 100;
 
+let closeStore: () => void = () => {};
+
 const app = createApp({
   ...configFromEnv(process.env, {
     generator: apiKey ? createGeminiGenerator(apiKey, modelChain()) : null,
@@ -73,20 +77,42 @@ const app = createApp({
   mount: (a) => {
     a.use("/api/passport", createPassportPublicRouter(signer));
     if (!projectId || !verifyToken || process.env.WORKSPACE_ENABLED === "false") {
-      console.log("Live workspace disabled (no Firebase project id or WORKSPACE_ENABLED=false)");
+      console.log("Live workspace disabled (no Firebase project id for sign-in, or WORKSPACE_ENABLED=false)");
       return;
     }
-    const bucket = process.env.STORAGE_BUCKET || fb.storageBucket;
-    if (!bucket) {
-      console.log("Live workspace disabled (no storage bucket)");
-      return;
+    // Storage backend: "sqlite" (default; database file + evidence folder on a persistent disk)
+    // or "firebase" (Firestore + Cloud Storage). Sign-in uses Firebase Auth in both cases.
+    const backend = (process.env.WORKSPACE_STORE || "sqlite").toLowerCase();
+    let repo: Repo;
+    let blobs: BlobStore;
+    if (backend === "firebase") {
+      const bucket = process.env.STORAGE_BUCKET || fb.storageBucket;
+      if (!bucket) {
+        console.log("Live workspace disabled (WORKSPACE_STORE=firebase but no storage bucket)");
+        return;
+      }
+      const fbApp = adminApp(projectId, bucket);
+      repo = FirestoreRepo.create(fbApp, authEmulator ? undefined : process.env.FIRESTORE_DATABASE_ID || fb.firestoreDatabaseId);
+      blobs = new CloudStorageBlobStore(fbApp, bucket);
+    } else if (backend === "sqlite") {
+      if (process.env.K_SERVICE) {
+        console.error("Refusing to start: SQLite needs a persistent disk; Cloud Run's filesystem is temporary. Set WORKSPACE_STORE=firebase.");
+        process.exit(1);
+      }
+      const dataDir = path.resolve(process.env.DATA_DIR || "data");
+      const sqlite = new SqliteRepo(path.join(dataDir, "miraah.db"));
+      repo = sqlite;
+      closeStore = () => sqlite.close();
+      blobs = new FsBlobStore(dataDir);
+    } else {
+      console.error(`Refusing to start: unknown WORKSPACE_STORE "${backend}" (use sqlite or firebase)`);
+      process.exit(1);
     }
-    const fbApp = adminApp(projectId, bucket);
     a.use(
       "/api/workspace",
       createWorkspaceRouter({
-        repo: FirestoreRepo.create(fbApp, authEmulator ? undefined : process.env.FIRESTORE_DATABASE_ID || fb.firestoreDatabaseId),
-        blobs: new CloudStorageBlobStore(fbApp, bucket),
+        repo,
+        blobs,
         verifyToken,
         vision:
           authEmulator && process.env.E2E_FAKE_VISION === "true"
@@ -100,7 +126,7 @@ const app = createApp({
       })
     );
     const visionMode = authEmulator && process.env.E2E_FAKE_VISION === "true" ? "fake (test)" : apiKey ? "on" : "off";
-    console.log(`Live workspace enabled · signing ${signer ? `on (key ${signer.keyId})` : "off"} · vision ${visionMode}`);
+    console.log(`Live workspace enabled · store ${backend} · signing ${signer ? `on (key ${signer.keyId})` : "off"} · vision ${visionMode}`);
   },
 });
 
@@ -117,9 +143,30 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`MIRAAH server on http://0.0.0.0:${PORT} · AI ${apiKey ? "enabled" : "disabled"}`);
   });
+
+  // Graceful shutdown: finish in-flight requests, then close the database (checkpoints the WAL).
+  const shutdown = (signal: string) => {
+    console.log(`${signal} received, shutting down`);
+    server.close(() => {
+      try {
+        closeStore();
+      } finally {
+        process.exit(0);
+      }
+    });
+    setTimeout(() => {
+      try {
+        closeStore();
+      } finally {
+        process.exit(1); // forced: requests were still open
+      }
+    }, 8_000).unref(); // below docker stop's default 10s, so the DB is closed before SIGKILL
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer();
