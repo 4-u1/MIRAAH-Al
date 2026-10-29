@@ -63,9 +63,8 @@ export const findingCreateSchema = z
     evidenceIds: z
       .array(text(64).min(1))
       .max(20)
-      .optional()
       .default([])
-      .transform((ids) => Array.from(new Set(ids))),
+      .transform((ids): string[] => Array.from(new Set(ids))),
     /** "ai-confirmed": inspector accepted (possibly edited) an AI suggestion on one of the evidence items. */
     source: z.enum(["manual", "ai-confirmed"]).default("manual"),
   })
