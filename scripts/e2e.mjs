@@ -123,7 +123,7 @@ try {
     ? ok(`signed passport verified by the server (${msg.trim()})`)
     : bad(`verify message: ${msg}`);
   const body = await page.innerText("body");
-  /recorded data/.test(body) ? ok("passport labelled as recorded data") : bad("passport not labelled as recorded data");
+  /recorded data/i.test(body) ? ok("passport labelled as recorded data") : bad("passport not labelled as recorded data");
   /DEMO/.test(await page.locator("text=NOT AN OFFICIAL DOCUMENT").first().innerText()) && bad("recorded passport shows a DEMO watermark");
   await shot("reviewer-export");
 } catch (e) {
