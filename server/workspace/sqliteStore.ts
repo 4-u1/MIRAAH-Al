@@ -163,7 +163,7 @@ export class FsBlobStore implements BlobStore {
     return full;
   }
 
-  async put(p: string, bytes: Buffer) {
+  async put(p: string, bytes: Buffer, _contentType?: string) {
     const full = this.resolve(p);
     mkdirSync(path.dirname(full), { recursive: true });
     const tmp = `${full}.${randomUUID()}.tmp`;
