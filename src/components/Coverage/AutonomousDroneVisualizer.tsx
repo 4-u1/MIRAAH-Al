@@ -26,6 +26,7 @@ import {
   Check,
 } from "lucide-react";
 import { CoverageArea } from "../../types";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 export interface DroneWaypoint {
   id: string;
@@ -649,6 +650,7 @@ export const AutonomousDroneVisualizer: React.FC<AutonomousDroneVisualizerProps>
   return (
     <div className="space-y-6">
       {/* ── DRONE COMMAND HEADER & MISSION CONTROL ── */}
+      <SimulatedBadge isArabic={isArabic} />
       <div className="rounded-3xl bg-gradient-to-br from-[#061226] via-[#081735] to-[#040C1A] border border-cyan-500/40 p-6 sm:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
         {/* Glow ambient background element */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-radial from-cyan-500/15 via-emerald-500/5 to-transparent pointer-events-none" />

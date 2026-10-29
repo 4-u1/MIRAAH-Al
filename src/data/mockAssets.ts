@@ -17,8 +17,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
     missingFieldsCount: 1,
     missingFieldsList: ["Municipal Compliance Digital Seal (Balady 2026)"],
     inspectionDate: "2026-08-30",
-    inspectorName: "Eng. Zaid Al-Harthy (SCE #59102)",
-    inspectorLicense: "SCE-VAL-8841",
+    inspectorName: "Demo Inspector 1 (fictional)",
+    inspectorLicense: "DEMO-LICENSE",
     heroImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
     findings: [
       {
@@ -253,12 +253,12 @@ export const MOCK_ASSETS: AssetRecord[] = [
       },
     ],
     buyerItems: [
-      { id: "b-1", label: "Structural Foundation & Frames", labelArabic: "الهيكل الإنشائي والأساسات الخرسانية", category: "Structure", status: "VERIFIED", statusDetails: "Human engineer verified — SBC-304 seismic & load compliance confirmed", statusDetailsArabic: "تم التحقق هندسياً — مطابقة كود البناء السعودي SBC-304 للأحمال والزلازل", lastVerifiedBy: "Eng. Zaid Al-Harthy", evidenceCount: 8, color: "#10B981" },
-      { id: "b-2", label: "Central Electrical Distribution", labelArabic: "لوحة التوزيع الكهربائية والمحولات", category: "Systems", status: "VERIFIED", statusDetails: "Thermal IR scan completed with balanced load curve", statusDetailsArabic: "مسح حراري بالأشعة تحت الحمراء معتمد بدون أي نقاط حرارة زائدة", lastVerifiedBy: "SCE #59102", evidenceCount: 6, color: "#10B981" },
-      { id: "b-3", label: "Water & Fire Suppression Grid", labelArabic: "شبكة التغذية المائية والإطفاء الآلي", category: "Systems", status: "VERIFIED", statusDetails: "Pressure tested up to 8 bar with NFPA-13 compliance", statusDetailsArabic: "اختبار ضغط 8 بار ومطابقة أنظمة الرش الآلي لمعايير السلامة", lastVerifiedBy: "Eng. Zaid Al-Harthy", evidenceCount: 6, color: "#10B981" },
-      { id: "b-4", label: "Roof & MEP Moisture Diagnostics", labelArabic: "تشخيص عزل السطح ومحطة التكييف", category: "Finishes", status: "AI DETECTED", statusDetails: "3 minor findings catalogued — 2 verified, 1 pending final signoff", statusDetailsArabic: "3 ملاحظات تقنية موثقة بالسطح — تم التحقق من 2 وقيد الاعتماد النهائي", evidenceCount: 6, color: "#F59E0B" },
-      { id: "b-5", label: "Spatial Point Cloud & Coverage", labelArabic: "التغطية المكانية والسحابة النقطية", category: "Structure", status: "VERIFIED", statusDetails: "98% overall digital twin coverage verified across 1,400 m²", statusDetailsArabic: "تغطية مكانية بنسبة 98% لكامل مساحة المبنى (1400 م²)", evidenceCount: 12, color: "#10B981" },
-      { id: "b-6", label: "Municipal Compliance & Deed", labelArabic: "الصك الإلكتروني والامتثال البلدي", category: "Legal & Compliance", status: "INCOMPLETE", statusDetails: "Electronic Deed verified; Balady 2026 digital seal in progress", statusDetailsArabic: "الصك الإلكتروني موثق؛ الختم الرقمي لبلدي 2026 قيد الربط الفوري", evidenceCount: 3, color: "#F59E0B" },
+      { id: "b-1", label: "Structural Foundation & Frames", labelArabic: "الهيكل الإنشائي والأساسات الخرسانية", category: "Structure", status: "VERIFIED", statusDetails: "Demo data (illustrative): Human engineer verified — SBC-304 seismic & load compliance confirmed", statusDetailsArabic: "بيانات توضيحية: تم التحقق هندسياً — مطابقة كود البناء السعودي SBC-304 للأحمال والزلازل", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 8, color: "#10B981" },
+      { id: "b-2", label: "Central Electrical Distribution", labelArabic: "لوحة التوزيع الكهربائية والمحولات", category: "Systems", status: "VERIFIED", statusDetails: "Demo data (illustrative): Thermal IR scan completed with balanced load curve", statusDetailsArabic: "بيانات توضيحية: مسح حراري بالأشعة تحت الحمراء معتمد بدون أي نقاط حرارة زائدة", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 6, color: "#10B981" },
+      { id: "b-3", label: "Water & Fire Suppression Grid", labelArabic: "شبكة التغذية المائية والإطفاء الآلي", category: "Systems", status: "VERIFIED", statusDetails: "Demo data (illustrative): Pressure tested up to 8 bar with NFPA-13 compliance", statusDetailsArabic: "بيانات توضيحية: اختبار ضغط 8 بار ومطابقة أنظمة الرش الآلي لمعايير السلامة", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 6, color: "#10B981" },
+      { id: "b-4", label: "Roof & MEP Moisture Diagnostics", labelArabic: "تشخيص عزل السطح ومحطة التكييف", category: "Finishes", status: "AI DETECTED", statusDetails: "Demo data (illustrative): 3 minor findings catalogued — 2 verified, 1 pending final signoff", statusDetailsArabic: "بيانات توضيحية: 3 ملاحظات تقنية موثقة بالسطح — تم التحقق من 2 وقيد الاعتماد النهائي", evidenceCount: 6, color: "#F59E0B" },
+      { id: "b-5", label: "Spatial Point Cloud & Coverage", labelArabic: "التغطية المكانية والسحابة النقطية", category: "Structure", status: "VERIFIED", statusDetails: "Demo data (illustrative): 98% overall digital twin coverage verified across 1,400 m²", statusDetailsArabic: "بيانات توضيحية: تغطية مكانية بنسبة 98% لكامل مساحة المبنى (1400 م²)", evidenceCount: 12, color: "#10B981" },
+      { id: "b-6", label: "Municipal Compliance & Deed", labelArabic: "الصك الإلكتروني والامتثال البلدي", category: "Legal & Compliance", status: "INCOMPLETE", statusDetails: "Demo data (illustrative): Electronic Deed verified; Balady 2026 digital seal in progress", statusDetailsArabic: "بيانات توضيحية: الصك الإلكتروني موثق؛ الختم الرقمي لبلدي 2026 قيد الربط الفوري", evidenceCount: 3, color: "#F59E0B" },
     ],
     actions: [
       {
@@ -298,7 +298,7 @@ export const MOCK_ASSETS: AssetRecord[] = [
         gain: "+4",
         gainNum: 4,
         targetArea: "Documentation",
-        details: "Instant API synchronization with Balady digital portal.",
+        details: "Planned: integration with Balady (not available in this prototype).",
       },
     ],
     iotSensors: [
@@ -489,7 +489,7 @@ export const MOCK_ASSETS: AssetRecord[] = [
       blockHeight: 1842903,
       immutableHashSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       timestamp: "2026-08-30 11:20:44 UTC",
-      verifiedAuditor: "Saudi Authority for Accredited Valuers (TAQEEM) & SCE Certified Bureau",
+      verifiedAuditor: "None (simulated record)",
       status: "IMMUTABLE_VERIFIED",
       certifiedAuditsCount: 6,
     },
@@ -513,7 +513,7 @@ export const MOCK_ASSETS: AssetRecord[] = [
         status: "COMPLIANT",
         complianceScore: 100,
         liquidationImpact: "ZERO_FRICTION",
-        notesArabic: "الصك الإلكتروني سارٍ، غير مرهون وموثق بالكامل في السجل العقاري الوطني.",
+        notesArabic: "بيانات توضيحية: لم يتم التحقق من أي صك أو سجل عقاري.",
       },
       {
         id: "leg-2",
@@ -566,8 +566,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
     missingFieldsCount: 2,
     missingFieldsList: ["Deed Verification Timestamp", "Recent Municipal Utility Certificate"],
     inspectionDate: "2026-08-28",
-    inspectorName: "Eng. Fahad Al-Otaibi (SCE #48912)",
-    inspectorLicense: "SCE-VAL-9921",
+    inspectorName: "Demo Inspector 2 (fictional)",
+    inspectorLicense: "DEMO-LICENSE",
     heroImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
     findings: [
       {
@@ -593,7 +593,7 @@ export const MOCK_ASSETS: AssetRecord[] = [
             cameraAngle: "Low Angle - North Wall Base",
             roomArea: "Living Room - Perimeter Wall",
             detectedBox: { x: 22, y: 48, w: 36, h: 42, label: "Moisture / Efflorescence (89%)" },
-            notes: "VLM thermal hue disparity indicates active dampness behind gypsum skirting.",
+            notes: "Demo note: possible dampness behind gypsum skirting (illustrative).",
           },
         ],
       },
@@ -604,9 +604,9 @@ export const MOCK_ASSETS: AssetRecord[] = [
       { id: "ar-13", area: "Roof Deck", areaArabic: "سطح المبنى والعزل", pct: 40, expectedFrames: 10, capturedFrames: 4, lastInspected: "2026-08-28", status: "Incomplete", isPrimaryBlocker: true },
     ],
     buyerItems: [
-      { id: "b-11", label: "Structural Foundations & Boundary Wall", labelArabic: "الأساسات الإنشائية والسور الخارجي", category: "Structure", status: "VERIFIED", statusDetails: "Foundation depth and perimeter settlement within SBC-304 limits", statusDetailsArabic: "عمق الأساسات ومناسيب الهبوط مطابقة لكود البناء السعودي SBC-304", lastVerifiedBy: "Eng. Fahad Al-Otaibi", evidenceCount: 4, color: "#10B981" },
-      { id: "b-12", label: "Perimeter Damp-Proof Membrane", labelArabic: "عوازل الرطوبة الأرضية (DPC)", category: "Finishes", status: "AI DETECTED", statusDetails: "Capillary moisture detected along north skirting", statusDetailsArabic: "رصد رطوبة شعرية أسفل الجدار الشمالي تتطلب معالجة العازل", lastVerifiedBy: "Eng. Fahad Al-Otaibi", evidenceCount: 3, color: "#F59E0B" },
-      { id: "b-13", label: "Residential Title Deed & MOMRAH License", labelArabic: "صك الملكية السكني ورخصة البناء", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Electronic title deed active with full municipal clearance", statusDetailsArabic: "الصك الإلكتروني سارٍ وموثق مع اكتمال رخصة البناء السكنية", lastVerifiedBy: "Ministry of Justice", evidenceCount: 2, color: "#10B981" },
+      { id: "b-11", label: "Structural Foundations & Boundary Wall", labelArabic: "الأساسات الإنشائية والسور الخارجي", category: "Structure", status: "VERIFIED", statusDetails: "Demo data (illustrative): Foundation depth and perimeter settlement within SBC-304 limits", statusDetailsArabic: "بيانات توضيحية: عمق الأساسات ومناسيب الهبوط مطابقة لكود البناء السعودي SBC-304", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 4, color: "#10B981" },
+      { id: "b-12", label: "Perimeter Damp-Proof Membrane", labelArabic: "عوازل الرطوبة الأرضية (DPC)", category: "Finishes", status: "AI DETECTED", statusDetails: "Demo data (illustrative): Capillary moisture detected along north skirting", statusDetailsArabic: "بيانات توضيحية: رصد رطوبة شعرية أسفل الجدار الشمالي تتطلب معالجة العازل", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 3, color: "#F59E0B" },
+      { id: "b-13", label: "Residential Title Deed & MOMRAH License", labelArabic: "صك الملكية السكني ورخصة البناء", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Demo data (illustrative): Electronic title deed active with full municipal clearance", statusDetailsArabic: "بيانات توضيحية: الصك الإلكتروني سارٍ وموثق مع اكتمال رخصة البناء السكنية", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 2, color: "#10B981" },
     ],
     actions: [
       {
@@ -653,8 +653,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
     missingFieldsCount: 0,
     missingFieldsList: [],
     inspectionDate: "2026-08-25",
-    inspectorName: "Eng. Tariq Al-Mansoor (SCE #31205)",
-    inspectorLicense: "SCE-COMM-441",
+    inspectorName: "Demo Inspector 3 (fictional)",
+    inspectorLicense: "DEMO-LICENSE",
     heroImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
     findings: [
       {
@@ -691,15 +691,15 @@ export const MOCK_ASSETS: AssetRecord[] = [
       { id: "ar-23", area: "Central Elevator Lobby", areaArabic: "بهو المصاعد المركزي والخدمات", pct: 98, sqm: 380, expectedFrames: 14, capturedFrames: 14, lastInspected: "2026-08-25", status: "Complete" },
     ],
     buyerItems: [
-      { id: "b-21", label: "Office Floor HVAC & Smoke Extraction", labelArabic: "أنظمة التكييف وسحب الدخان للدور", category: "Systems", status: "VERIFIED", statusDetails: "Tested with Civil Defense certified air extraction rate", statusDetailsArabic: "معتمد ومطابق لاشتراطات الدفاع المدني ومعدلات سحب الدخان", lastVerifiedBy: "Eng. Tariq Al-Mansoor", evidenceCount: 6, color: "#10B981" },
-      { id: "b-22", label: "Commercial Title Deed & Unit Sub-division", labelArabic: "صك الملكية المفرز وتصريح الاستخدام المكتبي", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Independent title deed with clean municipal register", statusDetailsArabic: "صك إلكتروني مستقل وخالٍ من أي موانع أو رهون قضائية", lastVerifiedBy: "Ministry of Justice", evidenceCount: 4, color: "#10B981" },
+      { id: "b-21", label: "Office Floor HVAC & Smoke Extraction", labelArabic: "أنظمة التكييف وسحب الدخان للدور", category: "Systems", status: "VERIFIED", statusDetails: "Demo data (illustrative): Tested with Civil Defense certified air extraction rate", statusDetailsArabic: "بيانات توضيحية: معتمد ومطابق لاشتراطات الدفاع المدني ومعدلات سحب الدخان", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 6, color: "#10B981" },
+      { id: "b-22", label: "Commercial Title Deed & Unit Sub-division", labelArabic: "صك الملكية المفرز وتصريح الاستخدام المكتبي", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Demo data (illustrative): Independent title deed with clean municipal register", statusDetailsArabic: "بيانات توضيحية: صك إلكتروني مستقل وخالٍ من أي موانع أو رهون قضائية", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 4, color: "#10B981" },
     ],
     actions: [
       {
         id: "act-21",
         n: 1,
         action: "Fast-Track Judicial Auction Listing",
-        actionArabic: "إدراج فوري في مزاد إنفاذ القضائي",
+        actionArabic: "اقتراح: جاهز للعرض في المزاد بعد اعتماد الجهة المختصة",
         impact: "High",
         effort: "Low",
         cost: "Low",
@@ -726,8 +726,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
     missingFieldsCount: 0,
     missingFieldsList: [],
     inspectionDate: "2026-09-01",
-    inspectorName: "Eng. Sultan Al-Mutairi (SCE #61044)",
-    inspectorLicense: "SCE-LOG-772",
+    inspectorName: "Demo Inspector 4 (fictional)",
+    inspectorLicense: "DEMO-LICENSE",
     heroImage: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
     findings: [
       {
@@ -764,8 +764,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
       { id: "ar-33", area: "Administrative Hub & Security Gate", areaArabic: "المبنى الإداري وبوابة الحراسة", pct: 96, sqm: 600, expectedFrames: 12, capturedFrames: 12, lastInspected: "2026-09-01", status: "Complete" },
     ],
     buyerItems: [
-      { id: "b-31", label: "Industrial Slab Load Tolerance", labelArabic: "تحمل الأرضيات الخرسانية للأحمال الثقيلة", category: "Structure", status: "VERIFIED", statusDetails: "Post-tensioned slab tested up to 75 kN/m²", statusDetailsArabic: "تحمل خرساني حتى 75 كيلو نيوتن/م² معتمد للمعدات الثقيلة", lastVerifiedBy: "Eng. Sultan Al-Mutairi", evidenceCount: 8, color: "#10B981" },
-      { id: "b-32", label: "Civil Defense Sprinkler ESFR Grid", labelArabic: "شبكة الرشاشات السريعة ESFR للدفاع المدني", category: "Systems", status: "VERIFIED", statusDetails: "NFPA-13 compliant early suppression fast response grid", statusDetailsArabic: "شبكة إطفاء سريع ESFR معتمدة ومطابقة لكود الدفاع المدني", lastVerifiedBy: "Civil Defense", evidenceCount: 6, color: "#10B981" },
+      { id: "b-31", label: "Industrial Slab Load Tolerance", labelArabic: "تحمل الأرضيات الخرسانية للأحمال الثقيلة", category: "Structure", status: "VERIFIED", statusDetails: "Demo data (illustrative): Post-tensioned slab tested up to 75 kN/m²", statusDetailsArabic: "بيانات توضيحية: تحمل خرساني حتى 75 كيلو نيوتن/م² معتمد للمعدات الثقيلة", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 8, color: "#10B981" },
+      { id: "b-32", label: "Civil Defense Sprinkler ESFR Grid", labelArabic: "شبكة الرشاشات السريعة ESFR للدفاع المدني", category: "Systems", status: "VERIFIED", statusDetails: "Demo data (illustrative): NFPA-13 compliant early suppression fast response grid", statusDetailsArabic: "بيانات توضيحية: شبكة إطفاء سريع ESFR مسجلة في البيانات التوضيحية (لم يتم فحصها)", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 6, color: "#10B981" },
     ],
     actions: [
       {
@@ -799,8 +799,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
     missingFieldsCount: 0,
     missingFieldsList: [],
     inspectionDate: "2026-08-20",
-    inspectorName: "Eng. Hisham Jamjoom (SCE #44921)",
-    inspectorLicense: "SCE-VAL-332",
+    inspectorName: "Demo Inspector 5 (fictional)",
+    inspectorLicense: "DEMO-LICENSE",
     heroImage: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
     findings: [
       {
@@ -837,8 +837,8 @@ export const MOCK_ASSETS: AssetRecord[] = [
       { id: "ar-43", area: "Perimeter Gardens & Guard Post", areaArabic: "الحدائق المحيطة وغرفة الأمن", pct: 98, sqm: 700, expectedFrames: 14, capturedFrames: 14, lastInspected: "2026-08-20", status: "Complete" },
     ],
     buyerItems: [
-      { id: "b-41", label: "Marine Concrete Corrosion Barrier", labelArabic: "مقاومة الخرسانة لأملاح البحر والرطوبة", category: "Structure", status: "VERIFIED", statusDetails: "Epoxy-coated rebar and sulfate-resistant cement confirmed", statusDetailsArabic: "حديد تسليح مطلي بالإيبوكسي وأسمنت مقاوم للأملاح البحرية", lastVerifiedBy: "Eng. Hisham Jamjoom", evidenceCount: 8, color: "#10B981" },
-      { id: "b-42", label: "Jeddah Municipality Permit & Zoning", labelArabic: "رخصة أمانة جدة والمطابقة التخطيطية", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Approved residential compound zoning and coastal setbacks", statusDetailsArabic: "اعتماد تخطيطي متكامل ومطابقة ارتدادات الكورنيش البحرية", lastVerifiedBy: "Jeddah Municipality", evidenceCount: 5, color: "#10B981" },
+      { id: "b-41", label: "Marine Concrete Corrosion Barrier", labelArabic: "مقاومة الخرسانة لأملاح البحر والرطوبة", category: "Structure", status: "VERIFIED", statusDetails: "Demo data (illustrative): Epoxy-coated rebar and sulfate-resistant cement confirmed", statusDetailsArabic: "بيانات توضيحية: حديد تسليح مطلي بالإيبوكسي وأسمنت مقاوم للأملاح البحرية", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 8, color: "#10B981" },
+      { id: "b-42", label: "Jeddah Municipality Permit & Zoning", labelArabic: "رخصة أمانة جدة والمطابقة التخطيطية", category: "Legal & Compliance", status: "VERIFIED", statusDetails: "Demo data (illustrative): Approved residential compound zoning and coastal setbacks", statusDetailsArabic: "بيانات توضيحية: اعتماد تخطيطي متكامل ومطابقة ارتدادات الكورنيش البحرية", lastVerifiedBy: "Demo Inspector (fictional)", evidenceCount: 5, color: "#10B981" },
     ],
     actions: [
       {

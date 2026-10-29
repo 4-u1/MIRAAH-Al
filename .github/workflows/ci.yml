@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "hardening/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run lint
+      - name: Test
+        run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-report.json
+      - name: Test summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            if (!fs.existsSync("vitest-report.json")) { console.log("::error::no test report"); process.exit(0); }
+            const r = JSON.parse(fs.readFileSync("vitest-report.json", "utf8"));
+            console.log(`::notice title=Tests::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped (${r.numTotalTests} total)`);
+            for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
+              console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
+          '
+      - name: Build
+        run: npm run build
+      - name: Bundle secret scan
+        run: |
+          if grep -rEo "AIza[0-9A-Za-z_-]{35}" dist/ | grep -v "$(node -p "require('./firebase-applet-config.json').apiKey")" ; then
+            echo "::error::Possible API key in dist/ other than the public Firebase web key"; exit 1
+          fi
+          # The Vite config must not inject server env vars into the client bundle.
+          if grep -nE "define[[:space:]]*:|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
+          echo "::notice title=Bundle scan::no API key values in dist/ besides the public Firebase web key; Vite config injects no env vars"
+      - name: Audit (production deps)
+        run: |
+          npm audit --omit=dev --json > audit.json || true
+          node -e '
+            const a = JSON.parse(require("fs").readFileSync("audit.json","utf8"));
+            const v = (a.metadata && a.metadata.vulnerabilities) || {};
+            console.log(`::notice title=npm audit (prod)::critical=${v.critical||0} high=${v.high||0} moderate=${v.moderate||0} low=${v.low||0}`);
+            for (const [name, x] of Object.entries(a.vulnerabilities || {})) {
+              const via = (x.via || []).map(v => typeof v === "string" ? v : `${v.title} ${v.range||""}`).join("; ").slice(0, 200);
+              console.log(`::notice title=vuln ${x.severity} ${name}::range=${x.range} fix=${JSON.stringify(x.fixAvailable)} via=${via}`);
+            }
+            if ((v.high||0) + (v.critical||0) > 0) { console.log("::error::high/critical vulnerabilities in production dependencies"); process.exit(1); }
+          '
+
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Rules tests (emulator)
+        run: npx --yes firebase-tools@14 emulators:exec --only firestore --project demo-miraah "npx vitest run tests/firestore.rules.test.ts --reporter=default --reporter=json --outputFile=rules-report.json"
+      - name: Rules summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            if (!fs.existsSync("rules-report.json")) { console.log("::error::no rules report"); process.exit(0); }
+            const r = JSON.parse(fs.readFileSync("rules-report.json","utf8"));
+            console.log(`::notice title=Firestore rules::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
+            for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
+              console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
+          '
+
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Browser
+        run: npx playwright install --with-deps chromium
+      - name: Start production server (no AI key, auth required)
+        run: |
+          NODE_ENV=production AI_REQUIRE_AUTH=true node dist/server.cjs > server.log 2>&1 &
+          echo $! > server.pid
+      - name: Smoke test
+        run: node scripts/smoke.mjs http://127.0.0.1:3000
+      - name: Server log tail
+        if: always()
+        run: tail -n 20 server.log | sed 's/^/::notice title=server log::/' | head -20
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: smoke-shots/

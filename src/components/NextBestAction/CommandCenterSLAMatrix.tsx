@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ActionItem, SLAAlertItem, SLAStatus, SLATier } from "../../types";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface CommandCenterSLAMatrixProps {
   actions: ActionItem[];
@@ -40,7 +41,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     slaStatus: "OVERDUE",
     deadlineHoursRemaining: -5.5,
     totalSlaHours: 24,
-    assignee: "Eng. Zaid Al-Harthy",
+    assignee: "Demo Inspector 1",
     assigneeRole: "Chief Structural Specialist",
     assigneeRoleArabic: "كبير مهندسي السلامة والإنشاء",
     valueAtRiskSar: 180000,
@@ -59,7 +60,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     slaStatus: "EXPIRING_SOON",
     deadlineHoursRemaining: 3.8,
     totalSlaHours: 24,
-    assignee: "Sultan Al-Otaibi",
+    assignee: "Demo Contractor",
     assigneeRole: "Waterproofing Contractor Liaison",
     assigneeRoleArabic: "مسؤول مقاول العزل وضبط الجودة",
     valueAtRiskSar: 120000,
@@ -78,7 +79,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     slaStatus: "EXPIRING_SOON",
     deadlineHoursRemaining: 8.2,
     totalSlaHours: 48,
-    assignee: "MOMRAH Gateway API",
+    assignee: "Planned municipal integration",
     assigneeRole: "Digital Compliance Custodian",
     assigneeRoleArabic: "مسؤول الربط والاعتماد البلدي",
     valueAtRiskSar: 240000,
@@ -116,7 +117,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     slaStatus: "ON_TRACK",
     deadlineHoursRemaining: 34.5,
     totalSlaHours: 48,
-    assignee: "Eng. Tariq Al-Mansoor",
+    assignee: "Demo Inspector 3",
     assigneeRole: "Structural Integrity Inspector",
     assigneeRoleArabic: "مفتش السلامة الإنشائية المعتمد",
     valueAtRiskSar: 160000,
@@ -136,7 +137,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     deadlineHoursRemaining: 42.0,
     totalSlaHours: 72,
     assignee: "Power Grid Solutions Co.",
-    assigneeRole: "SCE Certified Electromechanical Team",
+    assigneeRole: "Electromechanical contractor (demo)",
     assigneeRoleArabic: "فريق الفحص الكهروميكانيكي المعتمد",
     valueAtRiskSar: 75000,
     gainNum: 3,
@@ -248,6 +249,7 @@ export const CommandCenterSLAMatrix: React.FC<CommandCenterSLAMatrixProps> = ({
 
   return (
     <div className="space-y-6">
+      <SimulatedBadge isArabic={isArabic} />
       {/* ═══════════════════════════════════════════════════════════════════════
           COMMAND CENTER HEADER & OPERATIONAL BAR
       ═══════════════════════════════════════════════════════════════════════ */}

@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { SaudiOpenDataJuly2026Modal } from "./SaudiOpenDataJuly2026Modal";
 import { SAUDI_REAL_ESTATE_METADATA, SAUDI_REGIONAL_SUMMARY } from "../../data/saudiRealEstateJuly2026";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface MarketTrendsViewProps {
   asset: AssetRecord;
@@ -254,7 +255,7 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
         sbcClause: topFinding?.type === "Crack" ? "SBC-304 (Concrete Structures)" : "SBC-601 (Moisture & Thermal)",
         aiConfidence: topFinding?.conf || 88,
         rootCause: `Computer vision identified ${asset.findings?.length || 3} localized non-conformity zones causing structural condition discount.`,
-        rootCauseArabic: `رصدت الرؤية الحاسوبية ${asset.findings?.length || 3} مناطق عيوب أدت لخصم فني مباشر على التقييم المعتمد.`,
+        rootCauseArabic: `سُجلت ${asset.findings?.length || 0} ملاحظة في بيانات الأصل التوضيحية.`,
         remediationAction: asset.actions?.[0]?.action || "Deploy targeted Next Best Action remediation fast-track",
         remediationActionArabic: asset.actions?.[0]?.actionArabic || "تنفيذ خطة المعالجة السريعة الموصى بها",
       },
@@ -286,8 +287,8 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
         deltaPct: -9.8,
         sbcClause: "Judicial Auction Liquidation Discount",
         aiConfidence: 94,
-        rootCause: "Buyer risk aversion discounting uncertified structural/thermal integrity during judicial bid rounds.",
-        rootCauseArabic: "تحوط المستثمرين والمزايدين بخصم إضافي لغياب شهادة السلامة الإنشائية المعتمدة.",
+        rootCause: "Illustrative assumption: bidders discount when no engineering report exists.",
+        rootCauseArabic: "افتراض توضيحي: خصم إضافي من المزايدين عند غياب تقرير هندسي.",
         remediationAction: "Preventive remediation prior to auction listing to avoid severe capital haircut.",
         remediationActionArabic: "معالجة العيوب قبل الطرح لتجنب الخصم السعري الحاد.",
       },
@@ -313,15 +314,15 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
       status: "remediated",
       aiDefectImpact: {
         type: "spike",
-        defectName: "Valuation Surge via Certified Engineering Remediation",
-        defectNameArabic: "طفرة استرداد القيمة بعد المعالجة المعتمدة هندسياً",
+        defectName: "Illustrative value recovery after remediation",
+        defectNameArabic: "استرداد توضيحي للقيمة بعد المعالجة",
         severity: "Resolved",
         deltaSar: upliftVal,
         deltaPct: +Number(upliftPct),
         sbcClause: "Full SBC-201 / SBC-304 Re-Certification",
         aiConfidence: 99,
-        rootCause: "Elimination of defect penalty + Saudi Council of Engineers certified compliance dossier issuance.",
-        rootCauseArabic: "إلغاء خصم العيوب بالكامل وصدور شهادة الامتثال المعتمدة من هيئة المهندسين.",
+        rootCause: "Illustrative: defect penalty removed after remediation (assumption).",
+        rootCauseArabic: "افتراض توضيحي: زوال خصم العيوب بعد المعالجة.",
         remediationAction: "Asset classified as Prime Investment Grade for direct auction clearance.",
         remediationActionArabic: "تصنيف الأصل كأصل ممتاز جاهز للمزايدة الفورية بأعلى عائد.",
       },
@@ -508,6 +509,14 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <div className="flex flex-wrap items-center gap-2">
+        <SimulatedBadge isArabic={isArabic} />
+        <span className="text-[10px] text-slate-400">
+          {isArabic
+            ? "مؤشرات السوق والتوقعات هنا توضيحية. جدول العمليات العقارية (يوليو 2026) مأخوذ من ملف بيانات مفتوحة مرفق بالمشروع، ويلزم التحقق من مصدره قبل الاستخدام الرسمي."
+            : "Market indicators and forecasts here are illustrative. The July 2026 real-estate operations table comes from an open-data file bundled with the project; verify its source before official use."}
+        </span>
+      </div>
       {/* ══ HEADER BANNER & OVERVIEW ══ */}
       <div className="relative rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 p-6 lg:p-7 shadow-2xl overflow-hidden">
         <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
@@ -686,8 +695,8 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               {isArabic
-                ? `تم رصد 65,702 عملية عقارية موثقة بالمملكة خلال الفترة، تتصدرها إجراءات الحجز التحفظي وفك الحجز (35,973 عملية بنسبة 54.7%) والإفراغ العقاري (8,785 عملية). يوفر هذا الرادار للمصفي والمشتري مؤشراً استرشادياً لسرعة حركة السوق وقدرة التسييل.`
-                : `65,702 recorded government transactions in Saudi Arabia during the period, led by Precautionary Seizures & Releases (35,973 ops / 54.7%) and Conveyance (8,785 ops). Providing verifiable market liquidity depth.`}
+                ? `يحتوي الملف المرفق على 65,702 عملية عقارية مسجلة خلال الشهر، منها حجز تحفظي وفك حجز (35,973 عملية) وإفراغ (8,785 عملية). عمليات الحجز وفك الحجز ليست عمليات تصفية أو بيع. المصدر يحتاج تأكيد قبل أي استخدام رسمي.`
+                : `The bundled file lists 65,702 recorded real-estate operations for the month, including precautionary attachments and releases (35,973) and conveyances (8,785). Attachments and releases are not liquidations or sales. Confirm the source before official use.`}
             </p>
           </div>
 

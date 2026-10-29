@@ -136,7 +136,7 @@ export const ApiExplorerModal: React.FC<ApiExplorerModalProps> = ({
       path: "/api/findings/f-001/confirm",
       category: "Findings Review",
       description: "Licensed inspector marks finding VERIFIED (FR-05)",
-      mockResponse: { finding_id: "f-001", status: "VERIFIED", verified_by: "SCE #48912" },
+      mockResponse: { finding_id: "f-001", status: "VERIFIED", verified_by: "demo-inspector" },
     },
     {
       method: "POST",
@@ -197,6 +197,9 @@ export const ApiExplorerModal: React.FC<ApiExplorerModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-5xl bg-[#09152B] border border-[#00C5A0]/40 rounded-2xl shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh]">
+        <div className="px-4 py-2 bg-amber-500/15 border-b border-amber-500/40 text-amber-200 text-xs text-center">
+          Proposed API design — these endpoints are NOT implemented in this prototype; responses shown are examples. · تصميم مقترح للواجهات البرمجية، غير منفّذ في هذا النموذج، والردود المعروضة أمثلة.
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#00C5A0]/20 bg-[#0D1F45]">
           <div className="flex items-center gap-3">

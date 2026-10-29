@@ -158,10 +158,11 @@ export function computeAssetScores(
     code: string;
   }[] = [];
 
-  const roofArea = coverageAreas.find(
-    (a) => a.area.toLowerCase().includes("roof") || a.pct < 60
-  );
-  if (roofArea && roofArea.pct < 70) {
+  // Largest coverage gap: the lowest-coverage area below 70%.
+  const roofArea = [...coverageAreas]
+    .filter((a) => a.pct < 70)
+    .sort((a, b) => a.pct - b.pct)[0];
+  if (roofArea) {
     readinessBlockers.push({
       description: `${roofArea.area} coverage incomplete (${roofArea.pct}%)`,
       impact: "High",
@@ -169,9 +170,10 @@ export function computeAssetScores(
     });
   }
 
-  if (unresolved.some((f) => f.type === "Moisture")) {
+  const moisture = unresolved.find((f) => f.type === "Moisture");
+  if (moisture) {
     readinessBlockers.push({
-      description: "Moisture finding unresolved in North Wall",
+      description: `Moisture finding unresolved in ${moisture.area}`,
       impact: "Medium",
       code: "UNRESOLVED_MOISTURE",
     });
@@ -194,7 +196,7 @@ export function computeAssetScores(
   }
 
   // FR-13: Explainability Engine
-  const explainabilityText = `READINESS = ${liquidationReadiness} — Because: ${coveragePct}% inspection coverage · ${totalEvidenceFrames} evidence frames · ${unresolvedCount} unresolved findings · ${roofArea ? `${roofArea.area} coverage = ${roofArea.pct}%` : "All areas inspected"} · ${missingFieldsCount > 0 ? "Missing asset information" : "Asset metadata verified"}`;
+  const explainabilityText = `READINESS = ${liquidationReadiness} — Because: ${coveragePct}% inspection coverage · ${totalEvidenceFrames} evidence frames · ${unresolvedCount} unresolved findings · ${roofArea ? `${roofArea.area} coverage = ${roofArea.pct}%` : "No area below 70% coverage"} · ${missingFieldsCount > 0 ? "Missing asset information" : "Asset metadata verified"}`;
 
   return {
     conditionIndex,
