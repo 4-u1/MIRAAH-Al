@@ -33,7 +33,7 @@ googleProvider.setCustomParameters({
 });
 
 // Initialize Firestore (pointing to custom databaseId if configured)
-const useEmulators = import.meta.env.VITE_FIREBASE_EMULATORS === "true";
+const useEmulators = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_FIREBASE_EMULATORS === "true";
 
 // With emulators (end-to-end test builds only) the default database is used.
 export const db =
