@@ -110,7 +110,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
               desc: isArabic
                 ? "قياس نسبة الرطوبة بمسبار رقمي وإجراء مسح ثلاثي الأبعاد للتأكد من جفاف المنطقة وإغلاق الملاحظة."
                 : "Perform digital pin-probe moisture verification (<10%) and upload 3D verification keyframe to update Asset Passport.",
-              trade: isArabic ? "مفتش معتمد" : "SCE Inspector",
+              trade: isArabic ? "مهندس مرخّص" : "Licensed engineer",
             },
           ],
         };
@@ -153,7 +153,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
               phase: isArabic ? "المرحلة 4: التحقق من استقرار الشق" : "Phase 4: Tell-Tale Crack Gauge Sign-off",
               desc: isArabic
                 ? "فحص استواء السطح ومطابقة التقرير مع معايير كود البناء السعودي لإغلاق الملاحظة."
-                : "Verify zero optical displacement under tangential spotlighting and sign off SCE compliance record.",
+                : "Verify zero optical displacement under tangential spotlighting and record the verification.",
               trade: isArabic ? "فحص الجودة" : "QA Sign-off",
             },
           ],
@@ -242,7 +242,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
               desc: isArabic
                 ? "فحص تجانس اللون وعدم وجود فروقات ضوئية واعتماد إغلاق الملاحظة في منصة مرآة."
                 : "Confirm color consistency under 5000K daylight lighting and archive completion evidence in MIRAAH.",
-              trade: isArabic ? "اعتماد رسمي" : "Verification",
+              trade: isArabic ? "تحقق" : "Verification",
             },
           ],
         };
@@ -320,7 +320,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                       : "bg-emerald-50 text-emerald-800 border-emerald-300"
                   }`}>
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    SCE VERIFIED
+                    USER-VERIFIED
                   </span>
                 ) : (
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold flex items-center gap-1 border ${
@@ -353,7 +353,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                 <span>·</span>
                 <span>CODE: {profile.code}</span>
                 <span>·</span>
-                <span>VLM CONFIDENCE: {finding.conf}%</span>
+                <span>{isArabic ? "الثقة (توضيحية)" : "CONFIDENCE (demo)"}: {finding.conf}%</span>
                 <span>·</span>
                 <span>DETECTED: {finding.detectedAt}</span>
               </div>
@@ -395,7 +395,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#00E5B9] font-bold">
                 <Camera className="w-4 h-4" />
-                <span>{isArabic ? "الدليل الفوتوغرافي عالي الدقة (FR-04)" : "ORIGINAL PHOTOGRAPHIC EVIDENCE & VLM MAPPINGS"}</span>
+                <span>{isArabic ? "صور الدليل (توضيحية)" : "EVIDENCE IMAGES (ILLUSTRATIVE)"}</span>
               </div>
 
               {/* Viewport Modes */}
@@ -541,7 +541,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
 
                   {/* Right Top AI Metric HUD */}
                   <div className="absolute top-3 right-3 bg-[#050811]/90 backdrop-blur-md border border-white/[0.15] rounded-lg px-3.5 py-2 text-center font-mono z-20 pointer-events-none">
-                    <div className="text-[9px] uppercase tracking-wider text-[#94A3B8]">VLM Confidence</div>
+                    <div className="text-[9px] uppercase tracking-wider text-[#94A3B8]">Confidence (demo)</div>
                     <div className="text-lg font-black text-[#00E5B9] leading-none mt-0.5">
                       {finding.conf}%
                     </div>
@@ -698,7 +698,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                   📍 Zone: {finding.area}
                 </span>
                 <span className={`px-2.5 py-1 rounded ${isDark ? "bg-white/[0.04] text-white/90" : "bg-slate-200/70 text-slate-800"}`}>
-                  🔬 Model: Gemini 3.8 Flash Spatial Vision V4.2
+                  🔬 Fixed guidance text (no AI model)
                 </span>
                 <span className={`px-2.5 py-1 rounded ${isDark ? "bg-white/[0.04] text-white/90" : "bg-slate-200/70 text-slate-800"}`}>
                   📋 Code Standard: {profile.buildingStandard}
@@ -782,7 +782,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
             }`}>
               <div className="space-y-0.5">
                 <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-[#00E5B9]" : "text-teal-800"}`}>
-                  {isArabic ? "المقاول والمواد المعتمدة" : "CERTIFIED SPECIALIST TRADE REQUIRED"}
+                  {isArabic ? "الجهة المقترحة للمعالجة" : "SUGGESTED TRADE"}
                 </div>
                 <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{profile.requiredTrade}</div>
               </div>
@@ -807,9 +807,9 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                 isDark ? "text-white" : "text-slate-900"
               }`}>
                 <FileText className={`w-4 h-4 ${isDark ? "text-[#00E5B9]" : "text-teal-600"}`} />
-                <span>{isArabic ? "سجل تدقيق وملاحظات المهندس المعتمد (SCE)" : "LICENSED INSPECTOR AUDIT LOG & FIELD NOTES"}</span>
+                <span>{isArabic ? "سجل التحقق والملاحظات" : "VERIFICATION LOG & NOTES"}</span>
               </div>
-              <span className={`text-[10px] font-mono ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>ENG. FAHAD AL-OTAIBI (SCE-VAL-9921)</span>
+              <span className={`text-[10px] font-mono ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>DEMO INSPECTOR (fictional)</span>
             </div>
 
             <div className="space-y-2">
@@ -868,10 +868,10 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
               <span>
                 {finding.verified
                   ? isArabic
-                    ? "معتمد رسمي ✓ (إلغاء الاعتماد)"
-                    : "SCE VERIFIED ✓ (REVOKE)"
+                    ? "تم التحقق ✓ (إلغاء)"
+                    : "USER-VERIFIED ✓ (UNDO)"
                   : isArabic
-                  ? "اعتماد الملاحظة رسمياً ✓"
+                  ? "تأكيد التحقق من الملاحظة ✓"
                   : "APPROVE & VERIFY FINDING ✓"}
               </span>
             </button>

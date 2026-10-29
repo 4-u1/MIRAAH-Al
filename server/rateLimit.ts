@@ -5,8 +5,10 @@ export interface RateLimitOptions {
   burstLimit: number;
   /** Burst window length in ms. */
   burstWindowMs: number;
-  /** Max requests per IP per day. */
+  /** Max requests per key per day (Infinity = no daily cap). */
   dailyLimit: number;
+  /** Bucket key; defaults to the client IP. */
+  key?: (req: Request) => string;
   /** Injectable clock for tests. */
   now?: () => number;
 }
@@ -47,12 +49,14 @@ export function createRateLimiter(opts: RateLimitOptions) {
 
   function middleware(req: Request, res: Response, next: NextFunction) {
     const t = now();
-    const ip = req.ip || req.socket.remoteAddress || "unknown";
+    const ip = opts.key ? opts.key(req) : req.ip || req.socket.remoteAddress || "unknown";
 
-    const d = hit(daily, ip, DAY_MS, t);
-    if (d.count > opts.dailyLimit) {
-      res.setHeader("Retry-After", String(Math.ceil((d.resetAt - t) / 1000)));
-      return res.status(429).json({ error: "daily_limit", message: "Daily AI request limit reached." });
+    if (Number.isFinite(opts.dailyLimit)) {
+      const d = hit(daily, ip, DAY_MS, t);
+      if (d.count > opts.dailyLimit) {
+        res.setHeader("Retry-After", String(Math.ceil((d.resetAt - t) / 1000)));
+        return res.status(429).json({ error: "daily_limit", message: "Daily AI request limit reached." });
+      }
     }
 
     const b = hit(burst, ip, opts.burstWindowMs, t);

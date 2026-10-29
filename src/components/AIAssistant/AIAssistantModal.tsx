@@ -61,12 +61,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 query: "ما هي العيوب التي تخفض درجة جاهزية التصفية في هذا الأصل وكيف نعالجها؟",
               },
               {
-                label: "💰 تحليل العائد الاستثماري (ROI)",
-                query: "كم سيرتفع التقييم وسعر التصفية بعد إصلاح العيوب الحرجة وما هو العائد المتوقع؟",
+                label: "📊 ما الذي يرفع مؤشر الجاهزية؟",
+                query: "حسب المعادلة، ما الملاحظات أو البيانات الناقصة التي ترفع مؤشر جاهزية التصفية أكثر إذا عولجت؟",
               },
               {
-                label: "📜 مطابقة كود البناء السعودي (SBC)",
-                query: "هل العقار مطابق لاشتراطات كود البناء السعودي SBC 201 و SBC 304 وما هي التوصيات؟",
+                label: "📜 أجزاء كود البناء المرتبطة بالملاحظات",
+                query: "ما أجزاء كود البناء السعودي المرتبطة بالملاحظات المسجلة، وما الذي يجب أن يتحقق منه مهندس مرخّص؟",
               },
             ]
           : [
@@ -75,12 +75,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 query: "What defects lower the liquidation score and how to fix them?",
               },
               {
-                label: "💰 ROI Value Recovery Analysis",
-                query: "How much will valuation increase after remediating critical defects?",
+                label: "📊 What raises the readiness score?",
+                query: "Using the formula, which findings or missing fields would raise the readiness score most if resolved?",
               },
               {
-                label: "📜 Saudi Building Code Compliance",
-                query: "Is the property compliant with Saudi Building Code SBC 201 and SBC 304?",
+                label: "📜 Building-code parts behind the findings",
+                query: "Which Saudi Building Code parts relate to the recorded findings, and what should a licensed engineer check?",
               },
             ],
       };
@@ -149,8 +149,9 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         headers,
         body: JSON.stringify({
           message: q,
-          history: newHistory
-            .filter((m) => m.id !== "m1")
+          // Earlier user questions only (the server ignores assistant turns); the current one goes in `message`.
+          history: messages
+            .filter((m) => m.sender === "user")
             .slice(-6)
             .map((m) => ({ sender: m.sender, text: m.text.slice(0, 4000) })),
           asset: {

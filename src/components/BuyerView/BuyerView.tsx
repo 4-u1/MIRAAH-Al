@@ -66,7 +66,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               <span className={`text-xs font-mono font-bold uppercase tracking-wider ${
                 isDark ? "text-[#00C5A0]" : "text-emerald-700"
               }`}>
-                {isArabic ? "بوابة الشفافية للمشتري والمستثمر (FR-17)" : "VERIFIED BUYER TRANSPARENCY PORTAL"}
+                {isArabic ? "بوابة الشفافية للمشتري (FR-17)" : "BUYER TRANSPARENCY PORTAL"}
               </span>
               <h2 className={`text-xl font-extrabold mt-0.5 ${
                 isDark ? "text-white" : "text-slate-900"
@@ -142,7 +142,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
           {
             state: "AI DETECTED",
             stateArabic: "اكتشفها الذكاء الاصطناعي",
-            desc: "Found by AI VLM scan, pending certified human inspector sign-off.",
+            desc: "Flagged in the (demo) data, pending human verification.",
             color: "#F59E0B",
             icon: "⚠",
           },

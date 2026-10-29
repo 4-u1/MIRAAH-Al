@@ -102,7 +102,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
               <p className="text-xs text-slate-400 font-sans">
                 {isArabic
                   ? "تنبيهات فورية عند رصد مخاطر عالية في العيوب أو اقتراب مواعيد مهام التدخل (SLA)"
-                  : "Automated real-time monitoring for high-risk AI findings & approaching action deadlines"}
+                  : "Alerts for critical findings and action deadlines (demo data)"}
               </p>
             </div>
           </div>
@@ -454,8 +454,8 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span>
               {isArabic
-                ? "المراقبة اللحظية نشطة · متوافقة مع متطلبات كود البناء السعودي SBC"
-                : "Continuous Automated Monitoring Active · SBC Compliant"}
+                ? "تنبيهات تجريبية من بيانات توضيحية"
+                : "Demo alerts from illustrative data"}
             </span>
           </div>
 

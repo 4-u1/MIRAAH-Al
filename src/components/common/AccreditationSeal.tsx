@@ -14,7 +14,7 @@ interface AccreditationSealProps {
 
 export const AccreditationSeal: React.FC<AccreditationSealProps> = ({
   serialNumber = "SPECIMEN",
-  inspectorName = "م. فهد السديري · Eng. Fahad Al-Sudairi",
+  inspectorName = "Demo Inspector (fictional)",
   licenseNumber = "SPECIMEN",
   issueDate = "2026-03-15",
   verificationHash = "—",

@@ -486,7 +486,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                     <span>بيانات العقار والأصل الأساسية · Core Property Identity</span>
                   </h3>
                   <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                    محدث وفوري LIVE 2026
+                    بيانات توضيحية
                   </span>
                 </div>
 
@@ -724,7 +724,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-400" />
                 <h3 className="font-bold text-sm text-white">
-                  {isArabic ? "بيانات التحقق والختم الرقمي المعتمد" : "Digital Accreditation & Ledger Proof"}
+                  {isArabic ? "لا يوجد ختم ولا توقيع (نموذج توضيحي)" : "No seal or signature (specimen)"}
                 </h3>
               </div>
               <button
