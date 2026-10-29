@@ -51,6 +51,10 @@ jobs:
             const a = JSON.parse(require("fs").readFileSync("audit.json","utf8"));
             const v = (a.metadata && a.metadata.vulnerabilities) || {};
             console.log(`::notice title=npm audit (prod)::critical=${v.critical||0} high=${v.high||0} moderate=${v.moderate||0} low=${v.low||0}`);
+            for (const [name, x] of Object.entries(a.vulnerabilities || {})) {
+              const via = (x.via || []).map(v => typeof v === "string" ? v : `${v.title} ${v.range||""}`).join("; ").slice(0, 200);
+              console.log(`::notice title=vuln ${x.severity} ${name}::range=${x.range} fix=${JSON.stringify(x.fixAvailable)} via=${via}`);
+            }
           '
 
   firestore-rules:
