@@ -111,7 +111,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                   {isArabic ? "الملف التقديمي الشامل وملخص المشروع (MIRAAH Pitch Deck)" : "MIRAAH Executive Pitch Deck & Project Dossier"}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
-                  {isArabic ? "وثيقة 2026 الرسمية" : "2026 Executive Brief"}
+                  {isArabic ? "ملخص المشروع 2026" : "2026 Executive Brief"}
                 </span>
               </div>
               <p className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
@@ -639,7 +639,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               <h3 className={`text-base font-bold flex items-center gap-2 ${
                 isDark ? "text-white" : "text-slate-900"
               }`}>
-                <span>{isArabic ? "خزينة الوثائق والصكوك المعتمدة" : "Certified Documents & Official PDF Vault"}</span>
+                <span>{isArabic ? "نماذج مستندات توضيحية" : "Specimen documents"}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${
                   isDark ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : "bg-amber-100 text-amber-800 border-amber-300"
                 }`}>
@@ -648,8 +648,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               </h3>
               <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                 {isArabic
-                  ? "مستندات PDF رسمية موثقة بختم الاعتماد الرقمي وكود البناء السعودي مع باركود التحقق الفوري."
-                  : "Authentic certified PDF records with cryptographic verification seals, SBC audit compliance, and live QR hashes."}
+                  ? "نماذج توضيحية تبيّن شكل المستندات المقترح داخل المنصة. ليست مستندات رسمية ولم تصدر عن أي جهة."
+                  : "Illustrative specimens of the proposed in-platform documents. Not official documents; not issued by any authority."}
               </p>
             </div>
           </div>
@@ -659,7 +659,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               isDark ? "text-emerald-400 bg-emerald-950/40 border-emerald-500/30" : "text-emerald-800 bg-emerald-50 border-emerald-300"
             }`}>
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>{isArabic ? "موثق لدى الهيئة العامة للعقار" : "REGA & TAQEEM VERIFIED"}</span>
+              <span>{isArabic ? "نماذج · غير رسمية" : "SPECIMENS · NOT OFFICIAL"}</span>
             </span>
           </div>
         </div>
@@ -686,7 +686,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 <h4 className={`font-bold text-sm transition-colors ${
                   isDark ? "text-white group-hover:text-amber-300" : "text-slate-900 group-hover:text-amber-700"
                 }`}>
-                  {isArabic ? "صك الملكية العقاري الإلكتروني" : "Certified Electronic Title Deed"}
+                  {isArabic ? "نموذج صك ملكية" : "Specimen title deed"}
                 </h4>
                 <div className={`text-[11px] font-mono mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   #DEED-SA-20481 · 2.4 MB PDF
@@ -694,8 +694,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               </div>
               <p className={`text-[11px] line-clamp-2 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                 {isArabic
-                  ? "سجل إلكتروني رسمي صادر من وزارة العدل والهيئة العامة للعقار مع إحداثيات الرفع المساحي."
-                  : "Official MOJ title deed with geodetic parcel boundaries, municipal setbacks, and escrow clearance."}
+                  ? "نموذج توضيحي لشكل بيانات الصك داخل المنصة (لم يصدر عن وزارة العدل)."
+                  : "Illustrative layout of title-deed data in the platform (not issued by the Ministry of Justice)."}
               </p>
             </div>
 
@@ -800,8 +800,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               </div>
               <p className={`text-[11px] line-clamp-2 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                 {isArabic
-                  ? "تقدير القيمة السوقية العادلة وسعر الأساس للتصفية القضائية معتمد من مقيمين مرخصين."
-                  : "Certified fair market valuation with liquidation auction reserve threshold by accredited appraisers."}
+                  ? "نموذج توضيحي لتقرير تقييم (ليس تقييماً معتمداً)."
+                  : "Illustrative valuation report layout (not a certified valuation)."}
               </p>
             </div>
 
@@ -853,8 +853,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               </div>
               <p className={`text-[11px] line-clamp-2 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                 {isArabic
-                  ? "إذن الطرح النهائي في المزاد العلني واستكمال شروط الإفراغ العقاري والضمان المالي."
-                  : "Official auction enablement and judicial conveyance clearance issued by Infath."}
+                  ? "نموذج مقترح لملخص جاهزية المزاد (لم يصدر عن إنفاذ)."
+                  : "Proposed auction-readiness summary layout (not issued by Infath)."}
               </p>
             </div>
 
@@ -973,8 +973,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
           </p>
           <p className="leading-relaxed">
             {isArabic
-              ? "مؤشر الحالة (Condition Index) وجاهزية التصفية (Readiness) هي درجات رقمية مبنية على تحليلات الذكاء الاصطناعي والأدلة المرئية المسجلة، ولا تشكل تقريراً هندسياً معتمداً أو شهادة سلامة إنشائية رسمية أو ضماناً لأسعار البيع."
-              : "Condition Index and Liquidation Readiness scores are AI-assisted analytical tools based on verifiable visual inspection media. They do NOT constitute a structural engineering certificate, official safety license, or guaranteed commercial transaction price."}
+              ? "مؤشر الحالة وجاهزية التصفية درجات تُحسب بمعادلات ثابتة من الملاحظات والتغطية المسجلة (بيانات توضيحية)، ولا تشكل تقريراً هندسياً معتمداً أو شهادة سلامة إنشائية أو ضماناً لأسعار البيع."
+              : "Condition Index and Liquidation Readiness are computed by fixed formulas from the recorded findings and coverage (demo data). They do NOT constitute a structural engineering certificate, official safety licence, or guaranteed sale price."}
           </p>
         </div>
       </div>

@@ -135,7 +135,7 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
         ar: "سجل عقاري موثق يربط المساحات والوثائق والعيوب مكانياً",
       },
       description: {
-        en: "The Asset Passport consolidates all physical, architectural, and statutory metrics of an asset into a unified digital record. Inspect cross-sections, certified title deeds, municipal Balady permits, and area breakdown from basement to roof levels.",
+        en: "The Asset Passport consolidates all physical, architectural, and statutory metrics of an asset into a unified digital record. Inspect cross-sections, specimen documents, and area breakdown from basement to roof levels (demo data).",
         ar: "يوفر جواز الأصل هوية رقمية موحدة لكل عقار، متضمناً فحص الصكوك الإلكترونية، رخص بلدي، وتفصيل المساحات الطابقية من الأقبية حتى الأسطح مع استعراض شامل للبيانات المساحية والتثمين المالي.",
       },
       features: [
@@ -178,7 +178,7 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
         ar: "رصد الشقوق والرطوبة وربطها بإطارات الفيديو الدقيقة وتصنيف الخطورة",
       },
       description: {
-        en: "Every structural imperfection is automatically detected, categorized by severity (Critical, Moderate, Low), and cross-referenced with relevant Saudi Building Code clauses. Officers can verify, dispute, or track remediation workflows in real-time.",
+        en: "Recorded findings are categorised by severity (Critical, Moderate, Low) and tagged with a Saudi Building Code part. In this prototype, findings come from demo data or manual labelling, not automatic detection. Users can verify findings or mark them resolved.",
         ar: "يقوم نموذج الرؤية الحاسوبية باكتشاف التشققات، الرطوبة، والعيوب السطحية تلقائياً وربطها برقم إطار الفيديو والتوقيت الدقيق، مع ربط كل ملاحظة ببنود كود البناء السعودي (SBC 304 للخرسانة وSBC 601 للعزل).",
       },
       features: [
@@ -217,17 +217,17 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
         ar: "نظام التشغيل المعرفي للعقارات الذكية (PropTech 2.0)",
       },
       tagline: {
-        en: "Real-time IoT strain telemetry, BIM clash audit & SRE-Chain blockchain",
+        en: "Future concept, simulated: IoT telemetry, BIM audit & blockchain registry",
         ar: "حساسات إنشائية حية، فحص نماذج BIM وتوثيق البلوكشين لسجل العقار",
       },
       description: {
-        en: "The next frontier of property due diligence: real-time telemetry from IoT strain and vibration sensors, automated BIM-LiDAR tolerance clashing, 10-year structural lifecycle forecasting under Riyadh climate stress, and immutable deed provenance on the Saudi Real Estate Blockchain.",
+        en: "A simulated future concept with demo data: IoT sensor telemetry, BIM-LiDAR tolerance checks, lifecycle forecasting and a blockchain deed registry. None of these are connected to real systems in this version.",
         ar: "المستوى المعرفي الأحدث لإدارة الأصول: قراءة حية لمجسات الإجهاد والحرارة IoT، مطابقة المخططات الهندسية BIM مع المسح الفعلي LiDAR، محاكاة تآكل الخرسانة لـ 10 سنوات قادمة، وتوثيق سجلات الصكوك المصفاة في بلوكشين SRE-Chain.",
       },
       features: [
         {
           en: "Live IoT telemetry (strain gauge, moisture probes, SBC vibration limits)",
-          ar: "مراقبة حية للحساسات الإنشائية واختبار الإجهادات اللحظية",
+          ar: "محاكاة لقراءات حساسات إنشائية (بيانات توضيحية)",
           icon: "📡",
         },
         {
@@ -236,7 +236,7 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
           icon: "🏗️",
         },
         {
-          en: "Immutable cryptographic ledger for judicial auction provenance",
+          en: "Simulated registry concept (no real blockchain)",
           ar: "سجل رقمي مشفر غير قابل للتعديل لضمان نزاهة المزاد",
           icon: "⛓️",
         },
@@ -302,7 +302,7 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
         ar: "مستشار مرآة الذكي (مدعوم بمحرك Gemini 3.8)",
       },
       tagline: {
-        en: "Conversational real estate due diligence with real-time asset grounding",
+        en: "Questions about the active asset's recorded data",
         ar: "مساعد محادثة هندسي يجيب فورياً بالاستناد إلى السجل المكاني الكامل للأصل",
       },
       description: {
@@ -312,7 +312,7 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
       features: [
         {
           en: "Grounded directly in active asset telemetry, scores, and defect logs",
-          ar: "مرتبط بالبيانات اللحظية للأصل النشط ومؤشرات الجاهزية والعيوب",
+          ar: "يجيب من بيانات الأصل النشط ومؤشراته وملاحظاته المسجلة",
           icon: "🤖",
         },
         {
@@ -345,11 +345,11 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
       },
       tagline: {
         en: "Executive-grade judicial reports with cryptographic QR and executive summary",
-        ar: "توليد ملفات PDF رسمية عالية الدقة متضمنة رمز الاستجابة السريع والملخص التنفيذي",
+        ar: "تصدير ملف PDF للجواز بعلامة \"نموذج تجريبي\"، وJSON وCSV مع بصمة SHA-256",
       },
       description: {
         en: "With a single click, compile the full due diligence record into an accredited, high-resolution PDF report suitable for judicial auction packages, court filings, and prospective institutional bidders, featuring full color-sanitized vector layouts.",
-        ar: "بضغطة زر واحدة، يمكنك استخراج تقرير الفحص النافي للجهالة الشامل بصيغة PDF معتمدة ومجهزة بجداول العيوب، مؤشرات التقييم، وتوصيات الذكاء الاصطناعي مع رمز QR للتحقق اللحظي، متوافق مع كافة الطابعات وأنظمة المزادات.",
+        ar: "بضغطة زر تصدّر جواز الأصل بصيغة PDF (نموذج تجريبي) مع جداول الملاحظات والمؤشرات، وبصيغ JSON وCSV من نفس البيانات مع بصمة SHA-256 للتحقق من عدم تغيّر الملف.",
       },
       features: [
         {
@@ -363,15 +363,15 @@ export const InteractiveTourModal: React.FC<InteractiveTourModalProps> = ({
           icon: "🖨️",
         },
         {
-          en: "Cloud sync to Firestore with judicial officer authentication stamp",
-          ar: "مزامنة سحابية مع توثيق ختم المأمور القضائي المعتمد",
+          en: "Verification actions logged to Firestore for the signed-in user",
+          ar: "تسجيل إجراءات التحقق في Firestore باسم المستخدم المسجّل",
           icon: "✅",
         },
       ],
       highlightMetric: {
-        value: "100%",
-        labelEn: "Due Diligence Audit Trail",
-        labelAr: "سجل تدقيق نافٍ للجهالة معتمد",
+        value: "SHA-256",
+        labelEn: "Export fingerprint",
+        labelAr: "بصمة ملف التصدير",
       },
       actionLabel: { en: "Open Export Window", ar: "استعراض نافذة التصدير" },
       actionType: "export",

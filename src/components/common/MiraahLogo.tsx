@@ -79,7 +79,7 @@ export const MiraahLogo: React.FC<MiraahLogoProps> = ({
               ? "bg-slate-950/80 border-cyan-500/40 text-cyan-300"
               : "bg-white/90 border-cyan-500/40 text-cyan-800 shadow-sm"
           }`}>
-            100% AUTHENTIC IDENTITY
+            MIRAAH IDENTITY
           </div>
         </div>
 

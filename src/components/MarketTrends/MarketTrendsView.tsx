@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { SaudiOpenDataJuly2026Modal } from "./SaudiOpenDataJuly2026Modal";
 import { SAUDI_REAL_ESTATE_METADATA, SAUDI_REGIONAL_SUMMARY } from "../../data/saudiRealEstateJuly2026";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface MarketTrendsViewProps {
   asset: AssetRecord;
@@ -508,6 +509,14 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <div className="flex flex-wrap items-center gap-2">
+        <SimulatedBadge isArabic={isArabic} />
+        <span className="text-[10px] text-slate-400">
+          {isArabic
+            ? "مؤشرات السوق والتوقعات هنا توضيحية. جدول العمليات العقارية (يوليو 2026) مأخوذ من ملف بيانات مفتوحة مرفق بالمشروع، ويلزم التحقق من مصدره قبل الاستخدام الرسمي."
+            : "Market indicators and forecasts here are illustrative. The July 2026 real-estate operations table comes from an open-data file bundled with the project; verify its source before official use."}
+        </span>
+      </div>
       {/* ══ HEADER BANNER & OVERVIEW ══ */}
       <div className="relative rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 p-6 lg:p-7 shadow-2xl overflow-hidden">
         <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />

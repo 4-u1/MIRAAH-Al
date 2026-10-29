@@ -79,11 +79,11 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       const isImage = file.type.startsWith("image/");
       const fileType = isVideo ? "video" : isImage ? "image" : "document";
 
-      // Pick reasonable default classification for demo
+      // Default classification is a placeholder the user must review; there is no vision model in this version.
       const defectType = defectTypesList[(uploadedFiles.length + index) % defectTypesList.length];
       const severity = severities[(uploadedFiles.length + index) % severities.length];
       const area = availableAreas[(uploadedFiles.length + index) % availableAreas.length].en;
-      const confidence = Math.floor(88 + Math.random() * 11);
+      const confidence = 100; // manual (human) label, not a model score
 
       const previewUrl = isImage || isVideo ? URL.createObjectURL(file) : "";
 
@@ -120,16 +120,16 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
     setProgress(15);
     setStatusStep(
       isArabic
-        ? "استخراج الإطارات الدقيقة وتهيئة مسار المعالجة (FFmpeg)..."
-        : "Extracting high-res keyframes via FFmpeg pipeline (FR-01)..."
+        ? "تجهيز الملفات المرفوعة (محاكاة: لا تُرسل لأي خادم)..."
+        : "Preparing uploaded files (simulated: nothing is sent to a server)..."
     );
 
     setTimeout(() => {
       setProgress(45);
       setStatusStep(
         isArabic
-          ? "تحليل الرؤية الحاسوبية ومعايرة كود البناء السعودي (Gemini VLM)..."
-          : "Passing visual frames to Multimodal Vision API (FR-02)..."
+          ? "تطبيق التصنيف اليدوي الذي اخترته (لا يوجد تحليل رؤية حاسوبية في هذا الإصدار)..."
+          : "Applying your manual classification (no computer-vision analysis in this version)..."
       );
     }, 900);
 
@@ -137,8 +137,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       setProgress(80);
       setStatusStep(
         isArabic
-          ? "تصنيف العيوب وحساب إحداثيات الإحاطة (Bounding Boxes)..."
-          : "Evaluating 4 MVP Defect Classes (Crack, Moisture, Surface, Paint)..."
+          ? "إنشاء الملاحظات في سجل الأصل..."
+          : "Creating findings in the asset record..."
       );
     }, 1800);
 
@@ -146,8 +146,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       setProgress(100);
       setStatusStep(
         isArabic
-          ? "اكتمل الفحص! تم توثيق الأدلة وربطها بسجل الأصل بنجاح."
-          : "Analysis Complete! 100% Evidence Traceability verified."
+          ? "تمت إضافة الملاحظات بتصنيف يدوي، وتحتاج تحقق مهندس."
+          : "Findings added with manual labels; engineer verification required."
       );
 
       // Create structured findings for uploaded items and push to asset
@@ -158,7 +158,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
             type: file.selectedDefectType || "Crack",
             area: file.selectedArea || "Roof / Parapet",
             severity: file.selectedSeverity || "Moderate",
-            conf: file.confidence || 92,
+            conf: file.confidence ?? 100,
             frames: 1,
             verified: false,
             isResolved: false,
@@ -169,22 +169,22 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                 thumbnailUrl: file.previewUrl || "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80",
                 timestampSec: 12,
                 timestampFormatted: "00:12",
-                confidence: (file.confidence || 92) / 100,
-                cameraAngle: "Nadir 45° Drone Cam",
+                confidence: (file.confidence ?? 100) / 100,
+                cameraAngle: "Uploaded file",
                 roomArea: file.selectedArea || "Roof / Parapet",
                 detectedBox: {
                   x: 20,
                   y: 25,
                   w: 45,
                   h: 40,
-                  label: `${file.selectedDefectType} (${file.confidence}%)`,
+                  label: `${file.selectedDefectType} (manual)`,
                 },
                 notes: `Uploaded file: ${file.name}`,
               },
             ],
-            description: `AI Vision analysis identified a localized ${file.selectedDefectType?.toLowerCase()} during inspection of ${file.selectedArea}. Requires professional contractor validation.`,
+            description: `Manually labelled ${file.selectedDefectType?.toLowerCase()} in ${file.selectedArea} from an uploaded file. Not analysed by AI; requires engineer verification.`,
             titleArabic: `رصد ${file.selectedDefectType === "Crack" ? "تشققات إنشائية" : file.selectedDefectType === "Moisture" ? "تسريب ورطوبة" : file.selectedDefectType === "Surface Damage" ? "تآكل سطحي" : "تقشير دهانات"} في ${file.selectedArea}`,
-            descriptionArabic: `تم التعرف الآلي على مظاهر ${file.selectedDefectType} بنسبة ثقة ${file.confidence}% في نطاق ${file.selectedArea}. مسجل لغرض تدقيق كود البناء السعودي.`,
+            descriptionArabic: `ملاحظة مصنّفة يدوياً (${file.selectedDefectType}) في نطاق ${file.selectedArea} من ملف مرفوع. لم تُحلَّل بالذكاء الاصطناعي، وتحتاج تحقق مهندس.`,
             recommendation: "Review high-res evidence frame, schedule contractor patch test, and update liquidation condition index.",
             detectedAt: new Date().toISOString().split("T")[0],
           };
@@ -245,10 +245,10 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
           <div className="p-3.5 rounded-xl bg-black/30 border border-white/10 flex items-center justify-between gap-4">
             <div>
               <div className="text-xs font-bold text-white flex items-center gap-2">
-                <span>{isArabic ? "نمط معالجة الذكاء الاصطناعي:" : "AI Processing Mode:"}</span>
+                <span>{isArabic ? "نمط المعالجة (محاكاة):" : "Processing mode (simulated):"}</span>
                 <span className="text-cyan-300 font-mono">
                   {mode === "MODE_B"
-                    ? isArabic ? "النمط B (استدلال حي VLM)" : "Mode B (Live VLM Inference)"
+                    ? isArabic ? "النمط B (مخطط: استدلال VLM غير مفعّل)" : "Mode B (planned: VLM inference not enabled)"
                     : isArabic ? "النمط A (بيانات تجريبية جاهزة)" : "Mode A (Pre-Indexed Benchmark)"}
                 </span>
               </div>
@@ -455,7 +455,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                     setUploadedFiles([
                       {
                         id: "sample_pdf_1",
-                        name: "صك_الملكية_الإلكتروني_المعتمد_SRE20481.pdf",
+                        name: "نموذج_صك_توضيحي_SPECIMEN.pdf",
                         size: "2.4 MB",
                         type: "document",
                         previewUrl: "",
@@ -467,7 +467,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                       },
                       {
                         id: "sample_pdf_2",
-                        name: "شهادة_فحص_كود_البناء_السعودي_SBC_2026.pdf",
+                        name: "نموذج_تقرير_فحص_توضيحي_SPECIMEN.pdf",
                         size: "3.8 MB",
                         type: "document",
                         previewUrl: "",
@@ -539,7 +539,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
               <span>
                 {analyzing
                   ? isArabic ? "جارٍ التحليل المكاني..." : "Analyzing Media..."
-                  : isArabic ? `بدء الفحص والتحليل (${uploadedFiles.length})` : `Run AI Spatial Scan (${uploadedFiles.length})`}
+                  : isArabic ? `إضافة الملاحظات بتصنيف يدوي (${uploadedFiles.length})` : `Add manually labelled findings (${uploadedFiles.length})`}
               </span>
             </button>
           </div>
