@@ -1,84 +1,99 @@
-# Deploying MIRAAH (Cloud Run + Firebase)
+# Deploying MIRAAH
 
-Run these in order, in **your** project. Set the variables first:
+The default setup is **one server, SQLite, Docker**. The database and the evidence photos live on the server's disk, so you can host in Saudi Arabia with any provider that sells a Linux VPS. Sign-in uses **Firebase Authentication** with Google accounts. The free Spark plan is enough, because nothing else in Firebase is needed.
 
+An alternative backend (Firestore + Cloud Storage on Cloud Run) is described at the end.
+
+---
+
+## 1. Server
+- A Linux VPS. The minimum is 1 vCPU, 1–2 GB RAM and 20 GB disk; more disk for photos. Choose a Saudi data centre if data residency matters.
+- A domain or subdomain (e.g. `miraah.example.com`) with an **A record** pointing to the server's IP.
+- Install Docker and the Compose plugin with `curl -fsSL https://get.docker.com | sh`.
+- Open ports 80 and 443.
+
+## 2. Firebase sign-in (free)
+1. Open console.firebase.google.com and select project `substantial-braid-m5xj8` (or your own project, updating `firebase-applet-config.json`).
+2. Go to **Authentication**, then **Sign-in method**, and enable **Google**.
+3. Under **Authentication**, go to **Settings**, then **Authorized domains**, and add your domain (e.g. `miraah.example.com`).
+4. In Google Cloud Console, go to **APIs & Services**, then **Credentials**, and restrict the browser key to your domain **and** `substantial-braid-m5xj8.firebaseapp.com`. Google sign-in needs the second one.
+
+## 3. Get the code and create secrets on the server
 ```bash
-PROJECT=substantial-braid-m5xj8          # projectId in firebase-applet-config.json
-REGION=me-central2                        # or another Cloud Run region
-BUCKET=substantial-braid-m5xj8.firebasestorage.app   # storageBucket in firebase-applet-config.json
-SA=miraah-run@$PROJECT.iam.gserviceaccount.com
+git clone https://github.com/4-u1/MIRAAH-Al.git miraah && cd miraah
+docker run --rm -v "$PWD":/w -w /w node:22-slim node scripts/gen-signing-key.mjs
 ```
+Create `.env` next to `docker-compose.yml`. Never commit it, and never paste keys into chats.
+```
+ADMIN_EMAILS=you@example.com
+PASSPORT_SIGNING_KEY=<the base64 line printed above>
+GEMINI_API_KEY=<your Gemini key>
+```
+Lock it down with `chmod 600 .env`.
 
-## 1. Prerequisites
-- The Firebase project is on the **Blaze** plan. Cloud Storage buckets on `*.firebasestorage.app` require it.
-- Install `gcloud`, then sign in with `gcloud auth login`.
+Edit `Caddyfile` and replace `miraah.example.com` with your domain.
 
+## 4. Start
 ```bash
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
-  secretmanager.googleapis.com firestore.googleapis.com storage.googleapis.com --project $PROJECT
+docker compose up -d --build
+docker compose logs -f miraah     # expect: "Live workspace enabled · store sqlite · signing on (key …)"
 ```
+Caddy obtains the HTTPS certificate automatically.
 
-## 2. Firebase console
-1. Go to **Authentication**, then **Sign-in method**, and enable **Google**.
-2. Go to **Storage** and click *Get started*. This creates the bucket.
-3. Deploy the security rules from the repo root:
-   ```bash
-   npx firebase-tools login
-   npx firebase-tools deploy --only firestore:rules,storage --project $PROJECT
-   ```
-   These rules block clients from reading or writing workspace data and evidence directly. Only the server can.
-
-## 3. Dedicated service account (least privilege)
-```bash
-gcloud iam service-accounts create miraah-run --project $PROJECT --display-name "MIRAAH Cloud Run"
-gcloud projects add-iam-policy-binding $PROJECT --member "serviceAccount:$SA" --role roles/datastore.user
-gcloud storage buckets add-iam-policy-binding gs://$BUCKET --member "serviceAccount:$SA" --role roles/storage.objectAdmin
-```
-
-## 4. Secrets
-```bash
-node scripts/gen-signing-key.mjs     # prints PASSPORT_SIGNING_KEY (base64) and the public key
-printf '%s' 'PASTE_BASE64_KEY' | gcloud secrets create passport-signing-key --data-file=- --project $PROJECT
-printf '%s' 'YOUR_GEMINI_KEY'  | gcloud secrets create gemini-api-key      --data-file=- --project $PROJECT
-for s in passport-signing-key gemini-api-key; do
-  gcloud secrets add-iam-policy-binding $s --member "serviceAccount:$SA" --role roles/secretmanager.secretAccessor --project $PROJECT
-done
-```
-Never commit keys or paste them into chats.
-
-## 5. Deploy
-Use `^;^` so that more than one admin email can be passed without the comma breaking the list:
-```bash
-gcloud run deploy miraah --source . --region $REGION --project $PROJECT \
-  --service-account $SA --allow-unauthenticated --max-instances 1 \
-  --set-env-vars '^;^ADMIN_EMAILS=you@example.com,colleague@example.com;AI_REQUIRE_AUTH=true' \
-  --set-secrets 'GEMINI_API_KEY=gemini-api-key:latest,PASSPORT_SIGNING_KEY=passport-signing-key:latest'
-```
-- `--max-instances 1` is needed because rate limits are held in memory.
-- Leave `TRUST_PROXY` unset. It defaults to 1 on Cloud Run.
-- Never set `FIREBASE_AUTH_EMULATOR_HOST`, `E2E_FAKE_VISION` or `MIRAAH_E2E` in production. On Cloud Run the server refuses to start if `FIREBASE_AUTH_EMULATOR_HOST` or `E2E_FAKE_VISION` is set.
-- `--source` builds with Cloud Build. In newer projects, grant the Cloud Build service account `roles/run.builder` first if the build is denied.
-
-After deploying, go to Firebase **Authentication**, then **Settings**, then **Authorized domains**, and add the Cloud Run URL's domain.
-
-## 6. First run
-1. Open the service URL. Go to **Live Workspace** and sign in with an email listed in `ADMIN_EMAILS`.
+## 5. First run
+1. Open `https://your-domain`, go to **Live Workspace**, and sign in with the email in `ADMIN_EMAILS`.
 2. Assign roles:
    - **inspector** records assets, photos and findings
    - **reviewer** verifies and resolves findings
    - **viewer** has read-only access
-3. Check that it works: `GET /api/health`, and `GET /api/passport/public-key` (this should return a `key_id`).
-4. Upload a few real inspection photos and confirm the AI suggestions are sensible. The model only suggests; inspectors decide.
+3. Check that it works: `https://your-domain/api/health`, and `/api/passport/public-key` should show a `key_id`.
+4. Upload a few real inspection photos and check that the AI suggestions are sensible. The model only suggests; the inspector decides.
 
-## 7. Restrict the public Firebase web key
-In Google Cloud Console, go to **APIs & Services**, then **Credentials**. Restrict the browser key to your Cloud Run domain **and** `PROJECT.firebaseapp.com`. Google sign-in needs the second one.
+## 6. Backups (do this on day one)
+```bash
+docker compose exec miraah node scripts/backup.mjs      # writes ./backups/<timestamp>/ (database + photos)
+```
+Schedule it every night with `crontab -e`:
+```
+0 2 * * * cd /root/miraah && docker compose exec -T miraah node scripts/backup.mjs >> backups/backup.log 2>&1
+```
+Then copy `./backups` off the server, for example with `rsync` to another machine or object storage. A backup that stays on the same disk does not protect you from losing the server.
+
+**To restore:** stop the service with `docker compose stop miraah`, then copy `miraah.db` and the `evidence/` folder from a backup into the `miraah-data` volume and start it again.
+
+## 7. Updates
+```bash
+git pull && docker compose up -d --build
+```
+Data is in the `miraah-data` volume and survives rebuilds.
+
+## Rules for this setup
+- **Run one instance only.** SQLite and the in-memory rate limits assume a single server process.
+- **Keep `TRUST_PROXY=1`.** `docker-compose.yml` already sets it, because the app sits behind Caddy.
+- **Never set test-only variables in production.** These are `FIREBASE_AUTH_EMULATOR_HOST`, `E2E_FAKE_VISION` and `MIRAAH_E2E`. If either of the first two is set without `MIRAAH_E2E=1`, the server refuses to start.
 
 ## Known limits (MVP)
-- **Single tenant.** Every role can see every asset and every photo in the deployment. Use one deployment per organisation until per-case access is added.
-- **Photo metadata.** Photos are stored as uploaded, including any EXIF metadata such as GPS.
-- **Audit log.** Entries are written right after each change and are not in the same transaction, so a failure between the two steps could leave a change without an audit entry.
-- **Revoked users.** A disabled user keeps access until their token expires, up to 1 hour.
-- **Manual findings.** In the formulas a manual (inspector-recorded) finding counts with confidence 100. Its stored and exported confidence is empty.
-- **Role changes.** These are written to the audit log, but no screen shows them yet.
-- **Asset list.** It shows up to 500 assets.
-- **Rate limits.** These are per instance. Keep `--max-instances 1`, or move the limits to a shared store.
+- **Single tenant:** every role can see every asset and every photo on this server.
+- **Photo metadata:** photos are stored as uploaded, including any EXIF metadata such as GPS.
+- **Audit log:** the database itself makes the log append-only (it rejects updates and deletes), but each entry is written right after its change, not in the same transaction.
+- **Revoked users:** a disabled user keeps access until their token expires, up to 1 hour.
+- **Manual findings:** in the formulas, a manual (inspector-recorded) finding counts with confidence 100. Its stored and exported confidence is empty.
+- **Role changes:** these are audited, but no screen shows them yet.
+
+---
+
+## Alternative: Firestore + Cloud Storage on Cloud Run
+Set `WORKSPACE_STORE=firebase`. This requires the **Blaze** plan, and it never uses the local disk. Steps:
+
+1. Enable the APIs: run, cloudbuild, artifactregistry, secretmanager, firestore and storage.
+2. In Firebase, enable Storage.
+3. Deploy the rules with `npx firebase-tools deploy --only firestore:rules,storage`.
+4. Create a dedicated service account with `roles/datastore.user` and bucket `roles/storage.objectAdmin`.
+5. Put the secrets in Secret Manager and grant that service account `secretAccessor`.
+6. Deploy:
+   ```bash
+   gcloud run deploy miraah --source . --service-account SA --max-instances 1 \
+     --set-env-vars '^;^WORKSPACE_STORE=firebase;ADMIN_EMAILS=a@x.com,b@y.com' \
+     --set-secrets 'GEMINI_API_KEY=gemini-api-key:latest,PASSPORT_SIGNING_KEY=passport-signing-key:latest'
+   ```
+   If the build is denied, grant the Cloud Build service account `roles/run.builder`.
