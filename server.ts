@@ -161,9 +161,9 @@ async function startServer() {
       try {
         closeStore();
       } finally {
-        process.exit(0);
+        process.exit(1); // forced: requests were still open
       }
-    }, 15_000).unref();
+    }, 8_000).unref(); // below docker stop's default 10s, so the DB is closed before SIGKILL
   };
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));

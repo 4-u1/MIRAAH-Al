@@ -170,14 +170,25 @@ export class FsBlobStore implements BlobStore {
     try {
       const fd = openSync(tmp, "wx", 0o640);
       try {
-        writeSync(fd, bytes);
+        let off = 0;
+        while (off < bytes.length) off += writeSync(fd, bytes, off, bytes.length - off); // no silent short writes
         fsyncSync(fd); // durable before it becomes visible
       } finally {
         closeSync(fd);
       }
       renameSync(tmp, full); // atomic on the same filesystem
+      const dfd = openSync(path.dirname(full), "r");
+      try {
+        fsyncSync(dfd); // make the rename itself durable
+      } finally {
+        closeSync(dfd);
+      }
     } catch (e) {
-      if (existsSync(tmp)) unlinkSync(tmp);
+      try {
+        if (existsSync(tmp)) unlinkSync(tmp);
+      } catch {
+        /* keep the original error */
+      }
       throw e;
     }
   }
