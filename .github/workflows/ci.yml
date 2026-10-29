@@ -190,3 +190,26 @@ jobs:
           start=$(date +%s); docker stop -t 20 miraah-ci > /dev/null; took=$(( $(date +%s) - start ))
           [ "$took" -lt 10 ] && echo "::notice title=Docker::graceful stop in ${took}s" || { echo "::error::stop took ${took}s (SIGTERM not handled)"; exit 1; }
           docker run --rm -v miraah-ci-data:/d alpine sh -c 'test ! -e /d/miraah.db-wal' && echo "::notice title=Docker::database closed cleanly (no WAL left)" || { echo "::error::WAL file left after stop"; exit 1; }
+
+  compose-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the app service with docker compose
+        run: |
+          printf 'ADMIN_EMAILS=admin@example.com\n' > .env
+          mkdir -p backups
+          docker compose up -d --build miraah
+          for i in $(seq 1 40); do docker compose exec -T miraah node -e "fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" && break; sleep 2; done
+      - name: Backup, then restore with scripts/restore.sh
+        run: |
+          docker compose exec -T -u node miraah node scripts/backup.mjs
+          B=$(ls -d backups/*/ | head -1); echo "backup: $B"
+          test -f "$B/miraah.db"
+          ./scripts/restore.sh "$B"
+          for i in $(seq 1 40); do docker compose exec -T miraah node -e "fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" && break; sleep 2; done
+          owner=$(docker compose exec -T miraah stat -c %U /app/data/miraah.db | tr -d '\r')
+          [ "$owner" = "node" ] && echo "::notice title=Restore::service healthy after restore; database owned by node" || { echo "::error::database owner is $owner"; exit 1; }
+          code=$(docker compose exec -T miraah node -e "fetch('http://127.0.0.1:8080/api/workspace/me').then(r=>console.log(r.status))" | tr -d '\r')
+          [ "$code" = "401" ] && echo "::notice title=Restore::workspace serves requests on the restored database" || { echo "::error::workspace returned $code"; docker compose logs miraah | tail -20; exit 1; }
