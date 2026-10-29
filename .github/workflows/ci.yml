@@ -58,7 +58,7 @@ jobs:
             if ((v.high||0) + (v.critical||0) > 0) { console.log("::error::high/critical vulnerabilities in production dependencies"); process.exit(1); }
           '
 
-  firestore-rules:
+  firebase-emulators:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -72,8 +72,8 @@ jobs:
           java-version: 21
       - name: Install
         run: npm install --no-audit --no-fund
-      - name: Rules tests (emulator)
-        run: npx --yes firebase-tools@14 emulators:exec --only firestore --project demo-miraah "npx vitest run tests/firestore.rules.test.ts --reporter=default --reporter=json --outputFile=rules-report.json"
+      - name: Rules + integration tests (Firestore and Storage emulators)
+        run: npx --yes firebase-tools@14 emulators:exec --only firestore,storage --project demo-miraah "npx vitest run tests/firestore.rules.test.ts tests/integration --fileParallelism=false --reporter=default --reporter=json --outputFile=rules-report.json"
       - name: Rules summary
         if: always()
         run: |
@@ -81,7 +81,7 @@ jobs:
             const fs = require("fs");
             if (!fs.existsSync("rules-report.json")) { console.log("::error::no rules report"); process.exit(0); }
             const r = JSON.parse(fs.readFileSync("rules-report.json","utf8"));
-            console.log(`::notice title=Firestore rules::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
+            console.log(`::notice title=Rules + emulator integration::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
             for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
               console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
           '

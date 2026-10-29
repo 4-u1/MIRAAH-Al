@@ -45,5 +45,13 @@ service cloud.firestore {
         && (!('timestamp' in request.resource.data) || (request.resource.data.timestamp is string && request.resource.data.timestamp.size() <= 40));
       allow update, delete: if false;
     }
+
+    // Live workspace data is read and written only by the MIRAAH server (Admin SDK), which
+    // enforces roles and writes the audit log. No direct client access.
+    match /roles/{email} { allow read, write: if false; }
+    match /assets/{id} { allow read, write: if false; }
+    match /findings/{id} { allow read, write: if false; }
+    match /evidence/{id} { allow read, write: if false; }
+    match /auditLog/{id} { allow read, write: if false; }
   }
 }
