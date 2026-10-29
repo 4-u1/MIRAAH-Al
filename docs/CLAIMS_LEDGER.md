@@ -97,6 +97,18 @@ Baseline: commit `f6508d8` (before this work).
 | C55 | Passport hero: "instant SBC compliance matching", "verified evidence" | `AssetPassportView` | FIXED | Describes the prototype accurately |
 | C56 | Export field `ai_confidence_pct` | `passport.ts` | FIXED | Renamed `confidence_pct` (no AI produces it) |
 
+## Live workspace (feature/live-workspace)
+
+| # | Claim | Where | Status | Evidence |
+|---|---|---|---|---|
+| C57 | Full inspection cycle on real data (asset → photos → AI suggestion → inspector finding → reviewer → signed export) | Live Workspace tab, `server/workspace/` | REAL | `scripts/e2e.mjs` in CI (`e2e` job): 3 accounts on Auth/Firestore/Storage emulators, 11/11 |
+| C58 | Roles cannot be self-assigned | `routes.ts`, `firestore.rules` | REAL | `tests/workspace.test.ts`; rules deny client access to `roles` (emulator test) |
+| C59 | Uploaded files are images, type checked from bytes, SHA-256 recorded | `sniffImage` | REAL | Upload tests (415 on a fake PNG, 413 over 8 MB) |
+| C60 | AI suggests defects from photos; inspector decides | `vision.ts`, UI | REAL (code); **live model output not yet evaluated** | Structured output validated by zod; e2e uses a fake model. Owner must check with real photos and a key |
+| C61 | Signed passport proves origin and integrity | `signing.ts`, `/api/passport/verify` | REAL | Tamper tests: edited data, re-hashed data, signer, time all detected |
+| C62 | Every change is audited | `auditLog` | REAL | Workspace + emulator integration tests check the exact action sequence |
+| C63 | Deployable to Cloud Run | `Dockerfile`, `docs/DEPLOY.md` | REAL (image) / **not deployed** | `docker` CI job builds and runs the image; deployment needs the owner's project |
+
 ## Counts
 
 56 claims. Was false and now corrected: **39** (of which 2 now REAL and 1 SIMULATED). Real: **3** (plus the 2 corrected to REAL). Simulated and labelled: **9**. Planned: **3**. Unverified, owner to confirm: **2**. **Known false claims remaining after two independent review rounds: 0.**
