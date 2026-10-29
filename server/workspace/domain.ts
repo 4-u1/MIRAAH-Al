@@ -103,8 +103,11 @@ export interface Asset extends AssetCreate {
   updatedAt: string;
 }
 
-export interface Finding extends FindingCreate {
+export interface Finding extends Omit<FindingCreate, "evidenceIds" | "source" | "description"> {
   id: string;
+  description: string;
+  evidenceIds: string[];
+  source: "manual" | "ai-confirmed";
   assetId: string;
   /** Model self-reported confidence 0–100 (uncalibrated) for ai-confirmed findings; null for manual findings. */
   confidence: number | null;
