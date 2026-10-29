@@ -42,7 +42,7 @@ jobs:
             echo "::error::Possible API key in dist/ other than the public Firebase web key"; exit 1
           fi
           # The Vite config must not inject server env vars into the client bundle.
-          if grep -nE "define|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
+          if grep -nE "define[[:space:]]*:|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
           echo "::notice title=Bundle scan::no API key values in dist/ besides the public Firebase web key; Vite config injects no env vars"
       - name: Audit (production deps)
         run: |
