@@ -56,10 +56,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setProfile({
                 uid: firebaseUser.uid,
                 email: firebaseUser.email || "",
-                displayName: firebaseUser.displayName || "مستخدم معتمد",
+                displayName: firebaseUser.displayName || "مستخدم",
                 photoURL: firebaseUser.photoURL || "",
-                role: "judicial_officer",
-                organization: "مركز الإسناد والتصفية (إنفاذ)",
+                role: "demo_user",
+                organization: "",
               });
             }
           },

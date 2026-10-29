@@ -19,6 +19,7 @@ import { AccreditedPdfViewerModal, DocumentType } from "./components/Documents/A
 import { InteractiveTourModal } from "./components/Tour/InteractiveTourModal";
 import { SaudiOpenDataJuly2026Modal } from "./components/MarketTrends/SaudiOpenDataJuly2026Modal";
 import { ProjectDossierModal } from "./components/Presentation/ProjectDossierModal";
+import { DemoDataBanner } from "./components/common/DemoDataBanner";
 import { AssetSearchDropdown } from "./components/Navigation/AssetSearchDropdown";
 import { useNotificationSystem } from "./hooks/useNotificationSystem";
 import { NotificationToast } from "./components/Notifications/NotificationToast";
@@ -242,7 +243,7 @@ export default function App() {
   const TABS = [
     { id: "passport", label: "Asset Passport", labelArabic: "جواز الأصل والمناطق", icon: Home, emoji: "🏠" },
     { id: "proptech", label: "PropTech 2.0 OS", labelArabic: "منظومة PropTech المعرفية", icon: Cpu, emoji: "🤖" },
-    { id: "findings", label: "AI Findings", labelArabic: "نتائج الذكاء الاصطناعي", icon: Search, emoji: "🔍" },
+    { id: "findings", label: "Findings", labelArabic: "الملاحظات", icon: Search, emoji: "🔍" },
     { id: "coverage", label: "Spatial Coverage", labelArabic: "التغطية المكانية", icon: Compass, emoji: "📡" },
     { id: "trends", label: "Market Trends", labelArabic: "اتجاهات السوق والتقييم", icon: TrendingUp, emoji: "📈" },
     { id: "whatif", label: "What-If Simulator", labelArabic: "محاكي السيناريوهات", icon: Zap, emoji: "⚡" },
@@ -269,6 +270,7 @@ export default function App() {
       <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] rounded-full bg-radial from-blue-600/10 via-transparent to-transparent pointer-events-none z-0" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
+        <DemoDataBanner isArabic={isArabic} />
         {/* ══ COMMAND CENTER TOP NAVIGATION BAR ══ */}
         <header className={`sticky top-0 z-40 backdrop-blur-2xl border-b px-4 sm:px-8 py-3 flex items-center justify-between gap-4 flex-wrap transition-colors duration-200 ${
           isDark
@@ -390,11 +392,11 @@ export default function App() {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-cyan-500 group-hover:rotate-12 transition-transform" />
-              <span>{isArabic ? "مستشار مرآة" : "MIRAAH ADVISOR"}</span>
+              <span>{isArabic ? "مساعد مرآة" : "MIRAAH ASSISTANT"}</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded font-normal ${
                 isDark ? "bg-slate-800 text-cyan-300 border border-slate-700" : "bg-cyan-50 text-cyan-800 border border-cyan-200"
               }`}>
-                Gemini 3.8
+                {isArabic ? "يتطلب الدخول" : "Sign-in"}
               </span>
             </button>
 
@@ -443,7 +445,7 @@ export default function App() {
               isArabic={isArabic}
             />
 
-            {/* PDF Certified Vault */}
+            {/* Specimen documents */}
             <button
               onClick={() => handleOpenPdfViewer("title_deed")}
               className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
@@ -451,10 +453,10 @@ export default function App() {
                   ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 text-amber-300 hover:text-amber-200"
                   : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900"
               }`}
-              title={isArabic ? "خزينة الوثائق والصكوك المعتمدة PDF" : "Certified PDF Documents & Title Deeds Vault"}
+              title={isArabic ? "نماذج مستندات توضيحية (غير رسمية)" : "Specimen documents (not official)"}
             >
               <FileCheck2 className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">{isArabic ? "وثائق PDF المعتمدة" : "PDF VAULT"}</span>
+              <span className="hidden sm:inline">{isArabic ? "نماذج مستندات" : "SPECIMENS"}</span>
             </button>
 
             {/* Export Dossier */}
@@ -634,7 +636,7 @@ export default function App() {
               ? "bg-slate-900/95 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-700/80 hover:border-cyan-500/60"
               : "bg-white/95 hover:bg-slate-50 text-slate-800 hover:text-slate-900 border-slate-300 hover:border-teal-500 shadow-md"
           }`}
-          title={isArabic ? "فتح مستشار مرآة الذكي (المحرك: Gemini 3.8 Flash)" : "Open MIRAAH Spatial Advisor (Engine: Gemini 3.8 Flash)"}
+          title={isArabic ? "فتح مساعد مرآة (أسئلة عن بيانات الأصل)" : "Open the MIRAAH assistant (questions about the asset data)"}
         >
           <div className={`w-6 h-6 rounded-lg border flex items-center justify-center ${
             isDark ? "bg-cyan-950/80 border-cyan-500/40 text-cyan-400" : "bg-teal-50 border-teal-300 text-teal-700"
@@ -644,10 +646,10 @@ export default function App() {
 
           <div className="flex flex-col text-start">
             <span className={`text-xs font-bold leading-tight ${isDark ? "text-white" : "text-slate-900"}`}>
-              {isArabic ? "مستشار مرآة" : "MIRAAH Advisor"}
+              {isArabic ? "مساعد مرآة" : "MIRAAH Assistant"}
             </span>
             <span className={`text-[10px] font-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              {isArabic ? "المحرك: Gemini 3.8" : "Gemini 3.8 Flash"}
+              {isArabic ? "أسئلة عن بيانات الأصل" : "Ask about the asset data"}
             </span>
           </div>
         </button>

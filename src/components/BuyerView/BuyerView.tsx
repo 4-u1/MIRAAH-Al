@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface BuyerViewProps {
   buyerItems: BuyerVerificationItem[];
@@ -32,11 +33,11 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
   const [copied, setCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  const verificationHash = `MIRAAH-PUB-ASSET-${assetId}-VERIFIED-2026-SCE`;
+  const verificationHash = `MIRAAH-DEMO-REF-${assetId}`;
 
   const handleCopyLink = () => {
     navigator.clipboard?.writeText?.(
-      `https://miraah.sa/verify/${assetId}?token=ev_84920`
+      `MIRAAH-DEMO-REF-${assetId} (public verification page is planned, not live)`
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -66,12 +67,12 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               <span className={`text-xs font-mono font-bold uppercase tracking-wider ${
                 isDark ? "text-[#00C5A0]" : "text-emerald-700"
               }`}>
-                {isArabic ? "بوابة الشفافية للمشتري والمستثمر (FR-17)" : "VERIFIED BUYER TRANSPARENCY PORTAL"}
+                {isArabic ? "بوابة الشفافية للمشتري (FR-17)" : "BUYER TRANSPARENCY PORTAL"}
               </span>
               <h2 className={`text-xl font-extrabold mt-0.5 ${
                 isDark ? "text-white" : "text-slate-900"
               }`}>
-                {isArabic ? "تجربة التحقق المستقل للأصول" : "Zero-Trust Asset Verification Engine"}
+                {isArabic ? "عرض المشتري (بيانات توضيحية)" : "Buyer view (demo data)"} <SimulatedBadge isArabic={isArabic} className="ms-2 align-middle" />
               </h2>
             </div>
           </div>
@@ -142,7 +143,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
           {
             state: "AI DETECTED",
             stateArabic: "اكتشفها الذكاء الاصطناعي",
-            desc: "Found by AI VLM scan, pending certified human inspector sign-off.",
+            desc: "Flagged in the (demo) data, pending human verification.",
             color: "#F59E0B",
             icon: "⚠",
           },
@@ -266,8 +267,8 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               }`}>
                 <span>
                   {item.lastVerifiedBy
-                    ? `Verified by: ${item.lastVerifiedBy}`
-                    : "Pending validation"}
+                    ? `${isArabic ? "سُجّل بواسطة" : "Recorded by"}: ${item.lastVerifiedBy}`
+                    : isArabic ? "بانتظار التحقق" : "Pending validation"}
                 </span>
                 <span className={`font-bold ${
                   isDark ? "text-[#00C5A0]" : "text-emerald-600"
@@ -317,7 +318,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               <p className={`text-xs ${
                 isDark ? "text-[#94A3B8]" : "text-slate-500"
               }`}>
-                Scan to access real-time tamper-evident evidence frames, condition ratings, and certified engineer stamps.
+                Planned feature: a public verification page. Not live in this prototype; the QR code is illustrative.
               </p>
             </div>
 

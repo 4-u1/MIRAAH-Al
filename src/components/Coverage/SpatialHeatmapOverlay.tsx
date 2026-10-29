@@ -427,7 +427,7 @@ export const SpatialHeatmapOverlay: React.FC<SpatialHeatmapOverlayProps> = ({
               }`}
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>{isArabic ? "مسار الكاميرا" : "VLM Trajectory"}</span>
+              <span>{isArabic ? "مسار الكاميرا (توضيحي)" : "Camera path (demo)"}</span>
             </button>
           </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Markdown from "react-markdown";
 import { AssetRecord } from "../../types";
 import { ScoreResults } from "../../utils/scoring";
+import { auth } from "../../lib/firebase";
 import {
   Sparkles,
   X,
@@ -38,22 +39,21 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const getInitialMessage = useCallback(
     (isAr: boolean, a: AssetRecord, s: ScoreResults): Message => {
       const assetTitle = isAr ? (a.nameArabic || a.name) : a.name;
-      const sizeFormatted = (a.sizeSqm || 1400).toLocaleString();
+      const sizeFormatted = a.sizeSqm ? a.sizeSqm.toLocaleString() : "—";
       const valMillions = a.valuationSar
         ? (a.valuationSar / 1000000).toFixed(1)
-        : "14.8";
+        : "—";
 
       return {
         id: "m1",
         sender: "ai",
         text: isAr
-          ? `أهلاً بك، أنا **مستشار مرآة الذكي** للتحليل الهندسي والمكاني للأصول.\n\nلقد قمت بفحص بيانات أصل **«${assetTitle}»** (رقم #${a.id}):\n* **المساحة المبنية:** ${sizeFormatted} م²\n* **القيمة السوقية التقديرية:** ${valMillions} مليون ريال سعودي\n* **مؤشر الجاهزية للتصفية:** **${s.liquidationReadiness || 86} من 100**\n* **نسبة التغطية المكانية:** **${s.coveragePct || 98}%**\n\nكيف يمكنني مساعدتك في تدقيق كود البناء السعودي (SBC)، فحص العيوب الميدانية، أو خطة استرداد القيمة السوقية؟`
-          : `Welcome, I am **MIRAAH Spatial Intelligence** for real estate asset telemetry.\n\nI have analyzed **"${assetTitle}"** (#${a.id}):\n* **Gross Built Area:** ${sizeFormatted} sq m\n* **Estimated Valuation:** ${valMillions}M SAR\n* **Liquidation Readiness Index:** **${s.liquidationReadiness || 86}/100**\n* **Spatial Coverage:** **${s.coveragePct || 98}%**\n\nHow can I assist your Saudi Building Code (SBC) due diligence or value recovery planning?`,
+          ? `أهلاً بك، أنا **مساعد مرآة**. أجيب عن بيانات أصل **«${assetTitle}»** (رقم #${a.id}) المعروضة في المنصة:\n* **المساحة المبنية:** ${sizeFormatted} م²\n* **القيمة المدخلة:** ${valMillions} مليون ريال سعودي\n* **مؤشر الجاهزية للتصفية:** **${s.liquidationReadiness} من 100**\n* **نسبة التغطية:** **${s.coveragePct}%**\n\n_البيانات توضيحية (نموذج تجريبي)، وإجاباتي ليست استشارة هندسية أو قانونية أو تقييماً معتمداً._`
+          : `Welcome, I am the **MIRAAH assistant**. I answer questions about the displayed data for **"${assetTitle}"** (#${a.id}):\n* **Gross Built Area:** ${sizeFormatted} sq m\n* **Entered valuation:** ${valMillions}M SAR\n* **Liquidation Readiness Index:** **${s.liquidationReadiness}/100**\n* **Coverage:** **${s.coveragePct}%**\n\n_Demo data (prototype). My answers are not engineering, legal or certified valuation advice._`,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        engine: "Gemini 3.8 Flash",
         quickActions: isAr
           ? [
               {
@@ -61,12 +61,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 query: "ما هي العيوب التي تخفض درجة جاهزية التصفية في هذا الأصل وكيف نعالجها؟",
               },
               {
-                label: "💰 تحليل العائد الاستثماري (ROI)",
-                query: "كم سيرتفع التقييم وسعر التصفية بعد إصلاح العيوب الحرجة وما هو العائد المتوقع؟",
+                label: "📊 ما الذي يرفع مؤشر الجاهزية؟",
+                query: "حسب المعادلة، ما الملاحظات أو البيانات الناقصة التي ترفع مؤشر جاهزية التصفية أكثر إذا عولجت؟",
               },
               {
-                label: "📜 مطابقة كود البناء السعودي (SBC)",
-                query: "هل العقار مطابق لاشتراطات كود البناء السعودي SBC 201 و SBC 304 وما هي التوصيات؟",
+                label: "📜 أجزاء كود البناء المرتبطة بالملاحظات",
+                query: "ما أجزاء كود البناء السعودي المرتبطة بالملاحظات المسجلة، وما الذي يجب أن يتحقق منه مهندس مرخّص؟",
               },
             ]
           : [
@@ -75,12 +75,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 query: "What defects lower the liquidation score and how to fix them?",
               },
               {
-                label: "💰 ROI Value Recovery Analysis",
-                query: "How much will valuation increase after remediating critical defects?",
+                label: "📊 What raises the readiness score?",
+                query: "Using the formula, which findings or missing fields would raise the readiness score most if resolved?",
               },
               {
-                label: "📜 Saudi Building Code Compliance",
-                query: "Is the property compliant with Saudi Building Code SBC 201 and SBC 304?",
+                label: "📜 Building-code parts behind the findings",
+                query: "Which Saudi Building Code parts relate to the recorded findings, and what should a licensed engineer check?",
               },
             ],
       };
@@ -134,82 +134,88 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     if (!textToSend) setInputQuery("");
     setIsTyping(true);
 
+    const now = () =>
+      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const pushAi = (text: string, engine: string) =>
+      setMessages((prev) => [...prev, { id: `ai-${Date.now()}`, sender: "ai", text, timestamp: now(), engine }]);
+
     try {
-      const response = await fetch("/api/gemini/chat", {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const token = await auth.currentUser?.getIdToken().catch(() => undefined);
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await fetch("/api/ai/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           message: q,
-          history: newHistory,
-          asset,
-          scores,
+          // Earlier user questions only (the server ignores assistant turns); the current one goes in `message`.
+          history: messages
+            .filter((m) => m.sender === "user")
+            .slice(-6)
+            .map((m) => ({ sender: m.sender, text: m.text.slice(0, 4000) })),
+          asset: {
+            id: asset.id,
+            name: asset.name,
+            nameArabic: asset.nameArabic,
+            type: asset.type,
+            sizeSqm: asset.sizeSqm,
+            valuationSar: asset.valuationSar,
+            findings: asset.findings.map((f) => ({
+              id: f.id,
+              type: f.type,
+              severity: f.severity,
+              area: f.area,
+              verified: f.verified,
+              isResolved: f.isResolved,
+            })),
+          },
+          scores: {
+            liquidationReadiness: scores.liquidationReadiness,
+            coveragePct: scores.coveragePct,
+            inspectionConfidence: scores.inspectionConfidence,
+            conditionIndex: scores.conditionIndex,
+          },
           isArabic,
         }),
       });
 
+      if (response.status === 401) {
+        pushAi(
+          isArabic
+            ? "يلزم تسجيل الدخول لاستخدام المساعد الذكي. سجّل الدخول من زر الحساب في الأعلى ثم أعد المحاولة."
+            : "Please sign in to use the AI assistant (account button at the top), then try again.",
+          isArabic ? "النظام" : "System"
+        );
+        return;
+      }
+      if (response.status === 429) {
+        pushAi(
+          isArabic ? "تم تجاوز حد الطلبات المسموح. حاول بعد قليل." : "Request limit reached. Please try again later.",
+          isArabic ? "النظام" : "System"
+        );
+        return;
+      }
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      const aiReply =
-        data.reply ||
-        (isArabic ? "تم استلام الرد بنجاح." : "Response received.");
-
-      const aiMsg: Message = {
-        id: `ai-${Date.now()}`,
-        sender: "ai",
-        text: aiReply,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        engine: "Gemini 3.8 Flash",
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
+      const engine =
+        data.source === "model" && data.model
+          ? `Gemini · ${data.model}`
+          : isArabic
+          ? "ملخص ثابت (الذكاء الاصطناعي غير مفعّل)"
+          : "Fixed summary (AI not enabled)";
+      pushAi(String(data.reply || ""), engine);
     } catch (err) {
-      console.warn("Gemini API error, falling back to local reasoning:", err);
-
-      let fallbackText = "";
-      const lower = q.toLowerCase();
-      if (
-        lower.includes("سلام") ||
-        lower.includes("مرحبا") ||
-        lower.includes("hello") ||
-        lower.includes("hi")
-      ) {
-        fallbackText = isArabic
-          ? `وعليكم السلام ورحمة الله وبركاته، أهلاً بك!\n\nأنا **مستشار مرآة الذكي** المخصص لفحص وتحليل أصل **«${asset.nameArabic || asset.name}»**.\n\nيمكنني إفادتك بجميع تفاصيل الفحص الإنشائي، الالتزام باشتراطات **كود البناء السعودي (SBC)**، وتأثير العيوب الميدانية على القيمة وجاهزية التصفية. تفضل بأي استفسار ترغب به.`
-          : `Hello and welcome!\n\nI am the **MIRAAH Spatial Advisor** dedicated to analyzing **"${asset.name}"**.\n\nI can provide insights into structural audits, Saudi Building Code (SBC) compliance, and liquidation valuation impacts. How may I assist you?`;
-      } else if (
-        lower.includes("roi") ||
-        lower.includes("عائد") ||
-        lower.includes("تقييم") ||
-        lower.includes("سعر") ||
-        lower.includes("valuation")
-      ) {
-        fallbackText = isArabic
-          ? `### 📊 تحليل العائد الاستثماري للمعالجة (ROI):\n\n* **تكلفة المعالجة التقديرية:** 35,000 ريال سعودي (حقن إيبوكسي وعزل مائي معتمد).\n* **استرداد القيمة السوقية المباشر:** **+320,000 ريال سعودي** (+2.16% من القيمة الإجمالية).\n* **مؤشر جاهزية التصفية:** يرتفع من **${scores.liquidationReadiness}%** إلى **94%**.\n* **مضاعف العائد الاستثماري:** **9.14x**، مع تقليص مدة المزاد بنحو 18 يوماً.`
-          : `### 📊 Remediation ROI Analysis:\n\n* **Estimated Repair Cost:** 35,000 SAR (Epoxy injection & certified waterproofing).\n* **Direct Market Valuation Uplift:** **+320,000 SAR** (+2.16% total value).\n* **Liquidation Readiness Index:** Climbs from **${scores.liquidationReadiness}%** to **94%**.\n* **ROI Multiple:** **9.14x**, speeding up auction settlement by ~18 days.`;
-      } else {
-        fallbackText = isArabic
-          ? `بناءً على السجل المكاني لأصل **«${asset.nameArabic || asset.name}»**:\n\n* **مؤشر الجاهزية الحالي:** **${scores.liquidationReadiness} من 100**\n* **نسبة التغطية الميدانية:** **${scores.coveragePct}%**\n* **التوصية الفنية:** البدء بتنفيذ الإجراء الأفضل التالي (Next Best Action) لمعالجة الملاحظات الإنشائية وتوثيقها وفق كود البناء السعودي.`
-          : `Based on the spatial asset telemetry for **"${asset.name}"**:\n\n* **Current Liquidation Readiness:** **${scores.liquidationReadiness}/100**\n* **Field Scan Coverage:** **${scores.coveragePct}%**\n* **Technical Recommendation:** Execute the Next Best Action to remediate documented structural findings in accordance with SBC standards.`;
-      }
-
-      const aiMsg: Message = {
-        id: `ai-${Date.now()}`,
-        sender: "ai",
-        text: fallbackText,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        engine: "Gemini 3.8 Flash",
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
+      console.warn("AI assistant request failed:", err);
+      pushAi(
+        isArabic
+          ? "تعذّر الوصول إلى المساعد الذكي حالياً. لم يتم توليد أي إجابة؛ حاول مرة أخرى لاحقاً."
+          : "The AI assistant is unavailable right now. No answer was generated; please try again later.",
+        isArabic ? "النظام" : "System"
+      );
     } finally {
       setIsTyping(false);
     }
@@ -236,16 +242,16 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-white tracking-tight">
-                  {isArabic ? "مستشار مرآة الذكي" : "MIRAAH Spatial Intelligence"}
+                  {isArabic ? "مساعد مرآة" : "MIRAAH Assistant"}
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
-                  {isArabic ? "المحرك: Gemini 3.8 Flash" : "Engine: Gemini 3.8 Flash"}
+                  {isArabic ? "بيانات توضيحية" : "Demo data"}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
                 {isArabic
-                  ? "تحليل فوري لجاهزية التصفية، كود البناء السعودي، وتثمين الأصول"
-                  : "Due diligence, Saudi Building Code compliance & valuation uplift"}
+                  ? "أسئلة عن بيانات الأصل والملاحظات والمؤشرات المحسوبة"
+                  : "Questions about the asset data, findings and computed scores"}
               </p>
             </div>
           </div>

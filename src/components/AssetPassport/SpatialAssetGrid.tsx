@@ -121,7 +121,7 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
           <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
             {isArabic
               ? "استعراض تفاعلي لمناطق الأصل مع نسب السلامة، المساحات، وحالة الفحص الذاتي الميداني"
-              : "Interactive masonry zone matrix with live structural health, LiDAR telemetry, and defect counts"}
+              : "Zone matrix with recorded coverage and defect counts (demo data)"}
           </p>
         </div>
 
@@ -216,7 +216,7 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
                       isDark ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400" : "bg-emerald-50 border-emerald-300 text-emerald-800"
                     }`}>
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{isArabic ? "100% سليم" : "100% SOUND"}</span>
+                      <span>{isArabic ? "لا ملاحظات" : "NO FINDINGS"}</span>
                     </span>
                   ) : (
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold font-mono border animate-pulse ${
@@ -281,7 +281,7 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
               }`}>
                 <span className="flex items-center gap-1.5 font-mono text-[11px]">
                   <Camera className="w-3.5 h-3.5" />
-                  <span>{zone.capturedFrames || 12} {isArabic ? "لقطة موثقة" : "photos"}</span>
+                  <span>{zone.capturedFrames || 12} {isArabic ? "لقطة" : "photos"}</span>
                 </span>
 
                 <span className="flex items-center gap-1 font-mono text-[11px] text-cyan-600 dark:text-cyan-400 group-hover:translate-x-1 transition-transform">
@@ -350,7 +350,7 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
                   isDark ? "bg-slate-900/80 border-slate-800" : "bg-slate-50 border-slate-200"
                 }`}>
                   <div className={`text-[10px] font-mono uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    {isArabic ? "المساحة الموثقة" : "Mapped Area"}
+                    {isArabic ? "المساحة" : "Mapped Area"}
                   </div>
                   <div className={`text-base font-bold font-mono mt-1 ${isDark ? "text-white" : "text-slate-900"}`}>
                     {selectedZone.sqm || 300} م²
@@ -361,7 +361,7 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
                   isDark ? "bg-slate-900/80 border-slate-800" : "bg-slate-50 border-slate-200"
                 }`}>
                   <div className={`text-[10px] font-mono uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    {isArabic ? "دقة المسح الميداني" : "LiDAR Point Density"}
+                    {isArabic ? "كثافة المسح (توضيحية)" : "Scan density (demo)"}
                   </div>
                   <div className="text-base font-bold text-cyan-600 dark:text-cyan-400 font-mono mt-1">4.2M pts/m²</div>
                 </div>
@@ -406,10 +406,10 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
                   }`}>
                     <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-500 mb-2" />
                     <div className="font-bold text-sm">
-                      {isArabic ? "هذه المنطقة سليمة 100% وخالية من أي عيوب إنشائية أو تشطيبية" : "This zone is 100% sound with zero defects"}
+                      {isArabic ? "لا توجد ملاحظات مسجلة في هذه المنطقة" : "No findings recorded in this zone"}
                     </div>
                     <div className={`text-xs mt-1 ${isDark ? "text-emerald-400/80" : "text-emerald-700"}`}>
-                      {isArabic ? "تم التحقق عبر التصوير البانورامي ومطابقة كود البناء السعودي" : "Verified via 3D point cloud & multi-spectral visual telemetry"}
+                      {isArabic ? "عدم وجود ملاحظات لا يعني مطابقة كود البناء؛ يلزم فحص مهندس مرخّص" : "No findings does not mean code compliance; a licensed engineer must inspect"}
                     </div>
                   </div>
                 ) : (
@@ -479,12 +479,12 @@ export const SpatialAssetGrid: React.FC<SpatialAssetGridProps> = ({
                 <Info className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
                 <div className={`text-xs space-y-1 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                   <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                    {isArabic ? "اعتماد الهيئة السعودية للمهندسين (SCE)" : "Saudi Council of Engineers (SCE) Standard"}
+                    {isArabic ? "مرجع كود البناء (عام)" : "Building-code reference (general)"}
                   </div>
                   <p>
                     {isArabic
                       ? "تمت مطابقة معايير السلامة الإنشائية لهذه المنطقة وفق الكود السعودي SBC 201 للأبنية التجارية، مع تصنيف دقيق لجميع فواصل التمدد والعزل."
-                      : "Structural integrity and safety clearances adhere to Saudi Building Code SBC 201 for commercial properties, with expansion joints & insulation certified."}
+                      : "General reference: SBC 201 applies to commercial buildings. This prototype does not assess compliance."}
                   </p>
                 </div>
               </div>
