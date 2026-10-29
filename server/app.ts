@@ -42,7 +42,8 @@ export function configFromEnv(env: NodeJS.ProcessEnv, deps: Pick<AppConfig, "gen
   return {
     ...deps,
     requireAuth: (env.AI_REQUIRE_AUTH ?? "true").toLowerCase() !== "false",
-    trustProxy: parseTrustProxy(env.TRUST_PROXY),
+    // Cloud Run (K_SERVICE is set) sits behind exactly one Google front end.
+    trustProxy: parseTrustProxy(env.TRUST_PROXY ?? (env.K_SERVICE ? "1" : undefined)),
     burstLimit: int(env.AI_BURST_LIMIT, 10),
     burstWindowMs: 10_000,
     dailyLimit: int(env.AI_DAILY_LIMIT, 100),
@@ -74,13 +75,30 @@ export function createApp(cfg: AppConfig) {
     res.json({ status: "ok", ai: cfg.generator ? "enabled" : "disabled", authRequired: cfg.requireAuth });
   });
 
-  const limiter = createRateLimiter({
+  // 1) Per-IP burst limit before auth: cheap protection for token verification. No daily cap here,
+  //    so unauthenticated traffic cannot use up anyone's daily quota.
+  const ipLimiter = createRateLimiter({
+    burstLimit: cfg.burstLimit * 3,
+    burstWindowMs: cfg.burstWindowMs,
+    dailyLimit: Infinity,
+    now: cfg.now,
+  });
+  // 2) After auth: per-user burst + daily cap (per IP when auth is disabled).
+  const userLimiter = createRateLimiter({
     burstLimit: cfg.burstLimit,
     burstWindowMs: cfg.burstWindowMs,
     dailyLimit: cfg.dailyLimit,
     now: cfg.now,
+    key: (req) => {
+      const uid = (req as Request & { user?: { uid: string } }).user?.uid;
+      return uid ? `uid:${uid}` : `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+    },
   });
-  const guards = [limiter.middleware, ...(cfg.requireAuth && cfg.verifyToken ? [requireAuth(cfg.verifyToken)] : [])];
+  const guards = [
+    ipLimiter.middleware,
+    ...(cfg.requireAuth && cfg.verifyToken ? [requireAuth(cfg.verifyToken)] : []),
+    userLimiter.middleware,
+  ];
 
   app.post("/api/ai/chat", ...guards, async (req, res, next) => {
     try {
@@ -91,7 +109,12 @@ export function createApp(cfg: AppConfig) {
       const contents = [
         { role: "user", parts: [{ text: buildAssetDataBlock(body.asset, body.scores) }] },
         { role: "model", parts: [{ text: body.isArabic ? "تم استلام بيانات الأصل." : "Asset data received." }] },
-        ...body.history.slice(-6).map((h) => ({ role: h.sender === "user" ? "user" : "model", parts: [{ text: h.text }] })),
+        // Only the user's own earlier messages are forwarded. Client-sent "assistant" turns are dropped,
+        // so a client cannot put words in the model's mouth.
+        ...body.history
+          .filter((h) => h.sender === "user")
+          .slice(-6)
+          .map((h) => ({ role: "user", parts: [{ text: `(earlier question) ${h.text}` }] })),
         { role: "user", parts: [{ text: body.message }] },
       ];
       try {
@@ -139,7 +162,10 @@ export function createApp(cfg: AppConfig) {
     return res.status(500).json({ error: "internal_error" });
   });
 
-  const pruneTimer = setInterval(limiter.prune, 10 * 60 * 1000);
+  const pruneTimer = setInterval(() => {
+    ipLimiter.prune();
+    userLimiter.prune();
+  }, 10 * 60 * 1000);
   pruneTimer.unref?.();
 
   return app;

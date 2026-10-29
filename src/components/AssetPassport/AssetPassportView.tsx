@@ -116,8 +116,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               </div>
               <p className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                 {isArabic
-                  ? "استعراض شرائح العرض التقديمي الشامل، ملخص المشروع لمركز إنفاذ والمحاكم، والركائز التقنية السبع."
-                  : "View the comprehensive presentation slides, stakeholder benefits for Enfad, and platform architecture."}
+                  ? "عرض المشروع: المشكلة، ما يعمل الآن، المعادلات، وما هو محاكاة أو مخطط."
+                  : "Project overview: the problem, what works today, formulas, and what is simulated or planned."}
               </p>
             </div>
           </div>
@@ -132,7 +132,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
         </div>
       )}
 
-      {/* ── 2. Bespoke MIRAAH Architectural Monolith & Live 3D BIM Frame ── */}
+      {/* ── 2. 3D illustration (demo) ── */}
       <div className={`relative rounded-2xl p-6 lg:p-10 overflow-hidden ${
         isDark
           ? "bg-[#07090E] border border-white/[0.14] shadow-[0_30px_90px_rgba(0,0,0,0.95)]"
@@ -257,7 +257,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-display font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_4px_25px_rgba(6,182,212,0.35)] cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>{isArabic ? "تصدير الملف المعتمد (PDF / CSV / JSON)" : "EXPORT DOSSIER (PDF / CSV / JSON)"}</span>
+                <span>{isArabic ? "تصدير الملف (PDF / CSV / JSON)" : "EXPORT DOSSIER (PDF / CSV / JSON)"}</span>
               </button>
 
               <button
@@ -305,7 +305,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
                   <span className="font-mono text-[9px] text-cyan-300 tracking-widest uppercase font-bold bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded">
-                    LIVE SPATIAL BIM
+                    3D VIEW · DEMO
                   </span>
                 </div>
               </div>
@@ -628,7 +628,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
         </GlassCard>
       </div>
 
-      {/* ── 4.5 Certified Documents & Official PDF Vault (خزينة الوثائق والمستندات المعتمدة) ── */}
+      {/* ── 4.5 Specimen documents ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2.5">
@@ -643,7 +643,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${
                   isDark ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : "bg-amber-100 text-amber-800 border-amber-300"
                 }`}>
-                  4 ملفات معتمدة
+                  4 نماذج توضيحية
                 </span>
               </h3>
               <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
@@ -785,14 +785,14 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                   isDark ? "bg-blue-950/60 text-blue-300 border-blue-700/40" : "bg-blue-50 text-blue-800 border-blue-200"
                 }`}>
-                  تقييم معتمد
+                  نموذج تقييم
                 </span>
               </div>
               <div>
                 <h4 className={`font-bold text-sm transition-colors ${
                   isDark ? "text-white group-hover:text-blue-300" : "text-slate-900 group-hover:text-blue-700"
                 }`}>
-                  {isArabic ? "تقرير التقييم العقاري المعتمد" : "Taqeem Valuation Report"}
+                  {isArabic ? "نموذج تقرير تقييم" : "Specimen valuation report"}
                 </h4>
                 <div className={`text-[11px] font-mono mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   #VAL-TAQEEM-8820 · 1.9 MB PDF
@@ -824,7 +824,7 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
             </div>
           </div>
 
-          {/* Doc 4: Infath Liquidation Clearance */}
+          {/* Doc 4: specimen auction-readiness summary */}
           <div className={`p-4 rounded-2xl border transition-all duration-300 shadow-sm space-y-3 group flex flex-col justify-between ${
             isDark
               ? "bg-gradient-to-b from-slate-900 to-slate-950 border-purple-500/30 hover:border-purple-400"
@@ -838,14 +838,14 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                   isDark ? "bg-purple-950/60 text-purple-300 border-purple-700/40" : "bg-purple-50 text-purple-800 border-purple-200"
                 }`}>
-                  إنفاذ قضائي
+                  نموذج
                 </span>
               </div>
               <div>
                 <h4 className={`font-bold text-sm transition-colors ${
                   isDark ? "text-white group-hover:text-purple-300" : "text-slate-900 group-hover:text-purple-700"
                 }`}>
-                  {isArabic ? "تصريح المزاد والتصفية القضائية" : "Infath Liquidation Clearance"}
+                  {isArabic ? "نموذج ملخص جاهزية المزاد" : "Specimen auction-readiness summary"}
                 </h4>
                 <div className={`text-[11px] font-mono mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   #INFATH-CLR-7731 · 4.1 MB PDF

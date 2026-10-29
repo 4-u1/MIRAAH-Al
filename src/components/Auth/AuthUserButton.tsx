@@ -63,7 +63,7 @@ export const AuthUserButton: React.FC<AuthUserButtonProps> = ({ isArabic = false
           className={`px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-mono font-black transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.35)] cursor-pointer ${
             isAttemptingLogin ? "opacity-75 cursor-wait" : ""
           }`}
-          title={isArabic ? "تسجيل الدخول عبر حساب Google المعتمد" : "Sign in with Google"}
+          title={isArabic ? "تسجيل الدخول عبر حساب Google" : "Sign in with Google"}
         >
           <LogIn className={`w-3.5 h-3.5 ${isAttemptingLogin ? "animate-spin" : ""}`} />
           <span>{isAttemptingLogin ? (isArabic ? "جاري الفتح..." : "Opening...") : (isArabic ? "تسجيل الدخول" : "SIGN IN")}</span>

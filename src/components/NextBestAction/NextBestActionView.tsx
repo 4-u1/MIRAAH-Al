@@ -74,7 +74,7 @@ export const NextBestActionView: React.FC<NextBestActionViewProps> = ({
             <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${
               isDark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800 font-bold"
             }`}>
-              Live Radar
+              Demo Radar
             </span>
           </button>
 

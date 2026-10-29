@@ -212,7 +212,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
             </div>
             <div>
               <div className="text-base font-bold flex items-center gap-2">
-                <span>{isArabic ? "رفع وفحص وسائط المعاينة الميدانية" : "Spatial Media Ingestion & VLM Scan"}</span>
+                <span>{isArabic ? "رفع وسائط المعاينة (تصنيف يدوي)" : "Upload inspection media (manual labelling)"}</span>
                 <Badge color="#00C5A0">FR-01 / FR-02</Badge>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -254,8 +254,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 {mode === "MODE_B"
-                  ? isArabic ? "فحص صورك المرفوعة وتوليد مربعات الإحاطة وتقرير الملاحظة لحظياً." : "Processes your uploaded files directly, extracts frames and adds to findings."
-                  : isArabic ? "استخدام بيانات المعاينة المعتمدة مسبقاً لعرض سريع ومستقر." : "Fast deterministic demonstration with pre-verified ground truth."}
+                  ? isArabic ? "مخطط: تحليل آلي للصور. غير مفعّل في هذا الإصدار؛ التصنيف يدوي." : "Planned: automatic image analysis. Not enabled in this version; labelling is manual."
+                  : isArabic ? "استخدام بيانات توضيحية جاهزة لعرض سريع." : "Uses ready-made demo data for a quick demonstration."}
               </p>
             </div>
 
@@ -383,7 +383,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                           <span>{file.name}</span>
                           {file.type === "document" && (
                             <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono border border-amber-500/30">
-                              PDF معتمد
+                              PDF توضيحي
                             </span>
                           )}
                         </div>
@@ -400,7 +400,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                         <button
                           onClick={() => onOpenPdfViewer(file.docCategory || "title_deed")}
                           className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                          title="View Certified PDF Document"
+                          title="View specimen PDF"
                         >
                           <Eye className="w-3 h-3" />
                           <span>{isArabic ? "معاينة PDF" : "View PDF"}</span>
@@ -447,7 +447,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
           {uploadedFiles.length === 0 && (
             <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
               <span className="text-slate-400 font-medium">
-                {isArabic ? "أو يمكنك تجربة تحميل ملفات فحص ونماذج PDF جاهزة:" : "Or load sample files & certified PDF documents:"}
+                {isArabic ? "أو جرّب ملفات ونماذج PDF توضيحية:" : "Or load sample files & specimen PDFs:"}
               </span>
               <div className="flex items-center gap-2 flex-wrap">
                 <button
@@ -482,7 +482,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                   className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-[11px] transition-colors cursor-pointer border border-amber-500/40 flex items-center gap-1.5 font-bold"
                 >
                   <FileText className="w-3 h-3 text-amber-400" />
-                  <span>{isArabic ? "+ مستندات PDF المعتمدة" : "+ Certified PDF Docs"}</span>
+                  <span>{isArabic ? "+ نماذج PDF توضيحية" : "+ Specimen PDFs"}</span>
                 </button>
 
                 <button

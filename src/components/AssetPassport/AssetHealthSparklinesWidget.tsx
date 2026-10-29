@@ -165,7 +165,7 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
         delta: +3.2,
         status: "OPTIMAL" as const,
         statusArabic: "مثالي" as const,
-        description: "4.2M point cloud density calibrated at ±1.2cm spatial accuracy.",
+        description: "Illustrative coverage-density value (demo data; no LiDAR scan).",
         descriptionArabic: "كثافة نقاط 4.2 مليون نقطة بدقة مكانية مطابقة للمجسم ±1.2 سم.",
         sensorRef: "UAV-LIDAR-RTK",
         livePoints: generateWave(coverage >= 95 ? 98.4 : coverage, 0.4, 20, 0.08),
@@ -192,7 +192,7 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
         status: (readiness >= 80 ? "OPTIMAL" : "NOMINAL") as any,
         statusArabic: (readiness >= 80 ? "مثالي" : "طبيعي") as any,
         description: "Taqeem-cleared documentation with zero active municipal impediments.",
-        descriptionArabic: "وثائق معتمدة من تقييم مع خلو تام من أي موانع بلدية أو تنظيمية.",
+        descriptionArabic: "قيمة توضيحية؛ لم يتم التحقق من أي وثائق أو موانع.",
         sensorRef: "AI-CLEARANCE-V3",
         livePoints: generateWave(readiness, 0.5, 20, 0.06),
         history24h: generateWave(readiness - 1.5, 1.1, 24, 0.15),
@@ -217,8 +217,8 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
         delta: +0.2,
         status: "OPTIMAL" as const,
         statusArabic: "مثالي" as const,
-        description: "Emergency egress, alarm loops and smoke dampers 100% operational.",
-        descriptionArabic: "مسارات الهروب والإنذار ومخمدات الدخان تعمل بكفاءة 100%.",
+        description: "Illustrative value; no fire-safety inspection was performed.",
+        descriptionArabic: "قيمة توضيحية؛ لم يُجرَ فحص للسلامة من الحريق.",
         sensorRef: "SCADA-MEP-HUB",
         livePoints: generateWave(99.1, 0.3, 20, 0.01),
         history24h: generateWave(99.0, 0.4, 24, 0.01),
@@ -340,11 +340,11 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-sm sm:text-base font-black font-mono tracking-tight text-white uppercase flex items-center gap-2">
-                <span>{isArabic ? "لوحة المراقبة الحية ومؤشرات صحة الأصل" : "REAL-TIME ASSET HEALTH TELEMETRY"}</span>
+                <span>{isArabic ? "مؤشرات صحة الأصل (محاكاة)" : "ASSET HEALTH INDICATORS (SIMULATED)"}</span>
               </h3>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                <span>{isArabic ? "موجات حية مباشرة" : "LIVE SPARKLINES"}</span>
+                <span>{isArabic ? "موجات عشوائية للعرض" : "RANDOM DEMO WAVES"}</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -411,7 +411,7 @@ export const AssetHealthSparklinesWidget: React.FC<AssetHealthSparklinesWidgetPr
                   ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20"
                   : "bg-amber-500/10 border-amber-500/40 text-amber-400 hover:bg-amber-500/20"
               }`}
-              title={isLiveStreaming ? "Pause Live Polling" : "Resume Live Polling"}
+              title={isLiveStreaming ? "Pause demo animation" : "Resume demo animation"}
             >
               {isLiveStreaming ? (
                 <>

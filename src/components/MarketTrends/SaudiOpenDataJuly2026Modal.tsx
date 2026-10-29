@@ -158,7 +158,7 @@ export const SaudiOpenDataJuly2026Modal: React.FC<SaudiOpenDataJuly2026ModalProp
                   {isArabic ? "العمليات العقارية المسجلة - يوليو 2026" : "Saudi Registered Real Estate Operations - July 2026"}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold">
-                  {isArabic ? "بيانات حكومية معتمدة 100%" : "100% Verified Gov Open Data"}
+                  {isArabic ? "ملف بيانات مفتوحة مرفق · المصدر يحتاج تأكيد" : "Bundled open-data file · source to be confirmed"}
                 </span>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
@@ -294,7 +294,7 @@ export const SaudiOpenDataJuly2026Modal: React.FC<SaudiOpenDataJuly2026ModalProp
           {/* TAB 1: MACRO OVERVIEW & ENFAD LIQUIDATION RELEVANCE */}
           {activeTab === "overview" && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              {/* Relevance to Enfad Box */}
+              {/* Relevance box */}
               <div className="p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 to-blue-950/30 border border-cyan-500/30">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 mt-0.5">
@@ -302,15 +302,15 @@ export const SaudiOpenDataJuly2026Modal: React.FC<SaudiOpenDataJuly2026ModalProp
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <span>{isArabic ? "الأهمية المباشرة لمركز الإسناد والتصفية (إنفاذ) ومنصة مرآة" : "Strategic Alignment with Enfad & MIRAAH"}</span>
+                      <span>{isArabic ? "قراءة الأرقام" : "Reading the numbers"}</span>
                       <span className="text-xs px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono">
                         {isArabic ? "تكامل قضائي - سوقي" : "Judicial-Market Synergy"}
                       </span>
                     </h3>
                     <p className="text-sm text-slate-300 mt-2 leading-relaxed">
                       {isArabic
-                        ? `تُظهر بيانات وزارة العدل لشهر يوليو 2026 أن عمليات (الحجز التحفظي وفك الحجز) شكّلت أكثر من 54.7% من إجمالي الحراك العقاري في المملكة (بواقع 35,973 عملية)، مما يؤكد أهمية منصة «مرآة» كبنية تحتية رقمية مساندة لمركز «إنفاذ». تُمكّن المنصة المصفي والمشتري من التحقق الهندسي والقانوني من الأصل قبل الإفراغ، مما يرفع سرعة دوران التصفية ويحمي المشترين من العيوب غير المرصودة.`
-                        : `Ministry of Justice July 2026 open data reveals that Precautionary Seizures and Releases accounted for over 54.7% of all recorded real estate actions in Saudi Arabia (35,973 operations). MIRAAH acts as the essential verification layer for Enfad, bridging physical inspection with legal clearance before conveyance.`}
+                        ? `يحتوي الملف المرفق على 35,973 عملية حجز تحفظي وفك حجز من أصل 65,702 عملية مسجلة في الشهر (54.7% من عمليات الملف). هذه ليست عمليات تصفية أو بيع، لكنها تبيّن حجم الأصول التي تمر بإجراءات تنفيذ قد ينتهي بعضها بالبيع، حيث يمكن لجواز الأصل أن يساعد. المصدر يحتاج تأكيد.`
+                        : `The bundled file lists 35,973 precautionary attachments and releases out of 65,702 operations recorded for the month (54.7% of the file). These are not liquidations or sales, but they indicate how many assets pass through enforcement steps, some of which may end in a sale where an asset passport could help. Source to be confirmed.`}
                     </p>
 
                     {/* Quick Asset Match if present */}
@@ -744,8 +744,8 @@ export const SaudiOpenDataJuly2026Modal: React.FC<SaudiOpenDataJuly2026ModalProp
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>
               {isArabic
-                ? "تم استيراد ومعالجة وتدقيق العمليات العقارية المسجلة لشهر يوليو 2026 مطابقة 100% لبوابة البيانات المفتوحة"
-                : "Imported & verified 100% compliant with Saudi Open Data Portal (July 2026 MOJ)"}
+                ? "الأرقام هنا مطابقة لملف CSV المرفق بالمشروع (345 سجلاً، 65,702 عملية). لم يتم التحقق من الملف مقابل البوابة نفسها."
+                : "Figures match the CSV file bundled with the project (345 rows, 65,702 operations). The file has not been checked against the portal itself."}
             </span>
           </div>
           <button

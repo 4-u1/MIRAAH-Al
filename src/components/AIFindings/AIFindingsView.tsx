@@ -128,11 +128,11 @@ export const AIFindingsView: React.FC<AIFindingsViewProps> = ({
             </span>
             <span className={isDark ? "text-[#94A3B8]" : "text-slate-400"}>➔</span>
             <span className={`font-black tracking-widest ${isDark ? "text-[#EF4444]" : "text-rose-700"}`}>
-              {isArabic ? "ربط مكاني موثق بنسبة 100%" : "NO TRUSTED FINDING"}
+              {isArabic ? "لا ملاحظة موثوقة" : "NO TRUSTED FINDING"}
             </span>
           </div>
           <span className={`text-[10px] ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
-            {isArabic ? "// سلسلة الأدلة والتوثيق الهندسي ملزمة نظاماً" : "// 100% Spatial Evidence Traceability strictly verified"}
+            {isArabic ? "// كل ملاحظة يجب أن ترتبط بدليل" : "// every finding must link to evidence"}
           </span>
         </div>
       </GlassCard>
@@ -326,7 +326,7 @@ export const AIFindingsView: React.FC<AIFindingsViewProps> = ({
                   {finding.verified ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{isArabic ? "معتمد هندسياً" : "✓ VERIFIED"}</span>
+                      <span>{isArabic ? "تم التحقق" : "✓ USER-VERIFIED"}</span>
                     </>
                   ) : (
                     <>
@@ -410,7 +410,7 @@ export const AIFindingsView: React.FC<AIFindingsViewProps> = ({
             <p className={`text-xs leading-relaxed ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
               {isArabic
                 ? "يحلل نموذج الرؤية المكانية إطارات الفيديو والمسح الحراري لتحديد العيوب ودرجة الثقة."
-                : "VLM analyzes extracted video frames and detects visual defects with raw confidence scores."}
+                : "Planned: a vision model would analyse frames. In this prototype findings come from demo data or manual labels."}
             </p>
           </div>
 
@@ -431,12 +431,12 @@ export const AIFindingsView: React.FC<AIFindingsViewProps> = ({
             isDark ? "bg-green-950/20 border-green-500/35" : "bg-emerald-50/70 border-emerald-200"
           }`}>
             <div className={`text-xs font-bold font-mono ${isDark ? "text-green-400" : "text-emerald-800"}`}>
-              {isArabic ? "3. اعتماد مهندس معتمد (الهيئة السعودية للمهندسين)" : "3. Licensed Inspector Validation"}
+              {isArabic ? "3. تحقق المستخدم من الملاحظة" : "3. User verification"}
             </div>
             <p className={`text-xs leading-relaxed ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
               {isArabic
                 ? "يقوم مهندس مرخص من هيئة المهندسين بمراجعة الملاحظات وتوثيقها أو تعديلها نظامياً."
-                : "Certified Saudi Council of Engineers (SCE) inspector verifies or dismisses findings."}
+                : "A signed-in user verifies or dismisses findings (licensed-engineer roles are planned)."}
             </p>
           </div>
         </div>

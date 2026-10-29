@@ -66,13 +66,13 @@ export const GlobalKPIHeader: React.FC<GlobalKPIHeaderProps> = ({
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                   : "bg-emerald-50 text-emerald-800 border-emerald-200"
               }`}>
-                {isArabic ? "فحص حي موثق" : "LIVE VERIFIED"}
+                {isArabic ? "محسوب · بيانات توضيحية" : "COMPUTED · DEMO DATA"}
               </span>
             </div>
             <p className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
               {isArabic
                 ? "مصفوفة القياس المكاني المباشرة وجاهزية تصفية الأصول وفق معايير التقييم العقاري"
-                : "Real-time spatial telemetry & liquidation readiness metrics computed via VLM 2.5"}
+                : "Scores computed by fixed formulas from the recorded demo data"}
             </p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export const GlobalKPIHeader: React.FC<GlobalKPIHeaderProps> = ({
           }`}>
             <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping" />
             <span className={isDark ? "text-slate-300" : "text-slate-700 font-medium"}>
-              {isArabic ? "تحديث تلقائي: نشط" : "AUTO-SYNC: 100%"}
+              {isArabic ? "يُعاد الحساب عند التعديل" : "RECOMPUTED ON CHANGE"}
             </span>
           </span>
         </div>
@@ -114,7 +114,7 @@ export const GlobalKPIHeader: React.FC<GlobalKPIHeaderProps> = ({
             label={isArabic ? "المساحة المبنية" : "Gross Area"}
 
             sublabel={isArabic ? "متر مربع (م²)" : "sq meters"}
-            formulaTooltip={isArabic ? `المساحة الإجمالية المبنية: ${areaValue.toLocaleString()} م² موثقة 100%` : `Total Gross Built Area: ${areaValue.toLocaleString()} sq m`}
+            formulaTooltip={isArabic ? `المساحة الإجمالية المبنية: ${areaValue.toLocaleString()} م² (بيانات توضيحية)` : `Total Gross Built Area: ${areaValue.toLocaleString()} sq m`}
           />
         </div>
 
@@ -214,7 +214,7 @@ export const GlobalKPIHeader: React.FC<GlobalKPIHeaderProps> = ({
             gradient={{ from: "#A855F7", to: "#EC4899" }}
             unit="%"
             label={isArabic ? "موثوقية الذكاء" : "AI Confidence"}
-            sublabel={isArabic ? "SCE + VLM 2.5" : "SCE Verified"}
+            sublabel={isArabic ? "محسوب" : "Computed"}
             formulaTooltip={isArabic ? `مستوى الثقة الإحصائية لنموذج الذكاء المكاني: ${confidencePercent}%` : `Statistical confidence from multi-view validation: ${confidencePercent}%`}
           />
         </div>

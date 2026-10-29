@@ -255,7 +255,7 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
         sbcClause: topFinding?.type === "Crack" ? "SBC-304 (Concrete Structures)" : "SBC-601 (Moisture & Thermal)",
         aiConfidence: topFinding?.conf || 88,
         rootCause: `Computer vision identified ${asset.findings?.length || 3} localized non-conformity zones causing structural condition discount.`,
-        rootCauseArabic: `رصدت الرؤية الحاسوبية ${asset.findings?.length || 3} مناطق عيوب أدت لخصم فني مباشر على التقييم المعتمد.`,
+        rootCauseArabic: `سُجلت ${asset.findings?.length || 0} ملاحظة في بيانات الأصل التوضيحية.`,
         remediationAction: asset.actions?.[0]?.action || "Deploy targeted Next Best Action remediation fast-track",
         remediationActionArabic: asset.actions?.[0]?.actionArabic || "تنفيذ خطة المعالجة السريعة الموصى بها",
       },
@@ -287,8 +287,8 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
         deltaPct: -9.8,
         sbcClause: "Judicial Auction Liquidation Discount",
         aiConfidence: 94,
-        rootCause: "Buyer risk aversion discounting uncertified structural/thermal integrity during judicial bid rounds.",
-        rootCauseArabic: "تحوط المستثمرين والمزايدين بخصم إضافي لغياب شهادة السلامة الإنشائية المعتمدة.",
+        rootCause: "Illustrative assumption: bidders discount when no engineering report exists.",
+        rootCauseArabic: "افتراض توضيحي: خصم إضافي من المزايدين عند غياب تقرير هندسي.",
         remediationAction: "Preventive remediation prior to auction listing to avoid severe capital haircut.",
         remediationActionArabic: "معالجة العيوب قبل الطرح لتجنب الخصم السعري الحاد.",
       },
@@ -314,15 +314,15 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
       status: "remediated",
       aiDefectImpact: {
         type: "spike",
-        defectName: "Valuation Surge via Certified Engineering Remediation",
-        defectNameArabic: "طفرة استرداد القيمة بعد المعالجة المعتمدة هندسياً",
+        defectName: "Illustrative value recovery after remediation",
+        defectNameArabic: "استرداد توضيحي للقيمة بعد المعالجة",
         severity: "Resolved",
         deltaSar: upliftVal,
         deltaPct: +Number(upliftPct),
         sbcClause: "Full SBC-201 / SBC-304 Re-Certification",
         aiConfidence: 99,
-        rootCause: "Elimination of defect penalty + Saudi Council of Engineers certified compliance dossier issuance.",
-        rootCauseArabic: "إلغاء خصم العيوب بالكامل وصدور شهادة الامتثال المعتمدة من هيئة المهندسين.",
+        rootCause: "Illustrative: defect penalty removed after remediation (assumption).",
+        rootCauseArabic: "افتراض توضيحي: زوال خصم العيوب بعد المعالجة.",
         remediationAction: "Asset classified as Prime Investment Grade for direct auction clearance.",
         remediationActionArabic: "تصنيف الأصل كأصل ممتاز جاهز للمزايدة الفورية بأعلى عائد.",
       },
@@ -695,8 +695,8 @@ export const MarketTrendsView: React.FC<MarketTrendsViewProps> = ({
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               {isArabic
-                ? `تم رصد 65,702 عملية عقارية موثقة بالمملكة خلال الفترة، تتصدرها إجراءات الحجز التحفظي وفك الحجز (35,973 عملية بنسبة 54.7%) والإفراغ العقاري (8,785 عملية). يوفر هذا الرادار للمصفي والمشتري مؤشراً استرشادياً لسرعة حركة السوق وقدرة التسييل.`
-                : `65,702 recorded government transactions in Saudi Arabia during the period, led by Precautionary Seizures & Releases (35,973 ops / 54.7%) and Conveyance (8,785 ops). Providing verifiable market liquidity depth.`}
+                ? `يحتوي الملف المرفق على 65,702 عملية عقارية مسجلة خلال الشهر، منها حجز تحفظي وفك حجز (35,973 عملية) وإفراغ (8,785 عملية). عمليات الحجز وفك الحجز ليست عمليات تصفية أو بيع. المصدر يحتاج تأكيد قبل أي استخدام رسمي.`
+                : `The bundled file lists 65,702 recorded real-estate operations for the month, including precautionary attachments and releases (35,973) and conveyances (8,785). Attachments and releases are not liquidations or sales. Confirm the source before official use.`}
             </p>
           </div>
 

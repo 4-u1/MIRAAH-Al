@@ -136,7 +136,7 @@ export const ApiExplorerModal: React.FC<ApiExplorerModalProps> = ({
       path: "/api/findings/f-001/confirm",
       category: "Findings Review",
       description: "Licensed inspector marks finding VERIFIED (FR-05)",
-      mockResponse: { finding_id: "f-001", status: "VERIFIED", verified_by: "SCE #48912" },
+      mockResponse: { finding_id: "f-001", status: "VERIFIED", verified_by: "demo-inspector" },
     },
     {
       method: "POST",
