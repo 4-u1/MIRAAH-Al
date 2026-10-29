@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { GlassCard } from "../common/GlassCard";
 import { Badge } from "../common/Badge";
 import { useTheme } from "../../context/ThemeContext";
-import { calculateLiquidationReadiness } from "../../utils/scoring";
+import { calculateLiquidationReadiness, computeAssetScores } from "../../utils/scoring";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 import { AssetRecord } from "../../types";
 import {
   ResponsiveContainer,
@@ -69,11 +70,25 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
   // Preset scenarios matching the PRD
   const [selectedScenarioKey, setSelectedScenarioKey] = useState<string>("current");
 
-  // Custom interactive slider parameters
-  const [simConditionIndex, setSimConditionIndex] = useState<number>(72);
-  const [simCoveragePct, setSimCoveragePct] = useState<number>(94);
-  const [simUnresolvedDefects, setSimUnresolvedDefects] = useState<number>(2);
-  const [simMissingFields, setSimMissingFields] = useState<number>(2);
+  // Baseline = the asset's actual computed scores (same code as the passport).
+  const base = useMemo(() => {
+    if (!asset) return { ci: 100, cov: 100, unresolved: 0, missing: 0, ready: 100 };
+    const sc = computeAssetScores(asset.findings, asset.coverageAreas, asset.missingFieldsCount);
+    return { ci: sc.conditionIndex, cov: sc.coveragePct, unresolved: sc.unresolvedCount, missing: asset.missingFieldsCount, ready: sc.liquidationReadiness };
+  }, [asset]);
+
+  // Custom interactive slider parameters, seeded from the asset
+  const [simConditionIndex, setSimConditionIndex] = useState<number>(base.ci);
+  const [simCoveragePct, setSimCoveragePct] = useState<number>(base.cov);
+  const [simUnresolvedDefects, setSimUnresolvedDefects] = useState<number>(base.unresolved);
+  const [simMissingFields, setSimMissingFields] = useState<number>(base.missing);
+  useEffect(() => {
+    setSelectedScenarioKey("current");
+    setSimConditionIndex(base.ci);
+    setSimCoveragePct(base.cov);
+    setSimUnresolvedDefects(base.unresolved);
+    setSimMissingFields(base.missing);
+  }, [base]);
 
   // Active base asset valuation (default to 14,800,000 SAR)
   const baseValuation = asset?.valuationSar || 14800000;
@@ -206,7 +221,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
     const netValueGain = projectedLiquidationValue - totalCapex - asIsLiquidationValue;
     const roiPercentage = totalCapex > 0 ? Math.round((netValueGain / totalCapex) * 100) : 0;
     const estimatedAuctionDays = Math.max(25, 140 - totalDaysSaved);
-    const simulatedReadiness = Math.min(96, 61 + totalReadinessBoost);
+    const simulatedReadiness = Math.min(100, base.ready + totalReadinessBoost); // illustrative: boosts are assumptions
 
     return {
       selectedCount: selected.length,
@@ -219,7 +234,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
       estimatedAuctionDays,
       simulatedReadiness,
     };
-  }, [REPAIR_SCENARIOS, toggledScenarioIds, baseValuation]);
+  }, [REPAIR_SCENARIOS, toggledScenarioIds, baseValuation, base.ready]);
 
   // ── TIMELINE PROJECTION DATA FOR LINE GRAPH ──
   const chartData = useMemo(() => {
@@ -233,7 +248,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         projectedValue: asIsLiquidationValue,
         netCapital: asIsLiquidationValue,
         cumulativeCapex: 0,
-        readiness: 61,
+        readiness: base.ready,
         note: isArabic ? "رصد العيوب والملاحظات" : "Defect Detection & Baseline",
       },
       {
@@ -243,7 +258,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         projectedValue: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.15),
         netCapital: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.15 - totalCapex * 0.25),
         cumulativeCapex: Math.round(totalCapex * 0.25),
-        readiness: Math.round(61 + (financialMetrics.simulatedReadiness - 61) * 0.2),
+        readiness: Math.round(base.ready + (financialMetrics.simulatedReadiness - base.ready) * 0.2),
         note: isArabic ? "إعداد وثائق الإصلاح والمقاولين" : "Remediation Contract Award",
       },
       {
@@ -253,7 +268,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         projectedValue: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.55),
         netCapital: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.55 - totalCapex * 0.75),
         cumulativeCapex: Math.round(totalCapex * 0.75),
-        readiness: Math.round(61 + (financialMetrics.simulatedReadiness - 61) * 0.6),
+        readiness: Math.round(base.ready + (financialMetrics.simulatedReadiness - base.ready) * 0.6),
         note: isArabic ? "تنفيذ معالجة العيوب الإنشائية" : "Structural & Waterproofing Work",
       },
       {
@@ -263,7 +278,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         projectedValue: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.9),
         netCapital: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.9 - totalCapex),
         cumulativeCapex: totalCapex,
-        readiness: Math.round(61 + (financialMetrics.simulatedReadiness - 61) * 0.92),
+        readiness: Math.round(base.ready + (financialMetrics.simulatedReadiness - base.ready) * 0.92),
         note: isArabic ? "إصدار شهادات السلامة والمطابقة" : "Third-Party Compliance Sign-Off",
       },
       {
@@ -325,52 +340,54 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
   };
 
   // ── PRD PRESETS ──
+  // Presets are computed from the asset's real findings with the same formula as the passport.
+  const allResolvedCI = 100; // Condition Index with every finding resolved
   const PRESETS = [
     {
       key: "current",
       label: "CURRENT ASSET",
       labelArabic: "الوضع الحالي",
-      score: 61,
+      score: base.ready,
       color: "#64748B",
-      desc: "Baseline asset state with 2 unresolved findings and missing municipal deed info.",
-      cond: 72,
-      cov: 94,
-      unresolved: 2,
-      missing: 2,
+      desc: `Computed from the asset: ${base.unresolved} unresolved finding(s), ${base.missing} missing field(s).`,
+      cond: base.ci,
+      cov: base.cov,
+      unresolved: base.unresolved,
+      missing: base.missing,
     },
     {
       key: "docs",
       label: "Complete Docs",
-      labelArabic: "استكمال الوثائق",
-      score: 68,
+      labelArabic: "استكمال البيانات",
+      score: calculateLiquidationReadiness(base.ci, base.cov, base.unresolved, 0),
       color: "#60A5FA",
-      desc: "Upload certified title deed and utility certificate (removes 2 missing field penalties).",
-      cond: 72,
-      cov: 94,
-      unresolved: 2,
+      desc: "Provide the missing asset-profile fields (removes the missing-field penalty).",
+      cond: base.ci,
+      cov: base.cov,
+      unresolved: base.unresolved,
       missing: 0,
     },
     {
       key: "finding",
-      label: "Resolve Finding",
-      labelArabic: "معالجة الرطوبة",
-      score: 76,
+      label: "Resolve Findings",
+      labelArabic: "معالجة الملاحظات",
+      score: calculateLiquidationReadiness(allResolvedCI, base.cov, 0, base.missing),
       color: "#F59E0B",
-      desc: "Inspector verifies and seals North Wall moisture ingress (removes defect penalty & boosts condition to 86).",
-      cond: 86,
-      cov: 94,
+      desc: "Every recorded finding resolved and verified (Condition Index returns to 100).",
+      cond: allResolvedCI,
+      cov: base.cov,
       unresolved: 0,
-      missing: 2,
+      missing: base.missing,
     },
     {
       key: "both",
-      label: "Do Both ✦ (Max)",
-      labelArabic: "تنفيذ الحزمتين ✦",
-      score: 84,
+      label: "Do Both",
+      labelArabic: "تنفيذ الحزمتين",
+      score: calculateLiquidationReadiness(allResolvedCI, base.cov, 0, 0),
       color: "#00C5A0",
-      desc: "Complete documentation + resolve active findings for full transaction liquidation velocity.",
-      cond: 88,
-      cov: 98,
+      desc: "Missing fields provided and every finding resolved.",
+      cond: allResolvedCI,
+      cov: base.cov,
       unresolved: 0,
       missing: 0,
     },
@@ -393,6 +410,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <SimulatedBadge isArabic={isArabic} />
       {/* ══════════════════════════════════════════════════════════ */}
       {/* ── SECTION 1: FINANCIAL PROJECTION & REPAIR SIMULATION ── */}
       {/* ══════════════════════════════════════════════════════════ */}
@@ -417,8 +435,8 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
             </h2>
             <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
               {isArabic
-                ? "حدد سيناريوهات الإصلاح لرؤية الأثر المالي الفوري على القيمة السوقية، سرعة البيع في المزاد، وصافي العائد على الاستثمار."
-                : "Toggle potential repair scenarios and visualize the immediate trajectory on asset liquidation value, auction speed, and net capital gain."}
+                ? "التكاليف والزيادة في القيمة والأيام الموفّرة هنا أرقام افتراضية ثابتة للتوضيح وليست من بيانات الأصل؛ نقطة البداية هي الجاهزية المحسوبة فعلاً للأصل."
+                : "Costs, value uplift and days saved here are fixed illustrative assumptions, not asset data; the starting point is the asset's actual computed readiness."}
             </p>
           </div>
 
@@ -428,7 +446,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
                 ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
                 : "bg-teal-50 text-teal-800 border-teal-200 shadow-sm"
             }`}>
-              {isArabic ? "تقييم تقييم / RICS معتمد" : "RICS / TAQYEEM MODEL"}
+              {isArabic ? "افتراضات توضيحية · ليست تقييماً" : "ILLUSTRATIVE ASSUMPTIONS · NOT A VALUATION"}
             </span>
           </div>
         </div>
