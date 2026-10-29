@@ -1,5 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import {
+  connectAuthEmulator,
+  signInWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
@@ -8,6 +10,7 @@ import {
   User,
 } from "firebase/auth";
 import {
+  connectFirestoreEmulator,
   getFirestore,
   doc,
   setDoc,
@@ -30,9 +33,24 @@ googleProvider.setCustomParameters({
 });
 
 // Initialize Firestore (pointing to custom databaseId if configured)
-export const db = firebaseConfig.firestoreDatabaseId
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(app);
+const useEmulators = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_FIREBASE_EMULATORS === "true";
+
+// With emulators (end-to-end test builds only) the default database is used.
+export const db =
+  firebaseConfig.firestoreDatabaseId && !useEmulators
+    ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+    : getFirestore(app);
+
+// End-to-end test builds only (VITE_FIREBASE_EMULATORS=true at build time). In normal builds
+// Vite replaces the flag with "undefined" and this block is removed from the bundle.
+if (useEmulators) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  (window as unknown as Record<string, unknown>).__miraahTest = {
+    signIn: (email: string, password: string) => signInWithEmailAndPassword(auth, email, password),
+    signOut: () => fbSignOut(auth),
+  };
+}
 
 // Concurrency mutex lock for popup sign-in
 let isSigningIn = false;

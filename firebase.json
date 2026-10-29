@@ -15,6 +15,15 @@
     },
     "ui": {
       "enabled": false
+    },
+    "storage": {
+      "port": 9199
+    },
+    "auth": {
+      "port": 9099
     }
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

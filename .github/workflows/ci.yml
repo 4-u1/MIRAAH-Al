@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "hardening/**"]
+    branches: [main, "hardening/**", "feature/**"]
   pull_request:
 
 permissions:
@@ -20,7 +20,11 @@ jobs:
       - name: Install
         run: npm install --no-audit --no-fund
       - name: Typecheck
-        run: npm run lint
+        run: |
+          if ! npm run lint --silent > tsc.out 2>&1; then
+            grep -v "^>" tsc.out | tr '\n' ' ' | fold -w 1000 | head -4 | sed 's/^/::error title=tsc::/'
+            exit 1
+          fi
       - name: Test
         run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-report.json
       - name: Test summary
@@ -43,6 +47,9 @@ jobs:
           fi
           # The Vite config must not inject server env vars into the client bundle.
           if grep -nE "define[[:space:]]*:|GEMINI" vite.config.ts; then echo "::error::vite.config.ts may expose env vars to the client"; exit 1; fi
+          if ls dist | grep -q "server.cjs"; then echo "::error::server bundle is inside the public dist/ folder"; exit 1; fi
+          # Emulator test hooks must not be in the production bundle.
+          if grep -rq "__miraahTest\|127.0.0.1:9099" dist/assets; then echo "::error::emulator test hooks found in production bundle"; exit 1; fi
           echo "::notice title=Bundle scan::no API key values in dist/ besides the public Firebase web key; Vite config injects no env vars"
       - name: Audit (production deps)
         run: |
@@ -58,7 +65,7 @@ jobs:
             if ((v.high||0) + (v.critical||0) > 0) { console.log("::error::high/critical vulnerabilities in production dependencies"); process.exit(1); }
           '
 
-  firestore-rules:
+  firebase-emulators:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -72,8 +79,8 @@ jobs:
           java-version: 21
       - name: Install
         run: npm install --no-audit --no-fund
-      - name: Rules tests (emulator)
-        run: npx --yes firebase-tools@14 emulators:exec --only firestore --project demo-miraah "npx vitest run tests/firestore.rules.test.ts --reporter=default --reporter=json --outputFile=rules-report.json"
+      - name: Rules + integration tests (Firestore and Storage emulators)
+        run: npx --yes firebase-tools@14 emulators:exec --only firestore,storage --project demo-miraah "npx vitest run tests/firestore.rules.test.ts tests/integration --fileParallelism=false --reporter=default --reporter=json --outputFile=rules-report.json"
       - name: Rules summary
         if: always()
         run: |
@@ -81,7 +88,7 @@ jobs:
             const fs = require("fs");
             if (!fs.existsSync("rules-report.json")) { console.log("::error::no rules report"); process.exit(0); }
             const r = JSON.parse(fs.readFileSync("rules-report.json","utf8"));
-            console.log(`::notice title=Firestore rules::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
+            console.log(`::notice title=Rules + emulator integration::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
             for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
               console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
           '
@@ -102,7 +109,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Start production server (no AI key, auth required)
         run: |
-          NODE_ENV=production AI_REQUIRE_AUTH=true node dist/server.cjs > server.log 2>&1 &
+          NODE_ENV=production AI_REQUIRE_AUTH=true node server-dist/server.cjs > server.log 2>&1 &
           echo $! > server.pid
       - name: Smoke test
         run: node scripts/smoke.mjs http://127.0.0.1:3000
@@ -115,3 +122,62 @@ jobs:
         with:
           name: smoke-screenshots
           path: smoke-shots/
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Point the test build at a demo emulator project
+        run: |
+          node -e '
+            const fs = require("fs");
+            const c = JSON.parse(fs.readFileSync("firebase-applet-config.json", "utf8"));
+            c.projectId = "demo-miraah"; c.authDomain = "demo-miraah.firebaseapp.com";
+            c.storageBucket = "demo-miraah.appspot.com"; c.apiKey = "demo-api-key"; delete c.firestoreDatabaseId;
+            fs.writeFileSync("firebase-applet-config.json", JSON.stringify(c, null, 2));
+          '
+      - name: Build (emulator test build)
+        run: VITE_FIREBASE_EMULATORS=true npm run build
+      - name: Browser
+        run: npx playwright install --with-deps chromium
+      - name: Signed-in end-to-end flow (Auth, Firestore, Storage emulators)
+        run: npx --yes firebase-tools@14 emulators:exec --only auth,firestore,storage --project demo-miraah "bash scripts/e2e-run.sh"
+      - name: Server log tail
+        if: always()
+        run: tail -n 15 e2e-server.log | sed 's/^/::notice title=e2e server::/' | head -15 || true
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: e2e-shots/
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t miraah:ci .
+      - name: Run image and check health
+        run: |
+          if ! docker run -d --name miraah-ci -p 8080:8080 -e WORKSPACE_ENABLED=false miraah:ci > run.out 2> run.err; then
+            echo "::error title=docker run::$(tr '\n' ' ' < run.err | cut -c1-400)"; exit 1
+          fi
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/api/health && break; sleep 1; done
+          if ! curl -sf http://127.0.0.1:8080/api/health > /dev/null; then
+            echo "::error title=container logs::$(docker logs miraah-ci 2>&1 | tail -n 15 | tr '\n' ' ' | cut -c1-600)"; exit 1
+          fi
+          H=$(curl -sf http://127.0.0.1:8080/api/health)
+          echo "::notice title=Docker::$H"
+          curl -sf http://127.0.0.1:8080/ | grep -q "<div id=\"root\"" && echo "::notice title=Docker::index.html served" || { echo "::error::index not served"; docker logs miraah-ci; exit 1; }

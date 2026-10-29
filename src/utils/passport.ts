@@ -10,21 +10,31 @@ import type { ScoreResults } from "./scoring";
  */
 
 export const PASSPORT_SCHEMA = "miraah-passport/1.0";
+/** Recorded (live-workspace) exports add evidence hashes, finding sources and reviewers. */
+export const PASSPORT_SCHEMA_RECORDED = "miraah-passport/1.1";
 
 export interface PassportFinding {
   id: number;
   type: string;
   severity: string;
   area: string;
-  confidence_pct: number;
+  /** Model self-reported confidence (uncalibrated); null for manual findings in recorded exports. */
+  confidence_pct: number | null;
   verified_by_inspector: boolean;
   resolved: boolean;
   evidence_frames: number;
+  // Recorded exports only (schema 1.1)
+  finding_id?: string;
+  source?: "manual" | "ai-confirmed";
+  verified_by?: string | null;
+  resolved_by?: string | null;
+  evidence_sha256?: string[];
 }
 
 export interface PassportData {
   schema: string;
-  data_status: "demo";
+  /** "demo" = bundled demo data; "recorded" = entered by signed-in inspectors in the live workspace. */
+  data_status: "demo" | "recorded";
   disclaimer: string;
   asset: {
     id: string;
@@ -37,6 +47,7 @@ export interface PassportData {
     build_year: number;
     entered_valuation_sar: number;
     inspection_date: string;
+    case_reference?: string;
   };
   scores: {
     liquidation_readiness_index: number;
@@ -59,11 +70,18 @@ export interface PassportData {
 export const PASSPORT_DISCLAIMER =
   "Prototype export with demo data. Not an official document of Infath or any government body; not a certified inspection or valuation.";
 
-export function buildPassportData(asset: AssetRecord, scores: ScoreResults): PassportData {
+export const PASSPORT_DISCLAIMER_RECORDED =
+  "Export of inspection data recorded in MIRAAH by signed-in users. Not an official document of Infath or any government body; not a certified inspection or valuation. Findings marked verified were verified by a MIRAAH reviewer account, not by a licensed authority.";
+
+export function buildPassportData(
+  asset: AssetRecord,
+  scores: ScoreResults,
+  status: PassportData["data_status"] = "demo"
+): PassportData {
   return {
     schema: PASSPORT_SCHEMA,
-    data_status: "demo",
-    disclaimer: PASSPORT_DISCLAIMER,
+    data_status: status,
+    disclaimer: status === "demo" ? PASSPORT_DISCLAIMER : PASSPORT_DISCLAIMER_RECORDED,
     asset: {
       id: asset.id,
       name: asset.name,
