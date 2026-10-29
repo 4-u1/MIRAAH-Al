@@ -209,8 +209,8 @@ export const AssetPassportView: React.FC<AssetPassportViewProps> = ({
               isDark ? "text-[#94A3B8]" : "text-slate-600 font-medium"
             }`}>
               {isArabic
-                ? "منظومة الذكاء المكاني وإعادة البناء ثلاثي الأبعاد للمباني والأصول العقارية. تحويل وسائط المسح الميداني إلى أدلة موثوقة وتحليلات جاهزية التصفية مع مطابقة فورية لكود البناء السعودي (SBC 201/304)."
-                : "Autonomous spatial intelligence and architectural reconstruction platform. Transforming multi-spectral field media into verified evidence, liquidation readiness scoring, and instantaneous due-diligence dossiers."}
+                ? "نموذج أولي يجمع بيانات معاينة الأصل في جواز رقمي: ملاحظات مع أدلتها، تغطية الفحص، ومؤشرات جاهزية محسوبة بمعادلات معلنة (بيانات توضيحية، دون فحص مطابقة لكود البناء)."
+                : "Prototype that brings an asset's inspection data into one digital passport: findings with evidence, inspection coverage, and readiness scores from published formulas (demo data; no building-code compliance check)."}
             </p>
 
             {/* Real-time Dynamic Asset Telemetry Spec Bar (Replaces Static Labels) */}

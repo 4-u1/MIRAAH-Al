@@ -137,7 +137,7 @@ const DEFAULT_SLA_ALERTS: SLAAlertItem[] = [
     deadlineHoursRemaining: 42.0,
     totalSlaHours: 72,
     assignee: "Power Grid Solutions Co.",
-    assigneeRole: "SCE Certified Electromechanical Team",
+    assigneeRole: "Electromechanical contractor (demo)",
     assigneeRoleArabic: "فريق الفحص الكهروميكانيكي المعتمد",
     valueAtRiskSar: 75000,
     gainNum: 3,

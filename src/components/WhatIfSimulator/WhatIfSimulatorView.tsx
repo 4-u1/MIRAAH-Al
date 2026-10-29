@@ -158,7 +158,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
       },
       {
         id: "legal_docs_complete",
-        title: "Certified Digital Title Deed & Zoning Survey",
+        title: "Obtain title deed & zoning survey (hypothetical action)",
         titleArabic: "تحديث الصك الإلكتروني ومطابقة رخصة البناء",
         category: "Documentation",
         categoryArabic: "التوثيق والتراخيص",
@@ -279,7 +279,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         netCapital: Math.round(asIsLiquidationValue + (projectedLiquidationValue - asIsLiquidationValue) * 0.9 - totalCapex),
         cumulativeCapex: totalCapex,
         readiness: Math.round(base.ready + (financialMetrics.simulatedReadiness - base.ready) * 0.92),
-        note: isArabic ? "إصدار شهادات السلامة والمطابقة" : "Third-Party Compliance Sign-Off",
+        note: isArabic ? "فحص طرف ثالث (افتراضي)" : "Third-party inspection (hypothetical)",
       },
       {
         month: isArabic ? "الشهر 4: الإدراج في المزاد" : "M4: Auction Listing",
@@ -289,7 +289,7 @@ export const WhatIfSimulatorView: React.FC<WhatIfSimulatorViewProps> = ({
         netCapital: projectedLiquidationValue - totalCapex,
         cumulativeCapex: totalCapex,
         readiness: financialMetrics.simulatedReadiness,
-        note: isArabic ? "بدء المزايدة التنافسية" : "Verified Passport Live Bidding",
+        note: isArabic ? "طرح في المزاد (افتراضي)" : "Auction listing (hypothetical)",
       },
       {
         month: isArabic ? "الشهر 6: الإغلاق والتسوية" : "M6: Sale Settlement",

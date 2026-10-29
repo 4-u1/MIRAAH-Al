@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface BuyerViewProps {
   buyerItems: BuyerVerificationItem[];
@@ -71,7 +72,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               <h2 className={`text-xl font-extrabold mt-0.5 ${
                 isDark ? "text-white" : "text-slate-900"
               }`}>
-                {isArabic ? "تجربة التحقق المستقل للأصول" : "Zero-Trust Asset Verification Engine"}
+                {isArabic ? "عرض المشتري (بيانات توضيحية)" : "Buyer view (demo data)"} <SimulatedBadge isArabic={isArabic} className="ms-2 align-middle" />
               </h2>
             </div>
           </div>
@@ -266,8 +267,8 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               }`}>
                 <span>
                   {item.lastVerifiedBy
-                    ? `Verified by: ${item.lastVerifiedBy}`
-                    : "Pending validation"}
+                    ? `${isArabic ? "سُجّل بواسطة" : "Recorded by"}: ${item.lastVerifiedBy}`
+                    : isArabic ? "بانتظار التحقق" : "Pending validation"}
                 </span>
                 <span className={`font-bold ${
                   isDark ? "text-[#00C5A0]" : "text-emerald-600"

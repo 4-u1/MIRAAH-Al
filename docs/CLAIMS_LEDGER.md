@@ -38,7 +38,7 @@ Baseline: commit `f6508d8` (before this work).
 | C16 | Assistant has live IoT, BIM-AI, blockchain registry (SRE-Chain), real-time AVM, Balady/MOMRAH/e-deed checks | `server.ts` system prompt | FIXED | None exist | Prompt lists only implemented features; simulated and unavailable ones are named explicitly (`tests/prompts.test.ts`) |
 | C17 | Replies come from "Gemini 3.8 Flash" | server + client | FIXED | Canned text was labelled with the model id when no key or on error | No key: `source:"template", model:null`. Error: 503. UI shows the actual engine (`tests/server.test.ts`) |
 | C18 | Fallback ROI: "+320,000 SAR, 9.14×, −18 days" | server + client fallbacks | FIXED | Invented figures | Removed; template restates provided numbers only |
-| C19 | `gemini-3.8-flash` is a valid model | `server/llm.ts` | REAL | Listed as stable on ai.google.dev Gemini models page (checked Oct 2026) | Configurable via `GEMINI_MODEL` |
+| C19 | `gemini-3.8-flash` is a valid model | `server/llm.ts` | REAL | Fetched https://ai.google.dev/gemini-api/docs/models on 2026-10-29: `gemini-3.8-flash` and `gemini-3.1-flash-lite` listed as Stable. The independent reviewer could not re-check from its environment; re-confirm before deploying | Configurable via `GEMINI_MODEL` |
 | C20 | "AI Vision analysis identified…" on upload, confidence 88–98% | `MediaUploadModal` | FIXED | `Math.random()`; type chosen by the user | Manual labelling, confidence 100, honest progress text |
 | C21 | "AI cover summary" with accredited Taqeem valuation, legal clearance, LiDAR | `aiCoverSummary.ts` | FIXED | Fixed template | Rewritten to state computed facts and their limits |
 | C22 | "Thermal" image mode | Drill-down | FIXED | CSS hue filter | Renamed "hue filter (not thermal)" |
@@ -92,9 +92,13 @@ Baseline: commit `f6508d8` (before this work).
 | C50 | Client could forge earlier assistant turns | `server/app.ts` | FIXED | Only user turns forwarded (test) |
 | C51 | Unauthenticated traffic could exhaust the shared daily cap | `server/app.ts` | FIXED | IP burst limit before auth; burst + daily cap per user after auth (tests) |
 | C52 | Verify button checked an export against itself | Export window | FIXED | Removed; JSON-file check explains it compares data with the fingerprint inside the same file |
+| C53 | Buyer view: "Verified by: Ministry of Justice / Civil Defense / Jeddah Municipality", "Zero-Trust Asset Verification Engine" | `mockAssets.ts`, `BuyerView` | FIXED | Found in review round 2. Verifier = "Demo Inspector (fictional)", details prefixed "Demo data", label "Recorded by", Simulated badge, smoke test forbids these phrases |
+| C54 | Demo alert "Computer Vision detected … 96% AI confidence" | `useNotificationSystem` | FIXED | "Demo alert (no AI)" in both languages |
+| C55 | Passport hero: "instant SBC compliance matching", "verified evidence" | `AssetPassportView` | FIXED | Describes the prototype accurately |
+| C56 | Export field `ai_confidence_pct` | `passport.ts` | FIXED | Renamed `confidence_pct` (no AI produces it) |
 
 ## Counts
 
-52 claims. Was false and now corrected: **35** (of which 2 now REAL and 1 SIMULATED). Real: **3**. Simulated and labelled: **9**. Planned: **3**. Unverified, owner to confirm: **2**. **Known false claims remaining: 0.**
+56 claims. Was false and now corrected: **39** (of which 2 now REAL and 1 SIMULATED). Real: **3** (plus the 2 corrected to REAL). Simulated and labelled: **9**. Planned: **3**. Unverified, owner to confirm: **2**. **Known false claims remaining after two independent review rounds: 0.**
 
 Known residual wording: decorative strings inside large simulated components (e.g. sensor names, SLA penalty text) were not rewritten line by line. They sit under the "Simulated" badge and the global demo banner.
