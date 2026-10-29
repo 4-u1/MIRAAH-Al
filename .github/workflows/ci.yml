@@ -20,7 +20,11 @@ jobs:
       - name: Install
         run: npm install --no-audit --no-fund
       - name: Typecheck
-        run: npm run lint
+        run: |
+          if ! npm run lint --silent > tsc.out 2>&1; then
+            grep -v "^>" tsc.out | tr '\n' ' ' | fold -w 1000 | head -4 | sed 's/^/::error title=tsc::/'
+            exit 1
+          fi
       - name: Test
         run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-report.json
       - name: Test summary
