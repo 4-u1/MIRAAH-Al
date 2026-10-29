@@ -4,6 +4,7 @@ import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
 export interface VerifiedUser {
   uid: string;
   email?: string;
+  emailVerified?: boolean;
 }
 
 export type TokenVerifier = (idToken: string) => Promise<VerifiedUser>;
@@ -27,7 +28,11 @@ export function createFirebaseTokenVerifier(
       algorithms: ["RS256"],
     });
     if (!payload.sub) throw new Error("token has no subject");
-    return { uid: payload.sub, email: typeof payload.email === "string" ? payload.email : undefined };
+    return {
+      uid: payload.sub,
+      email: typeof payload.email === "string" ? payload.email.toLowerCase() : undefined,
+      emailVerified: payload.email_verified === true,
+    };
   };
 }
 

@@ -27,6 +27,8 @@ export interface AppConfig {
   /** JSON body limit for API routes. */
   bodyLimit: string;
   now?: () => number;
+  /** Extra routers mounted before the API 404/error handlers (live workspace, passport verify). */
+  mount?: (app: express.Express) => void;
 }
 
 export function parseTrustProxy(raw: string | undefined): string | number | boolean {
@@ -147,6 +149,8 @@ export function createApp(cfg: AppConfig) {
       next(err);
     }
   });
+
+  cfg.mount?.(app);
 
   app.use("/api", (_req, res) => res.status(404).json({ error: "not_found" }));
 

@@ -24,7 +24,8 @@ export interface PassportFinding {
 
 export interface PassportData {
   schema: string;
-  data_status: "demo";
+  /** "demo" = bundled demo data; "recorded" = entered by signed-in inspectors in the live workspace. */
+  data_status: "demo" | "recorded";
   disclaimer: string;
   asset: {
     id: string;
@@ -59,11 +60,18 @@ export interface PassportData {
 export const PASSPORT_DISCLAIMER =
   "Prototype export with demo data. Not an official document of Infath or any government body; not a certified inspection or valuation.";
 
-export function buildPassportData(asset: AssetRecord, scores: ScoreResults): PassportData {
+export const PASSPORT_DISCLAIMER_RECORDED =
+  "Export of inspection data recorded in MIRAAH by signed-in users. Not an official document of Infath or any government body; not a certified inspection or valuation. Findings marked verified were verified by a MIRAAH reviewer account, not by a licensed authority.";
+
+export function buildPassportData(
+  asset: AssetRecord,
+  scores: ScoreResults,
+  status: PassportData["data_status"] = "demo"
+): PassportData {
   return {
     schema: PASSPORT_SCHEMA,
-    data_status: "demo",
-    disclaimer: PASSPORT_DISCLAIMER,
+    data_status: status,
+    disclaimer: status === "demo" ? PASSPORT_DISCLAIMER : PASSPORT_DISCLAIMER_RECORDED,
     asset: {
       id: asset.id,
       name: asset.name,
