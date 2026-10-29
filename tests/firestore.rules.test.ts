@@ -69,4 +69,11 @@ describe.skipIf(!hasEmulator)("firestore.rules", () => {
     await assertFails(updateDoc(doc(alice, ref.path), { assetId: "2" }));
     await assertFails(deleteDoc(doc(alice, ref.path)));
   });
+  it("clients cannot read or write live-workspace data directly (server only)", async () => {
+    const alice = env.authenticatedContext("alice", { email: "alice@example.com", email_verified: true }).firestore();
+    for (const path of ["roles/alice@example.com", "assets/a1", "findings/f1", "evidence/e1", "auditLog/l1"]) {
+      await assertFails(getDoc(doc(alice, path)));
+      await assertFails(setDoc(doc(alice, path), { role: "inspector", x: 1 }));
+    }
+  });
 });
