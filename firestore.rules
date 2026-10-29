@@ -26,11 +26,14 @@ service cloud.firestore {
       }
     }
 
-    // Inspection audits & actions: Authenticated users can log verification or resolution notes
+    // Inspection audit log: append-only. A record must name its creator and cannot be edited or deleted.
     match /inspections/{inspectionId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.inspectorUid == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.inspectorUid == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.inspectorUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['assetId', 'findingId', 'verified', 'isResolved', 'actionTaken', 'notes', 'inspectorUid', 'inspectorEmail', 'timestamp', 'createdAt'])
+        && request.resource.data.assetId is string && request.resource.data.assetId.size() <= 64;
+      allow update, delete: if false;
     }
   }
 }
