@@ -36,7 +36,9 @@ describe("passport export", () => {
 
   it("is honest about its status", () => {
     expect(data.data_status).toBe("demo");
-    const text = JSON.stringify(data).toLowerCase();
+    expect(data.disclaimer).toMatch(/not an official document/i);
+    // Everything except the disclaimer (which says what the export is NOT) must avoid these claims.
+    const text = JSON.stringify({ ...data, disclaimer: "" }).toLowerCase();
     for (const banned of ["blockchain", "accredit", "certified", "digital_signature", "authority"]) {
       expect(text).not.toContain(banned);
     }
