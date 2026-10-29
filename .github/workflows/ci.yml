@@ -22,8 +22,60 @@ jobs:
       - name: Typecheck
         run: npm run lint
       - name: Test
-        run: if npm run | grep -q "^  test$"; then npm test; else echo "no test script yet"; fi
+        run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-report.json
+      - name: Test summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            if (!fs.existsSync("vitest-report.json")) { console.log("::error::no test report"); process.exit(0); }
+            const r = JSON.parse(fs.readFileSync("vitest-report.json", "utf8"));
+            console.log(`::notice title=Tests::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped (${r.numTotalTests} total)`);
+            for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
+              console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
+          '
       - name: Build
         run: npm run build
+      - name: Bundle secret scan
+        run: |
+          if grep -rEo "AIza[0-9A-Za-z_-]{35}" dist/ | grep -v "$(node -p "require('./firebase-applet-config.json').apiKey")" ; then
+            echo "::error::Possible API key in dist/ other than the public Firebase web key"; exit 1
+          fi
+          if grep -rq "GEMINI_API_KEY" dist/assets 2>/dev/null; then echo "::error::GEMINI_API_KEY referenced in client bundle"; exit 1; fi
+          echo "::notice title=Bundle scan::no server secrets found in dist/"
       - name: Audit (production deps)
-        run: npm audit --omit=dev --audit-level=high || true
+        run: |
+          npm audit --omit=dev --json > audit.json || true
+          node -e '
+            const a = JSON.parse(require("fs").readFileSync("audit.json","utf8"));
+            const v = (a.metadata && a.metadata.vulnerabilities) || {};
+            console.log(`::notice title=npm audit (prod)::critical=${v.critical||0} high=${v.high||0} moderate=${v.moderate||0} low=${v.low||0}`);
+          '
+
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Rules tests (emulator)
+        run: npx --yes firebase-tools@14 emulators:exec --only firestore --project demo-miraah "npx vitest run tests/firestore.rules.test.ts --reporter=default --reporter=json --outputFile=rules-report.json"
+      - name: Rules summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("fs");
+            if (!fs.existsSync("rules-report.json")) { console.log("::error::no rules report"); process.exit(0); }
+            const r = JSON.parse(fs.readFileSync("rules-report.json","utf8"));
+            console.log(`::notice title=Firestore rules::${r.numPassedTests} passed, ${r.numFailedTests} failed, ${r.numPendingTests} skipped`);
+            for (const f of r.testResults) for (const a of f.assertionResults) if (a.status === "failed")
+              console.log(`::error title=${a.fullName.slice(0,120)}::${(a.failureMessages[0]||"").split("\n")[0].slice(0,300)}`);
+          '

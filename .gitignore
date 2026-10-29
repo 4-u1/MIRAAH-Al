@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+vitest-report.json
+rules-report.json
+audit.json
