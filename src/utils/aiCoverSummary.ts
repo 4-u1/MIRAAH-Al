@@ -78,10 +78,10 @@ export function extractCoverPageAISummary(
   let readinessStatus: CoverPageAISummary["investmentReadiness"]["status"] = "ACCELERATED";
   let statusLabel = "Tier-1 Accelerated Liquidation Ready";
   let statusLabelArabic = "جاهزية تصفية مسرعة - الفئة الأولى";
-  let verdictTag = "INSTITUTIONAL GRADE · HIGH LIQUIDITY";
-  let verdictTagArabic = "أصل استثماري معتمد · سيولة عالية";
-  let projectedSpeed = "10 - 15 Business Days Fast-Track";
-  let projectedSpeedArabic = "١٠ - ١٥ يوم عمل (مزاد سريع)";
+  let verdictTag = "HIGH COMPUTED READINESS";
+  let verdictTagArabic = "جاهزية عالية (محسوبة)";
+  let projectedSpeed = "10 - 15 business days (illustrative assumption)";
+  let projectedSpeedArabic = "١٠ - ١٥ يوم عمل (افتراض توضيحي)";
   let targetBuyerAppetite = "Institutional REITs & High-Net-Worth Commercial Investors";
   let targetBuyerAppetiteArabic = "صناديق الاستثمار العقاري (REITs) وكبار المستثمرين التجاريين";
 
@@ -91,56 +91,55 @@ export function extractCoverPageAISummary(
     statusLabelArabic = "جاهزية استثمارية ممتازة (جاهز للمزاد الفوري)";
     verdictTag = "PRIME ASSET · ZERO STRUCTURAL IMPEDIMENTS";
     verdictTagArabic = "أصل ممتاز · خالٍ من العوائق الإنشائية";
-    projectedSpeed = "7 - 10 Business Days (Direct Execution)";
-    projectedSpeedArabic = "٧ - ١٠ أيام عمل (تنفيذ مباشر)";
+    projectedSpeed = "7 - 10 business days (illustrative assumption)";
+    projectedSpeedArabic = "٧ - ١٠ أيام عمل (افتراض توضيحي)";
   } else if (readiness >= 75) {
     readinessStatus = "ACCELERATED";
     statusLabel = "High Investment Readiness (Minor Rectifications)";
     statusLabelArabic = "جاهزية استثمارية عالية (ملاحظات طفيفة قابلة للاستدراك)";
-    verdictTag = "HIGH LIQUIDITY · MINOR PENDING SBC SEALS";
-    verdictTagArabic = "سيولة عالية · بانتظار استكمال أختام كود البناء البسيطة";
+    verdictTag = "HIGH COMPUTED READINESS · MINOR FINDINGS";
+    verdictTagArabic = "جاهزية عالية محسوبة · ملاحظات طفيفة";
   } else if (readiness >= 60) {
     readinessStatus = "CONDITIONAL";
     statusLabel = "Conditional Readiness (Pre-Auction Action Required)";
     statusLabelArabic = "جاهزية مشروطة (تتطلب معالجة قبل طرح المزاد)";
     verdictTag = "CONDITIONAL · ACTION PLAN DISPATCHED";
     verdictTagArabic = "مشروط · تم إطلاق خطة المعالجة الفنية";
-    projectedSpeed = "20 - 30 Business Days Post-Remediation";
-    projectedSpeedArabic = "٢٠ - ٣٠ يوم عمل بعد استكمال المعالجة";
+    projectedSpeed = "20 - 30 business days after remediation (illustrative assumption)";
+    projectedSpeedArabic = "٢٠ - ٣٠ يوم عمل بعد المعالجة (افتراض توضيحي)";
   } else {
     readinessStatus = "REMEDIATION_REQUIRED";
     statusLabel = "Technical Remediation Required";
     statusLabelArabic = "يتطلب معالجة فنية وهندسية شاملة";
     verdictTag = "REMEDIATION MANDATORY · DEFECT ESCALATION";
     verdictTagArabic = "معالجة إلزامية · تصعيد عيوب فنية";
-    projectedSpeed = "45+ Business Days (Post-Audit Clearance)";
-    projectedSpeedArabic = "٤٥+ يوم عمل (بعد اعتماد التدقيق الشامل)";
+    projectedSpeed = "45+ business days (illustrative assumption)";
+    projectedSpeedArabic = "٤٥+ يوم عمل (افتراض توضيحي)";
   }
 
-  // Generate Investment Executive Summary
-  const executiveSummary = `Spatial and structural analysis confirms high asset resilience with a ${condition}% structural condition index across ${asset.sizeSqm.toLocaleString()} m² BUA. Supported by an accredited Taqeem valuation of SAR ${asset.valuationSar.toLocaleString()} and clean title verification, the asset exhibits optimal capital preservation metrics with minimal friction for judicial or private auction disposal.`;
-  
-  const executiveSummaryArabic = `تؤكد التحليلات المكانية والهندسية متانة الأصل بمؤشر سلامة إنشائية يبلغ ${condition}٪ لمساحة بناء قدرها ${asset.sizeSqm.toLocaleString()} م². بدعم من تقييم "تقييم" المعتمد بقيمة ${asset.valuationSar.toLocaleString()} ريال وخلو السجل من النزاعات، يتمتع الأصل بجاذبية استثمارية عالية ومسار تصفية سريع وموثوق للمزادات القضائية والخاصة.`;
+  // Executive summary: deterministic template from computed scores only (no AI, no external verification).
+  const executiveSummary = `Computed from the recorded data (demo): Condition Index ${condition}/100 across ${asset.sizeSqm.toLocaleString()} m² BUA, Liquidation Readiness ${readiness}/100, ${unresolvedFindings.length} unresolved finding(s). The entered valuation of SAR ${asset.valuationSar.toLocaleString()} is demo input, not a certified valuation; title and legal status are not verified by this prototype.`;
 
-  // Dynamic Catalysts
+  const executiveSummaryArabic = `محسوب من البيانات المسجلة (توضيحية): مؤشر الحالة ${condition} من 100 لمساحة بناء ${asset.sizeSqm.toLocaleString()} م²، وجاهزية التصفية ${readiness} من 100، و${unresolvedFindings.length} ملاحظة غير معالجة. القيمة المدخلة ${asset.valuationSar.toLocaleString()} ريال بيانات توضيحية وليست تقييماً معتمداً، والوضع القانوني والصك غير متحقق منهما في هذا النموذج.`;
+
   const catalysts: InvestmentCatalyst[] = [
     {
-      title: "Sound Structural Core & SBC Adherence",
-      titleArabic: "سلامة الهيكل الخرساني والامتثال لكود البناء",
-      detail: `Verified structural stability at ${condition}% with zero primary load-bearing foundation flaws detected via LiDAR.`,
-      detailArabic: `تحقق ميداني من سلامة الأعمدة والأساسات بنسبة ${condition}٪ مع انعدام الشروخ الإنشائية الحرجة في المسح الليزري.`,
+      title: "Computed condition",
+      titleArabic: "مؤشر الحالة المحسوب",
+      detail: `Condition Index ${condition}/100 from ${unresolvedFindings.length} unresolved recorded finding(s); ${criticalCount} critical.`,
+      detailArabic: `مؤشر الحالة ${condition} من 100 بناءً على ${unresolvedFindings.length} ملاحظة غير معالجة، منها ${criticalCount} حرجة.`,
     },
     {
-      title: "Accredited Valuation & Legal Clearance",
-      titleArabic: "تقييم معتمد وخلو قانوني تام",
-      detail: `Independent Taqeem benchmark of SAR ${asset.valuationSar.toLocaleString()} backed by official judicial enforcement clearance.`,
-      detailArabic: `تقييم عقاري معتمد بقيمة ${asset.valuationSar.toLocaleString()} ريال ومطابقة تامة مع أوامر التنفيذ القضائي بإنفاذ.`,
+      title: "Valuation status",
+      titleArabic: "حالة التقييم",
+      detail: `Entered value SAR ${asset.valuationSar.toLocaleString()} (demo input). A licensed Taqeem valuer is required for any official use.`,
+      detailArabic: `قيمة مدخلة ${asset.valuationSar.toLocaleString()} ريال (بيانات توضيحية). أي استخدام رسمي يتطلب مقيّماً مرخّصاً من تقييم.`,
     },
     {
-      title: "Transparent 4-State Evidence Proof",
-      titleArabic: "توثيق شفاف رباعي الحالات للأدلة",
-      detail: `${scores.totalEvidenceFrames} verified drone & LiDAR frames anchored with cryptographic hash for buyer due-diligence certainty.`,
-      detailArabic: `توثيق ${scores.totalEvidenceFrames} إطار فحص وبصمة رقمية مشفرة تضمن الشفافية المطلقة للمشتري والمستثمر.`,
+      title: "Evidence",
+      titleArabic: "الأدلة",
+      detail: `${scores.totalEvidenceFrames} evidence frame(s) recorded (illustrative images in this prototype). The export carries a SHA-256 fingerprint of the passport data.`,
+      detailArabic: `${scores.totalEvidenceFrames} إطار دليل مسجل (صور توضيحية في هذا النموذج). ويحمل ملف التصدير بصمة SHA-256 لبيانات الجواز.`,
     },
   ];
 
@@ -179,7 +178,7 @@ export function extractCoverPageAISummary(
         impactDescription: `Detected in area "${f.area}" with ${f.conf}% neural confidence. Non-critical to load capacity.`,
         impactDescriptionArabic: `رُصد في نطاق "${f.area}" بمستوى ثقة ${f.conf}٪، ولا يشكل تهديداً لسلامة الهيكل الحامل.`,
         mitigationPath: f.recommendation,
-        mitigationPathArabic: "تطبيق المعالجة الموصى بها واعتماد التقرير الهندسي من مهندس معتمد (SCE).",
+        mitigationPathArabic: "تطبيق المعالجة المقترحة وتأكيدها من مهندس مرخّص.",
         estimatedCostSar: estCost,
       });
     });

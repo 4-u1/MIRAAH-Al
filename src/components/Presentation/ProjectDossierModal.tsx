@@ -75,7 +75,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       },
       subtitle: {
         ar: "منظومة المعاينة الفراغية الذكية وجواز الأصل العقاري للتصفية القضائية والاستثمارية",
-        en: "Spatial Asset Intelligence & Certified Digital Asset Passport for Judicial Liquidation",
+        en: "Spatial Asset Intelligence & Digital Asset Passport for Judicial Liquidation (prototype)",
       },
       keyQuote: {
         ar: "«تحويل العقار القضائي المتنازع عليه من ملف ورقي مجتزأ إلى توأم رقمي معتمد يحمي المشتري، ويحفظ حقوق الورثة، ويسرّع التصفية»",
@@ -91,7 +91,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         },
         {
           titleAr: "مسار الابتكار المستهدف",
-          titleEn: "Official Innovation Track",
+          titleEn: "Innovation Track",
           descAr: "مسار معاينة الأصول: ابتكار تقنيات ذكية ترفع كفاءة المعاينة، وتسرع توثيق العقارات، وتوفر بيئة يقين هندسي لقرارات التصفية والتسويق.",
           descEn: "Asset Inspection Track: Developing advanced spatial technologies to streamline inspection, verification, and liquidation.",
           icon: Target,
@@ -167,7 +167,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       highlightMetrics: [
         { labelAr: "عدد الشرائح الشاملة", labelEn: "Total Slides", val: "20 شريحة" },
         { labelAr: "المحاور الاستراتيجية", labelEn: "Strategic Pillars", val: "4 محاور" },
-        { labelAr: "التغطية المعمارية", labelEn: "Framework Scope", val: "100% متكامل" },
+        { labelAr: "حالة النموذج", labelEn: "Status", val: "نموذج تجريبي" },
       ],
       tag: "خارطة العرض الاستراتيجي",
     },
@@ -339,8 +339,8 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         en: "Judicial Liquidation Market Sizing & Open Data Intelligence",
       },
       subtitle: {
-        ar: "تحليل استراتيجي مدعوم رسمياً ببيانات وزارة العدل السعودية المفتوحة (يوليو 2026)",
-        en: "Data-driven market sizing grounded in official Saudi MOJ Open Data Portal (July 2026)",
+        ar: "تحليل سوقي استرشادي من ملف بيانات مفتوحة لعمليات عقارية (يوليو 2026) مرفق بالمشروع",
+        en: "Indicative market view from a bundled open-data file of real-estate operations (July 2026)",
       },
       keyQuote: {
         ar: "«سوق التصفية والحجز بالمملكة يتجاوز 35 ألف عملية شهرياً (54.7% من إجمالي الحراك العقاري)، مما يجعل مرآة ضرورة وطنية ملحة»",
@@ -417,8 +417,8 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "طبقة البيانات والحوكمة السحابية (Cloud & Storage Layer)",
           titleEn: "Cloud & Storage Governance (Firestore & Auth)",
-          descAr: "قاعدة بيانات سحابية لحظية ومصادقة مستخدمين مشفرة متعددة الأدوار (RBAC) لحفظ سجلات التفتيش وجوازات الأصول وسجلات التدقيق.",
-          descEn: "Enterprise Firestore DB with RBAC identity authentication managing asset dossiers and tamper-proof audit trails.",
+          descAr: "Firestore مع تسجيل دخول Google؛ قواعد تسمح لكل مستخدم ببياناته فقط وتسجّل إجراءات التحقق من الملاحظات. لا توجد أدوار وصلاحيات متعددة (RBAC) في هذا الإصدار.",
+          descEn: "Firestore with Google sign-in; rules limit each user to their own data and log finding-verification actions. No multi-role RBAC in this version.",
           icon: Database,
         },
         {
@@ -470,22 +470,22 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "محرك الذكاء الاصطناعي التوليدي (GenAI SDK)",
           titleEn: "Generative AI Engine",
-          descAr: "حزمة Google GenAI الرسمية بنموذج Gemini 3.8 Flash المتطور، مع استرداد احتياطي تلقائي يمنع أي انقطاع أثناء المعاينة الميدانية.",
-          descEn: "Official @google/genai SDK leveraging Gemini 3.8 Flash with automated multi-tier failover recovery.",
+          descAr: "حزمة @google/genai مع نموذج Gemini قابل للضبط ونموذج احتياطي؛ إذا لم يتوفر مفتاح أو تعذّر النموذج تظهر رسالة واضحة بدل إجابة مولّدة.",
+          descEn: "@google/genai SDK with a configurable Gemini model and one fallback; without a key or model the UI says so instead of generating an answer.",
           icon: Cpu,
         },
         {
           titleAr: "قاعدة البيانات والحفظ السحابي (Cloud Data Tier)",
           titleEn: "Cloud Database & Identity",
-          descAr: "قاعدة بيانات Firestore لإدارة الحالات والتعديل اللحظي (In-Memory Mutation)، ومصادقة Firebase بمستويات وصول للمشرف القضائي.",
-          descEn: "Firestore DB for real-time synchronization, in-memory optimistic updates, and role-based access control.",
+          descAr: "حالة الواجهة في الذاكرة، وFirestore لملف المستخدم وسجل التحقق، ومصادقة Firebase.",
+          descEn: "In-memory UI state, Firestore for user profile and verification log, Firebase Auth.",
           icon: Database,
         },
       ],
       highlightMetrics: [
-        { labelAr: "دعم TypeScript الشامل", labelEn: "Type Safety", val: "100%" },
+        { labelAr: "لغة البرمجة", labelEn: "Language", val: "TypeScript" },
         { labelAr: "محرك الذكاء الاصطناعي", labelEn: "AI Core", val: "Gemini 3.8" },
-        { labelAr: "تحديث البيانات اللحظي", labelEn: "Sync Latency", val: "مباشر" },
+        { labelAr: "الفحص الآلي", labelEn: "CI", val: "GitHub Actions" },
       ],
       tag: "المنظومة البرمجية والـ Stack",
     },
@@ -629,14 +629,14 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "تصدير الوثائق المعتمدة (ExportPassportModal)",
           titleEn: "ExportPassportModal",
-          descAr: "توليد وتصدير ملفات PDF رسمية عالية الدقة من 4 صفحات، مع إتاحة تصدير البيانات الخام بصيغ JSON و CSV لتكامل الأنظمة.",
+          descAr: "تصدير جواز الأصل PDF من 4 صفحات بعلامة \"نموذج تجريبي\"، وتصدير JSON وCSV من نفس البيانات مع بصمة SHA-256.",
           descEn: "Client-side generation of accredited 4-page PDF dossiers, alongside raw JSON and CSV data streams.",
           icon: FileText,
         },
         {
           titleAr: "استعراض الوثائق ورفع الوسائط (Media & Docs Tools)",
           titleEn: "Media & Document Ingestion",
-          descAr: "عارض الوثائق الرسمية (الصك الإلكتروني، تقرير التقييم، رخصة بلدي)، ونافذة معالجة مقاطع الفيديو والصور الميدانية.",
+          descAr: "عارض نماذج مستندات توضيحية (ليست رسمية)، ونافذة رفع صور ومقاطع مع تصنيف يدوي للملاحظات.",
           descEn: "Accredited deed and appraisal viewer, paired with field media capture and visual triage tools.",
           icon: Eye,
         },
@@ -683,7 +683,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
           titleAr: "3. تدقيق العيوب واستشارة الذكاء الاصطناعي (Defects & AI)",
           titleEn: "3. Defect Audit & AI SBC Consultation",
           descAr: "اعتماد أو معالجة العيوب الإنشائية وتحديث سجل التدقيق اللحظي، واستشارة مستشار مرآة الذكي وفق كود البناء السعودي.",
-          descEn: "Verify defects with tamper-proof audit logging and query AI advisor for SBC-compliant remediation.",
+          descEn: "Verify findings (logged to Firestore) and ask the AI assistant about the recorded data.",
           icon: Cpu,
         },
         {
@@ -697,7 +697,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       highlightMetrics: [
         { labelAr: "خطوات مسار العمل", labelEn: "Workflow Steps", val: "7 خطوات محوكمة" },
         { labelAr: "متوسط وقت الدورة", labelEn: "Avg Cycle Time", val: "أقل من 15 دقيقة" },
-        { labelAr: "التوثيق القضائي", labelEn: "Audit Trail", val: "تلقائي 100%" },
+        { labelAr: "سجل التحقق", labelEn: "Audit log", val: "Firestore" },
       ],
       tag: "رحلة المستخدم والمسار التشغيلي",
     },
@@ -721,7 +721,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "مسارات الخادم الفعلية والمؤمنة (Hardened Endpoints)",
           titleEn: "Hardened Server Endpoints",
-          descAr: "1. GET /api/health لفحص سلامة الخادم، 2. POST /api/gemini/chat لاستقبال محادثة المستشار بسياق إنفاذ، 3. POST /api/gemini/analyze-defect لتحليل العيوب وكود البناء.",
+          descAr: "1. GET /api/health لفحص سلامة الخادم، 2. POST /api/ai/chat لاستقبال محادثة المستشار بسياق إنفاذ، 3. POST /api/gemini/analyze-defect لتحليل العيوب وكود البناء.",
           descEn: "REST endpoints handling system health, context-grounded inspection chat, and automated SBC defect triage.",
           icon: Layers,
         },
@@ -735,7 +735,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "هندسة التوجيه السياقي الصارم (Grounding Prompts)",
           titleEn: "Context Grounding & Prompt Engineering",
-          descAr: "حقن سياق إرشادي رسمي يتضمن تفاصيل الأصل المسجل ومرجعية كود البناء السعودي (SBC) وهوية إنفاذ الإنشائية لتفادي الهلوسة.",
+          descAr: "تمرير بيانات الأصل كبيانات محددة ومنظّفة منفصلة عن التعليمات، مع قائمة صريحة بما هو منفّذ وما هو محاكاة، ومنع اختلاق الأرقام.",
           descEn: "Context injection binding deed data, SBC structural criteria, and Enfad guidelines to eliminate hallucination.",
           icon: Cpu,
         },
@@ -750,7 +750,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       highlightMetrics: [
         { labelAr: "زمن استجابة المسارات", labelEn: "API Response Time", val: "< 180ms" },
         { labelAr: "معدل توفر الخدمة", labelEn: "Failover Availability", val: "99.98%" },
-        { labelAr: "حماية مفاتيح النظام", labelEn: "Key Isolation", val: "100% خلفية" },
+        { labelAr: "مفتاح Gemini", labelEn: "API key", val: "على الخادم فقط" },
       ],
       tag: "الواجهة الخلفية والـ APIs",
     },
@@ -827,36 +827,36 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
         {
           titleAr: "مؤشر الحالة الإنشائية (CI — Condition Index)",
           titleEn: "Condition Index (CI)",
-          descAr: "يبدأ من 100 نقطة؛ يخصم 25 نقطة لكل عيب حرج غير معالج، و 10 نقاط للمتوسط، و 3 نقاط للمنخفض. وتُلغى الخصومات كلياً عند اعتماد معالجة العيب.",
-          descEn: "Starts at 100; subtracts 25 pts for unresolved critical defects, 10 for medium, 3 for low. Restored upon verified repair.",
+          descAr: "يبدأ من 100 ويخصم لكل ملاحظة غير معالجة: الوزن × (نسبة الثقة ÷ 100)، والأوزان: حرج 15، متوسط 8، منخفض 3. الملاحظات المعالجة لا تُخصم.",
+          descEn: "Starts at 100; for each unresolved finding subtracts weight × confidence/100 with weights Critical 15, Moderate 8, Low 3. Resolved findings are not penalised.",
           icon: ShieldCheck,
         },
         {
           titleAr: "نسبة التغطية المكانية (COV — Coverage Ratio)",
           titleEn: "Coverage Ratio (COV)",
-          descAr: "المتوسط الحسابي المرجح لنسب مسح الغرف والواجهات والأسطح والقبو لضمان عدم وجود زوايا خفية في التقرير.",
-          descEn: "Weighted arithmetic average of inspected rooms, facades, roofs, and basements ensuring complete audit.",
+          descAr: "المتوسط الحسابي البسيط لنسب التغطية المسجلة لكل منطقة.",
+          descEn: "Simple mean of the recorded coverage percentage of each area.",
           icon: Compass,
         },
         {
           titleAr: "مؤشر ثقة الفحص البصري (CONF — Visual Confidence)",
           titleEn: "Visual Confidence (CONF)",
-          descAr: "يبدأ من 95%؛ يخصم 12% عند غياب الفحص المسجل، وتخصم نسب إضافية حسب نسبة العيوب غير المعتمدة هندسياً.",
-          descEn: "Starts at 95%; penalizes uninspected zones and scales deductions based on unverified engineering items.",
+          descAr: "0.50 × التغطية + 0.30 × متوسط نسب الثقة + 0.20 × نسبة الملاحظات التي لها دليل مصوّر.",
+          descEn: "0.50 × coverage + 0.30 × mean finding confidence + 0.20 × share of findings with evidence frames.",
           icon: Eye,
         },
         {
-          titleAr: "اكتمال الوثائق وعقوبة العوائق (DOC — Document Integrity)",
-          titleEn: "Document Integrity & Blocker Penalties (DOC)",
-          descAr: "يبدأ من 100% ويخصم 20 نقطة عن كل وثيقة بلدية مفقودة، مع عقوبة إضافية (10-15 نقطة) في حال وجود عيب حرج في الأساسات.",
-          descEn: "Starts at 100%; deducts 20 pts per missing deed/permit, with 10-15 pt penalty for foundation risks.",
+          titleAr: "مؤشر جاهزية التصفية (Readiness)",
+          titleEn: "Liquidation Readiness Index",
+          descAr: "100 − 0.40 × (100 − مؤشر الحالة) − 0.35 × (100 − التغطية) − 5 × الملاحظات غير المعالجة − 3 × حقول بيانات الأصل الناقصة، محصوراً بين 0 و100.",
+          descEn: "100 − 0.40 × (100 − CI) − 0.35 × (100 − coverage) − 5 × unresolved findings − 3 × missing asset fields, clamped to 0–100.",
           icon: FileText,
         },
       ],
       highlightMetrics: [
-        { labelAr: "الوزن النسبي للحالة الإنشائية", labelEn: "CI Weight", val: "40%" },
-        { labelAr: "الوزن النسبي للتغطية والتوثيق", labelEn: "COV & DOC Weight", val: "40%" },
-        { labelAr: "الوزن النسبي لثقة الفحص", labelEn: "CONF Weight", val: "20%" },
+        { labelAr: "معامل الحالة الإنشائية", labelEn: "CI factor", val: "0.40" },
+        { labelAr: "معامل التغطية", labelEn: "Coverage factor", val: "0.35" },
+        { labelAr: "خصم كل ملاحظة غير معالجة", labelEn: "Per unresolved finding", val: "−5" },
       ],
       tag: "خوارزمية FR-11 للجاهزية",
     },
@@ -919,14 +919,14 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       badge: { ar: "الشريحة 17 | الجاهزية الميدانية والتحقق", en: "Slide 17 | Live Prototype vs Enterprise Integration" },
       title: {
         ar: "المكونات التشغيلية الحية والتحقق الميداني الفعلي",
-        en: "100% Functional Live Prototype & Enterprise Roadmap",
+        en: "Working Prototype (demo data) & Roadmap",
       },
       subtitle: {
         ar: "تجاوزنا مرحلة التصاميم النظرية إلى برمجية متكاملة تعمل بكامل وظائفها وجاهزة للعرض الحي",
         en: "Beyond static wireframes: a fully deployed, interactive platform verified against real-world assets",
       },
       keyQuote: {
-        ar: "«كل زر في المنصة، وكل نافذة، وكل حساب مالي يعمل ببرمجية حقيقية 100% يمكن للمحكمين تجربتها مباشرة الآن»",
+        ar: "«الحسابات والمؤشرات والتصدير تعمل فعلاً ويمكن تجربتها؛ والوحدات المعلّمة بـ\"محاكاة\" تعرض فكرة مستقبلية ببيانات توضيحية»",
         en: "Every button, modal, and calculation runs on live code that judges can interact with and test directly.",
       },
       bulletPoints: [
@@ -948,19 +948,19 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
           titleAr: "تصدير الوثائق وسجل التدقيق المشفر",
           titleEn: "Accredited Export & Audit Logging",
           descAr: "توليد ملفات PDF عالية الدقة وتنزيل ملفات JSON و CSV محلياً على جهاز المستخدم، مع كتابة عمليات الفحص في سجل التدقيق السحابي.",
-          descEn: "Instant client-side generation of certified 4-page PDF dossiers and permanent cloud audit logging.",
+          descEn: "Client-side 4-page PDF export marked as prototype, plus Firestore verification log.",
           icon: FileText,
         },
         {
           titleAr: "المرحلة التالية: الربط الحكومي الشامل (Enterprise API Integration)",
           titleEn: "Next Phase: National Enterprise Sandbox",
-          descAr: "نقل الربط التجريبي للوثائق إلى تكامل مباشر عبر واجهات برمجية رسمية (APIs) مع بوابة إفراغ، منصة بلدي، ونظام مزادات إنفاذ الوطني.",
+          descAr: "مخطط مستقبلي: تكامل عبر واجهات برمجية رسمية مع الجهات المعنية بعد الحصول على الموافقات اللازمة. لا يوجد أي ربط حالياً.",
           descEn: "Transitioning pilot sandboxes into production APIs with Enfad, Efrah, and the Real Estate Registry.",
           icon: Layers,
         },
       ],
       highlightMetrics: [
-        { labelAr: "جاهزية النموذج الأولي", labelEn: "Prototype Readiness", val: "100% شغال" },
+        { labelAr: "حالة النموذج الأولي", labelEn: "Prototype", val: "يعمل ببيانات توضيحية" },
         { labelAr: "زمن معالجة الذكاء الاصطناعي", labelEn: "AI Latency", val: "< 120ms" },
         { labelAr: "قابلية العرض الحي", labelEn: "Live Demo Ready", val: "فورية" },
       ],
@@ -985,8 +985,8 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
       bulletPoints: [
         {
           titleAr: "1. رسوم إصدار جواز الأصل القضائي (B2G/B2B Fees)",
-          titleEn: "1. Certified Asset Passport Issuance Fee",
-          descAr: "رسم مقطوع (3,500 – 7,500 ر.س حسب مساحة الأصل) يُعتمد رسمياً ضمن مصاريف التصفية القضائية المعتمدة ويُقتطع من حصيلة المزاد.",
+          titleEn: "1. Asset Passport Issuance Fee (proposal)",
+          descAr: "مقترح: رسم مقطوع (3,500 – 7,500 ر.س حسب مساحة الأصل)، وطريقة احتسابه ضمن مصاريف التصفية تخضع لقرار الجهة المختصة.",
           descEn: "Fixed fee per inspected asset recognized as approved judicial liquidation expense deducted at closing.",
           icon: FileText,
         },
@@ -1664,7 +1664,7 @@ export const ProjectDossierModal: React.FC<ProjectDossierModalProps> = ({
             <div className="p-5 rounded-2xl bg-slate-950/80 border border-cyan-500/40 text-xs text-slate-300 space-y-2">
               <h4 className="font-bold text-white text-sm">جاهزية الإطلاق والشراكة التجريبية (Pilot Cohort)</h4>
               <p className="leading-relaxed">
-                المنصة جاهزة تقنياً ومعمارياً بنسبة 100% للربط التجريبي مع مركز الإسناد والتصفية (إنفاذ) ومحاكم التنفيذ بالرياض على دفعة أولى تتكون من 10 أصول عقارية، لقياس الأثر وتدريب الفرق الميدانية وتوفير تجربة استثنائية للمزايدين والمستثمرين.
+                نقترح تجربة محدودة (Pilot) مع مركز الإسناد والتصفية (إنفاذ) على دفعة أولى من 10 أصول عقارية، بعد استكمال الربط بالبيانات الحقيقية والموافقات اللازمة، لقياس الأثر وتدريب الفرق الميدانية.
               </p>
             </div>
           </div>

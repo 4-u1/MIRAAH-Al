@@ -443,7 +443,7 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                   }`}
                 >
                   <Flame className="w-3 h-3" />
-                  <span>THERMAL / HUE</span>
+                  <span>HUE FILTER (not thermal)</span>
                 </button>
                 <button
                   onClick={() => setViewMode("contour")}
@@ -487,6 +487,9 @@ export const DefectDrillDownModal: React.FC<DefectDrillDownModalProps> = ({
                           : ""
                       }`}
                     />
+                    <span className="absolute bottom-1 left-1 z-10 rounded bg-black/70 px-1.5 py-0.5 text-[9px] text-amber-200">
+                      {isArabic ? "صورة توضيحية (مكتبة صور) · المربع والنسبة للعرض فقط" : "Illustrative stock image · box and score are for display only"}
+                    </span>
 
                     {/* AI Bounding Box Overlay with Corner Reticles */}
                     {viewMode === "ai" && currentFrame.detectedBox && (

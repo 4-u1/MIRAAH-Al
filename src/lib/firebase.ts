@@ -65,10 +65,10 @@ export async function signInWithGoogle(): Promise<{ user: User | null; error?: A
         {
           uid: user.uid,
           email: user.email || "",
-          displayName: user.displayName || "مستخدم معتمد",
+          displayName: user.displayName || "مستخدم",
           photoURL: user.photoURL || "",
-          role: "judicial_officer",
-          organization: "مركز الإسناد والتصفية (إنفاذ)",
+          role: "demo_user",
+          organization: "",
           lastLogin: new Date().toISOString(),
         },
         { merge: true }

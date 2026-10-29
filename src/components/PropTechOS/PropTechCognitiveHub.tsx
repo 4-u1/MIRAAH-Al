@@ -27,6 +27,7 @@ import {
 import { AssetRecord } from "../../types";
 import { SmartIoTDashboard } from "./SmartIoTDashboard";
 import { useTheme } from "../../context/ThemeContext";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface PropTechCognitiveHubProps {
   asset: AssetRecord;
@@ -95,16 +96,17 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
 
   const PILLARS = [
     { id: "all", label: "Overview & Matrix", labelArabic: "نظرة شمولية شاملة", icon: Workflow },
-    { id: "iot", label: "Smart IoT", labelArabic: "المستشعرات الذكية (Smart IoT)", icon: Activity, badge: "Live Gauges" },
+    { id: "iot", label: "Smart IoT", labelArabic: "المستشعرات الذكية (Smart IoT)", icon: Activity, badge: "Simulated" },
     { id: "bim", label: "2. BIM-AI Deviation", labelArabic: "٢. مطابقة BIM والنمذجة", icon: Layers, badge: `${(totalBimSavings/1000).toFixed(0)}k SAR وفر` },
-    { id: "predictive", label: "3. Predictive Lifecycle", labelArabic: "٣. التنبؤ بالدورة الحياتية", icon: Clock, badge: "10-Yr AI" },
-    { id: "blockchain", label: "4. National Registry & Chain", labelArabic: "٤. السجل العقاري والبلوكشين", icon: ShieldCheck, badge: "SRE-Chain" },
-    { id: "avm", label: "5. Dynamic AVM Model", labelArabic: "٥. محرك التقييم العقاري الآلي", icon: TrendingUp, badge: "Live Comps" },
-    { id: "legal", label: "6. Legal-Tech & Balady", labelArabic: "٦. التدقيق القانوني والبلدي", icon: Scale, badge: "100% سارٍ" },
+    { id: "predictive", label: "3. Predictive Lifecycle", labelArabic: "٣. التنبؤ بالدورة الحياتية", icon: Clock, badge: "Simulated" },
+    { id: "blockchain", label: "4. National Registry & Chain", labelArabic: "٤. السجل العقاري والبلوكشين", icon: ShieldCheck, badge: "Simulated" },
+    { id: "avm", label: "5. Dynamic AVM Model", labelArabic: "٥. محرك التقييم العقاري الآلي", icon: TrendingUp, badge: "Simulated" },
+    { id: "legal", label: "6. Legal-Tech & Balady", labelArabic: "٦. التدقيق القانوني والبلدي", icon: Scale, badge: "Simulated" },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <SimulatedBadge isArabic={isArabic} />
       {/* ══ HEADER: COGNITIVE OS COMMAND BANNER ══ */}
       <div className={`relative rounded-3xl overflow-hidden border p-6 sm:p-8 backdrop-blur-xl ${
         isDark
@@ -144,8 +146,8 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
               isDark ? "text-slate-300" : "text-slate-600"
             }`}>
               {isArabic
-                ? "دمج تقنيات الجيل القادم: التوأم الرقمي الحي بمستشعرات IoT، مطابقة نمذجة BIM، التنبؤ بالدورة الحياتية، التوثيق بالبلوكشين، محرك التقييم الآلي AVM، والامتثال القانوني الذكي."
-                : "Next-generation PropTech 2.0: Live IoT telemetry, BIM-AI deviation detection, 10-year predictive lifecycle AI, National Registry blockchain passport, dynamic AVM engine, and Balady legal-tech automation."}
+                ? "تصوّر مستقبلي (محاكاة ببيانات توضيحية): مستشعرات IoT، مطابقة BIM، التنبؤ بالدورة الحياتية، سجل بلوكشين، تقييم آلي AVM، وتدقيق قانوني. لا يوجد أي ربط حقيقي بهذه الأنظمة في هذا الإصدار."
+                : "Future vision (simulated with demo data): IoT telemetry, BIM deviation, predictive lifecycle, blockchain registry, AVM and legal audit. None of these are connected to real systems in this version."}
             </p>
           </div>
 
@@ -157,7 +159,7 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
               <div className={`text-[10px] uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>{isArabic ? "حالة المستشعرات" : "IoT TELEMETRY"}</div>
               <div className={`text-lg font-bold flex items-center justify-center gap-1 ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>
                 <Activity className="w-4 h-4 animate-pulse" />
-                <span>5 / 5 LIVE</span>
+                <span>SIMULATED</span>
               </div>
             </div>
 
@@ -477,18 +479,18 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className={`text-lg font-bold font-arabic ${isDark ? "text-white" : "text-slate-900"}`}>
-                    {isArabic ? "٤. التوثيق بسجل العقار الوطني وسلسلة الكتل (Blockchain Passport)" : "4. National Real Estate Registry & Blockchain Trustless Passport"}
+                    {isArabic ? "٤. سجل بلوكشين (فكرة مستقبلية · محاكاة)" : "4. Blockchain registry (future concept · simulated)"}
                   </h2>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
                     isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-emerald-50 text-emerald-800 border-emerald-200"
                   }`}>
-                    SRE-Chain Node #1842903
+                    Simulated · no real chain
                   </span>
                 </div>
                 <p className={`text-xs font-mono mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   {isArabic
-                    ? "سجل غير قابل للتلاعب يوثق كافة الصكوك، تقارير الفحص، وأعمال الصيانة لرفع ثقة المشترين في الصفقات العقارية."
-                    : "Cryptographically secured on-chain due-diligence passport guaranteeing immutable maintenance and inspection provenance."}
+                    ? "محاكاة لفكرة سجل يوثّق الصكوك وتقارير الفحص. لا توجد شبكة بلوكشين ولا ربط بالسجل العقاري الوطني."
+                    : "Simulation of a registry concept for deeds and inspection reports. There is no blockchain network and no link to the national real-estate registry."}
                 </p>
               </div>
             </div>
@@ -497,7 +499,7 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
               isDark ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-300" : "bg-emerald-50 border-emerald-200 text-emerald-800"
             }`}>
               <Lock className="w-3.5 h-3.5" />
-              <span>{isArabic ? "سجل تاريخي موثق ومحمي 100%" : "100% IMMUTABLE PROOF"}</span>
+              <span>{isArabic ? "بيانات توضيحية" : "DEMO DATA"}</span>
             </div>
           </div>
 
@@ -529,7 +531,7 @@ export const PropTechCognitiveHub: React.FC<PropTechCognitiveHubProps> = ({
                 <div className="flex items-center justify-between">
                   <span className={`text-[10px] uppercase flex items-center gap-1.5 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                     <Lock className={`w-3 h-3 ${isDark ? "text-cyan-400" : "text-cyan-600"}`} />
-                    {isArabic ? "بصمة التشفير غير القابلة للتلاعب (SHA-256 Hash):" : "Immutable Proof Hash (SHA-256):"}
+                    {isArabic ? "قيمة توضيحية (ليست بصمة لأي بيانات):" : "Illustrative value (not a hash of any data):"}
                   </span>
                   <button
                     onClick={() => copyToClipboard(blockchain.immutableHashSha256)}

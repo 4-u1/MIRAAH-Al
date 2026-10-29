@@ -196,11 +196,7 @@ export const AuthUserButton: React.FC<AuthUserButtonProps> = ({ isArabic = false
                 {isArabic ? "الدور الوظيفي:" : "Role:"}
               </span>
               <span className="text-cyan-300 font-bold">
-                {profile?.role === "judicial_officer"
-                  ? isArabic
-                    ? "مأمور تصفية قضائية"
-                    : "Judicial Officer"
-                  : profile?.role || "Authorized User"}
+                {isArabic ? "مستخدم تجريبي" : "Demo user"}
               </span>
             </div>
 
@@ -210,7 +206,7 @@ export const AuthUserButton: React.FC<AuthUserButtonProps> = ({ isArabic = false
                 {isArabic ? "الجهة:" : "Entity:"}
               </span>
               <span className="text-slate-200 truncate max-w-[130px]">
-                {profile?.organization || "مركز إنفاذ"}
+                {profile?.organization || (isArabic ? "غير محددة" : "Not set")}
               </span>
             </div>
           </div>

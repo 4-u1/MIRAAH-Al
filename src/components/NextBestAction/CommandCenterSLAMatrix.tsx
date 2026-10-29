@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ActionItem, SLAAlertItem, SLAStatus, SLATier } from "../../types";
+import { SimulatedBadge } from "../common/DemoDataBanner";
 
 interface CommandCenterSLAMatrixProps {
   actions: ActionItem[];
@@ -248,6 +249,7 @@ export const CommandCenterSLAMatrix: React.FC<CommandCenterSLAMatrixProps> = ({
 
   return (
     <div className="space-y-6">
+      <SimulatedBadge isArabic={isArabic} />
       {/* ═══════════════════════════════════════════════════════════════════════
           COMMAND CENTER HEADER & OPERATIONAL BAR
       ═══════════════════════════════════════════════════════════════════════ */}
