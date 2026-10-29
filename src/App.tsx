@@ -243,7 +243,7 @@ export default function App() {
   const TABS = [
     { id: "passport", label: "Asset Passport", labelArabic: "جواز الأصل والمناطق", icon: Home, emoji: "🏠" },
     { id: "proptech", label: "PropTech 2.0 OS", labelArabic: "منظومة PropTech المعرفية", icon: Cpu, emoji: "🤖" },
-    { id: "findings", label: "AI Findings", labelArabic: "نتائج الذكاء الاصطناعي", icon: Search, emoji: "🔍" },
+    { id: "findings", label: "Findings", labelArabic: "الملاحظات", icon: Search, emoji: "🔍" },
     { id: "coverage", label: "Spatial Coverage", labelArabic: "التغطية المكانية", icon: Compass, emoji: "📡" },
     { id: "trends", label: "Market Trends", labelArabic: "اتجاهات السوق والتقييم", icon: TrendingUp, emoji: "📈" },
     { id: "whatif", label: "What-If Simulator", labelArabic: "محاكي السيناريوهات", icon: Zap, emoji: "⚡" },
