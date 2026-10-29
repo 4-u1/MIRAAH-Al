@@ -11,7 +11,7 @@ import {
   assertSucceeds,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, addDoc, collection, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, addDoc, collection, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
 const hasEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
 
@@ -42,22 +42,29 @@ describe.skipIf(!hasEmulator)("firestore.rules", () => {
     await assertFails(getDoc(doc(anon, "inspections/x")));
   });
 
-  it("inspection records must carry the creator's uid", async () => {
-    const alice = env.authenticatedContext("alice").firestore();
-    await assertFails(addDoc(collection(alice, "inspections"), { inspectorUid: "bob", assetId: "1" }));
-    await assertSucceeds(addDoc(collection(alice, "inspections"), { inspectorUid: "alice", assetId: "1", verified: true }));
+  const rec = (uid: string, extra: Record<string, unknown> = {}) => ({ inspectorUid: uid, assetId: "1", createdAt: serverTimestamp(), ...extra });
+
+  it("inspection records must carry the creator's uid, email and server time", async () => {
+    const alice = env.authenticatedContext("alice", { email: "alice@example.com" }).firestore();
+    await assertFails(addDoc(collection(alice, "inspections"), rec("bob")));
+    await assertFails(addDoc(collection(alice, "inspections"), rec("alice", { inspectorEmail: "boss@example.com" })));
+    await assertFails(addDoc(collection(alice, "inspections"), { inspectorUid: "alice", assetId: "1", createdAt: new Date(0) }));
+    await assertSucceeds(addDoc(collection(alice, "inspections"), rec("alice", { inspectorEmail: "alice@example.com", verified: true, findingId: 3 })));
   });
 
-  it("inspection records reject unexpected fields", async () => {
+  it("inspection records reject unexpected fields and oversized or mistyped values", async () => {
     const alice = env.authenticatedContext("alice").firestore();
-    await assertFails(addDoc(collection(alice, "inspections"), { inspectorUid: "alice", assetId: "1", role: "admin" }));
+    await assertFails(addDoc(collection(alice, "inspections"), rec("alice", { role: "admin" })));
+    await assertFails(addDoc(collection(alice, "inspections"), rec("alice", { notes: "x".repeat(1001) })));
+    await assertFails(addDoc(collection(alice, "inspections"), rec("alice", { verified: "yes" })));
   });
 
-  it("the inspection log is append-only, even for the creator", async () => {
+  it("the inspection log is append-only, and users read only their own records", async () => {
     const alice = env.authenticatedContext("alice").firestore();
     const bob = env.authenticatedContext("bob").firestore();
-    const ref = await addDoc(collection(alice, "inspections"), { inspectorUid: "alice", assetId: "1" });
-    await assertSucceeds(getDoc(doc(bob, ref.path)));
+    const ref = await addDoc(collection(alice, "inspections"), rec("alice"));
+    await assertSucceeds(getDoc(doc(alice, ref.path)));
+    await assertFails(getDoc(doc(bob, ref.path)));
     await assertFails(updateDoc(doc(alice, ref.path), { inspectorUid: "bob" }));
     await assertFails(updateDoc(doc(alice, ref.path), { assetId: "2" }));
     await assertFails(deleteDoc(doc(alice, ref.path)));
