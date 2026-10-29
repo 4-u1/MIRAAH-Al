@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import {
@@ -38,6 +38,7 @@ import { MiraahLogo } from "../common/MiraahLogo";
 import { CoverPageAISummarySection } from "./CoverPageAISummarySection";
 import { extractCoverPageAISummary } from "../../utils/aiCoverSummary";
 import { sanitizeElementForCanvas } from "../../utils/canvasSanitizer";
+import { buildPassportData, buildPassportExport, buildPassportCsv, type PassportExport } from "../../utils/passport";
 
 interface ExportPassportModalProps {
   isOpen: boolean;
@@ -65,70 +66,24 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
   const [pdfProgressText, setPdfProgressText] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Single source of truth for JSON / CSV / PDF; fingerprint = SHA-256 of canonical passport JSON.
+  const passportData = useMemo(() => buildPassportData(asset, scores), [asset, scores]);
+  const [passportExport, setPassportExport] = useState<PassportExport | null>(null);
+  useEffect(() => {
+    let alive = true;
+    buildPassportExport(passportData).then((e) => {
+      if (alive) setPassportExport(e);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [passportData]);
+
   if (!isOpen) return null;
 
-  const mockSha256 = `0x${Array.from(asset.id + "MIRAAH2026INFATH")
-    .map((c) => c.charCodeAt(0).toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 32)}e4f9b28a1c97`;
-
-  const passportJson = {
-    schema_version: "2.4.0-INFATH-GOV",
-    dossier_id: `INFATH-DSP-${asset.id}-${new Date().getFullYear()}`,
-    generated_at: new Date().toISOString(),
-    blockchain_hash: mockSha256,
-    authority: "مركز الإسناد والتصفية (إنفاذ) · Entrustment and Liquidation Center",
-    partner_institution: "جامعة القصيم · Qassim University",
-    accreditations: ["SCE-PROP-2026", "TAQEEM-VAL-2026", "SBC-COMPLIANT"],
-    asset_info: {
-      id: asset.id,
-      name: asset.name,
-      name_ar: asset.nameArabic,
-      type: asset.type,
-      type_ar: asset.typeArabic,
-      location: asset.location,
-      location_ar: asset.locationArabic,
-      city: asset.city,
-      district: asset.district,
-      size_sqm: asset.sizeSqm,
-      build_year: asset.buildYear,
-      valuation_sar: asset.valuationSar,
-      inspector: {
-        name: asset.inspectorName,
-        license: asset.inspectorLicense,
-        inspection_date: asset.inspectionDate,
-      },
-    },
-    scores: {
-      liquidation_readiness_index: scores.liquidationReadiness,
-      condition_index: scores.conditionIndex,
-      inspection_confidence: scores.inspectionConfidence,
-      inspection_coverage_pct: scores.coveragePct,
-      risk_level: scores.riskLevel,
-    },
-    findings_summary: {
-      total: scores.totalFindings,
-      critical: scores.criticalCount,
-      moderate: scores.moderateCount,
-      low: scores.lowCount,
-      unresolved: scores.unresolvedCount,
-      verified_evidence_frames: scores.totalEvidenceFrames,
-    },
-    ai_due_diligence_synthesis: extractCoverPageAISummary(asset, scores),
-    saudi_building_code_matrix: {
-      "SBC-304": "مطابق مع ملاحظات طفيفة (Concrete & Rebar)",
-      "SBC-601": "معالجة عزل رطوبي قيد المتابعة (Thermal & Moisture)",
-      "SBC-801": "مكتمل بنسبة 100% (Fire Protection & Life Safety)",
-      "SBC-201": "معتمد بالكامل (Architectural & Egress)",
-    },
-    standards_compliance: {
-      evidence_traceability_pct: 100,
-      four_state_buyer_transparency: true,
-      digital_signature_valid: true,
-    },
-  };
-
-  const jsonString = JSON.stringify(passportJson, null, 2);
+  const passportSha = passportExport?.fingerprint.sha256 ?? "";
+  const shaShown = passportSha || "computing…";
+  const jsonString = passportExport ? JSON.stringify(passportExport, null, 2) : "";
 
   const handleCopy = () => {
     navigator.clipboard?.writeText?.(jsonString);
@@ -137,12 +92,13 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
   };
 
   const handleCopyHash = () => {
-    navigator.clipboard?.writeText?.(mockSha256);
+    navigator.clipboard?.writeText?.(passportSha);
     setCopiedHash(true);
     setTimeout(() => setCopiedHash(false), 2000);
   };
 
   const handleDownloadJson = () => {
+    if (!jsonString) return;
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -186,7 +142,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      pdf.save(`MIRAAH_Certified_Dossier_Asset_${asset.id}_Page${activePage}.pdf`);
+      pdf.save(`MIRAAH_Demo_Dossier_Asset_${asset.id}_Page${activePage}.pdf`);
     } catch (err) {
       console.error("PDF generation failed, triggering browser print fallback:", err);
       window.print();
@@ -197,123 +153,8 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
   };
 
   const handleDownloadCsv = () => {
-    const headers = [
-      "Dossier Reference",
-      "Asset ID",
-      "Asset Name (EN)",
-      "Asset Name (AR)",
-      "Property Type",
-      "City",
-      "District",
-      "Location Coordinates",
-      "Size (SQM)",
-      "Build Year",
-      "Valuation (SAR)",
-      "Liquidation Readiness (%)",
-      "Condition Index (%)",
-      "Inspection Confidence (%)",
-      "Risk Level",
-      "Inspector Name",
-      "Inspector License",
-      "Inspection Date",
-      "Total Findings",
-      "Critical Defects",
-      "Moderate Defects",
-      "Low Defects",
-      "Unresolved Defects",
-      "Finding ID",
-      "Finding Title",
-      "Defect Type",
-      "Severity",
-      "SBC Code Reference",
-      "Area Zone",
-      "Est. Repair Cost (SAR)",
-      "Resolution Status",
-      "AI Confidence (%)",
-      "Blockchain Verification Hash",
-    ];
-
-    const rows = asset.findings.map((f) => [
-      `INFATH-DSP-${asset.id}-2026`,
-      asset.id,
-      `"${(asset.name || "").replace(/"/g, '""')}"`,
-      `"${(asset.nameArabic || "").replace(/"/g, '""')}"`,
-      `"${asset.type}"`,
-      `"${asset.city}"`,
-      `"${asset.district}"`,
-      `"${(asset.location || "").replace(/"/g, '""')}"`,
-      asset.sizeSqm,
-      asset.buildYear,
-      asset.valuationSar,
-      scores.liquidationReadiness,
-      scores.conditionIndex,
-      scores.inspectionConfidence,
-      scores.riskLevel,
-      `"${asset.inspectorName}"`,
-      asset.inspectorLicense,
-      asset.inspectionDate,
-      scores.totalFindings,
-      scores.criticalCount,
-      scores.moderateCount,
-      scores.lowCount,
-      scores.unresolvedCount,
-      f.id,
-      `"${(f.title || f.type || "").replace(/"/g, '""')}"`,
-      `"${f.type}"`,
-      `"${f.severity}"`,
-      f.severity === "Critical" ? "SBC-304" : f.type === "Moisture" ? "SBC-601" : "SBC-201",
-      `"${(f.area || "").replace(/"/g, '""')}"`,
-      f.severity === "Critical" ? 45000 : f.severity === "Moderate" ? 18000 : 5000,
-      f.isResolved ? "Resolved" : "Unresolved",
-      `${f.conf}%`,
-      mockSha256,
-    ]);
-
-    const csvContent =
-      "\uFEFF" +
-      [
-        headers.join(","),
-        ...(rows.length > 0
-          ? rows.map((r) => r.join(","))
-          : [
-              [
-                `INFATH-DSP-${asset.id}-2026`,
-                asset.id,
-                `"${asset.name}"`,
-                `"${asset.nameArabic}"`,
-                `"${asset.type}"`,
-                `"${asset.city}"`,
-                `"${asset.district}"`,
-                `"${asset.location}"`,
-                asset.sizeSqm,
-                asset.buildYear,
-                asset.valuationSar,
-                scores.liquidationReadiness,
-                scores.conditionIndex,
-                scores.inspectionConfidence,
-                scores.riskLevel,
-                `"${asset.inspectorName}"`,
-                asset.inspectorLicense,
-                asset.inspectionDate,
-                0,
-                0,
-                0,
-                0,
-                0,
-                "N/A",
-                "No active defects",
-                "None",
-                "None",
-                "SBC-COMPLIANT",
-                "All Zones",
-                0,
-                "Clean",
-                "100%",
-                mockSha256,
-              ].join(","),
-            ]),
-      ].join("\r\n");
-
+    if (!passportSha) return;
+    const csvContent = buildPassportCsv(passportData, passportSha);
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -341,7 +182,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
         {/* ══ PAGE 1: CLIENT-READY COVER PAGE ══ */}
         <div className="dossier-cover-page bg-white text-slate-900 font-sans">
           {/* Subtle Watermark */}
-          <div className="dossier-cover-watermark">MIRAAH · INFATH</div>
+          <div className="dossier-cover-watermark">DEMO · نموذج</div>
 
           <div className="dossier-cover-frame flex-1 flex flex-col justify-between z-10">
             <div className="dossier-cover-inner-border" />
@@ -366,10 +207,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
                 <div className="text-end">
                   <div className="text-[11px] font-bold text-slate-900 font-arabic">
-                    المملكة العربية السعودية · منظومة التصفية والإنفاذ
+                    مرآة · نموذج تجريبي مقدَّم لبرنامج ابتكار إنفاذ
                   </div>
                   <div className="text-[9.5px] font-mono font-bold text-cyan-900">
-                    Doc Ref: INFATH-DSP-{asset.id}-2026-CR
+                    Doc Ref: MIRAAH-DEMO-{asset.id}-2026-CR
                   </div>
                   <div className="text-[9px] text-slate-500 font-mono">
                     Issuance: {asset.inspectionDate} · Form FR-16
@@ -384,7 +225,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                   <span>OFFICIAL ACCREDITED DUE DILIGENCE DOSSIER & SPATIAL ASSET PASSPORT</span>
                 </div>
                 <h1 className="text-xl font-extrabold text-slate-900 tracking-tight font-arabic">
-                  جواز الأصل المكاني وملف الفحص النافي للجهالة المعتمد للتصفية
+                  جواز الأصل المكاني وملف الفحص (نموذج تجريبي ببيانات توضيحية)
                 </h1>
               </div>
 
@@ -413,7 +254,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
                   <div className="text-end bg-white border border-slate-300 rounded-lg p-2.5 shadow-xs shrink-0">
                     <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                      Certified Valuation (Taqeem)
+                      Entered valuation (demo, not Taqeem)
                     </div>
                     <div className="text-base font-black text-emerald-800">
                       SAR {asset.valuationSar.toLocaleString()}
@@ -488,10 +329,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                 <div className="p-2 rounded-lg bg-slate-50 border border-slate-300 text-center">
                   <div className="text-[9px] font-bold text-slate-900 flex items-center justify-center gap-1">
                     <Award className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Infath Innovation</span>
+                    <span>Submitted to Infath Innovation (prototype)</span>
                   </div>
                   <div className="text-[8px] text-slate-500 mt-0.5">
-                    Accredited Liquidation Twin
+                    Prototype · Demo data
                   </div>
                 </div>
 
@@ -501,14 +342,14 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     <span>Saudi Council of Engineers</span>
                   </div>
                   <div className="text-[8px] text-slate-500 mt-0.5">
-                    Certified Technical Inspection
+                    Prototype inspection record
                   </div>
                 </div>
 
                 <div className="p-2 rounded-lg bg-slate-50 border border-slate-300 text-center">
                   <div className="text-[9px] font-bold text-slate-900 flex items-center justify-center gap-1">
                     <Scale className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Taqeem Accredited</span>
+                    <span>Not accredited (demo)</span>
                   </div>
                   <div className="text-[8px] text-slate-500 mt-0.5">
                     Real Estate Valuation Standard
@@ -525,17 +366,17 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     <QrCode className="w-10 h-10 text-slate-900" />
                   </div>
                   <div className="text-[9px] text-slate-600">
-                    <div className="font-bold text-slate-900">Cryptographic Due Diligence QR & Audit Seal</div>
+                    <div className="font-bold text-slate-900">Data fingerprint (SHA-256) · not a seal</div>
                     <div>Scan for interactive BIM 3D viewer & raw sensor telemetry</div>
                     <div className="font-mono text-[8px] text-slate-500 mt-0.5">
-                      Merkle Root: {mockSha256.slice(0, 24)}...
+                      SHA-256: {shaShown.slice(0, 24)}…
                     </div>
                   </div>
                 </div>
 
                 <div className="text-end">
                   <div className="text-[9px] font-mono font-bold text-slate-900 uppercase">
-                    Security Stamp: VERIFIED · GENUINE
+                    Demo data · not verified by any authority
                   </div>
                   <div className="text-[8px] text-slate-500">
                     Digital Passport UUID: DSP-{asset.id}-2026-X9
@@ -547,7 +388,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
               </div>
 
               <div className="mt-2 pt-1.5 border-t border-slate-200 flex items-center justify-between text-[8px] text-slate-500 font-mono">
-                <span>CONFIDENTIAL · PREPARED FOR JUDICIAL ENFORCEMENT & INFATH AUCTION</span>
+                <span>PROTOTYPE · DEMO DATA · NOT FOR OFFICIAL USE</span>
                 <span>CLIENT-READY DOSSIER · COVER PAGE (1 OF 4)</span>
               </div>
             </div>
@@ -576,10 +417,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                 <div className="text-end">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-800">
                     <Award className="w-3.5 h-3.5 text-amber-600" />
-                    <span>مبادرة ابتكار إنفاذ · Infath Innovation</span>
+                    <span>مقدَّم لبرنامج ابتكار إنفاذ · prototype</span>
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono mt-1">
-                    Doc Ref: INFATH-DSP-{asset.id}-2026
+                    Doc Ref: MIRAAH-DEMO-{asset.id}-2026
                   </div>
                 </div>
               </div>
@@ -587,7 +428,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
               {/* Title Banner */}
               <div className="my-5 text-center">
                 <span className="text-[11px] font-mono font-bold tracking-widest text-cyan-800 uppercase bg-cyan-50 px-3 py-1 rounded-md border border-cyan-200">
-                  SECTION 01 / 03 · EXECUTIVE CERTIFICATE & LIQUIDATION SUMMARY
+                  SECTION 01 / 03 · EXECUTIVE SUMMARY (DEMO)
                 </span>
                 <h1 className="text-2xl font-black text-slate-950 mt-2">
                   {asset.name}
@@ -631,7 +472,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     {scores.coveragePct}%
                   </div>
                   <div className="text-[9px] font-semibold text-blue-800 bg-blue-100/60 rounded px-1 mt-1">
-                    Drone & 3D LiDAR
+                    Coverage (demo)
                   </div>
                 </div>
 
@@ -670,7 +511,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     <span className="font-semibold text-slate-900">{asset.buildYear}</span>
                   </div>
                   <div className="p-2.5 flex justify-between">
-                    <span className="text-slate-500">Certified Valuation:</span>
+                    <span className="text-slate-500">Entered valuation (demo):</span>
                     <span className="font-bold text-emerald-800">{asset.valuationSar.toLocaleString()} SAR</span>
                   </div>
                   <div className="p-2.5 flex justify-between">
@@ -706,14 +547,14 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                   <div className="font-bold text-slate-900">Cryptographic Verification QR</div>
                   <div>Scan to audit live spatial digital twin & telemetry</div>
                   <div className="font-mono text-[9px] text-slate-400 mt-0.5">
-                    Hash: {mockSha256.slice(0, 20)}...
+                    Hash: {shaShown.slice(0, 20)}…
                   </div>
                 </div>
               </div>
 
               <div className="text-end">
                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                  Certified Endorsement
+                  Reviewer sign-off (not signed)
                 </div>
                 <div className="font-serif italic font-bold text-sm text-slate-900 mt-0.5">
                   Eng. Zaid Al-Harthy
@@ -779,11 +620,11 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                   <div className="flex justify-between items-center text-xs font-bold text-slate-800">
                     <span>SBC 801: Fire & Life Safety</span>
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800">
-                      100% CLEAR
+                      DEMO VALUE
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-600 mt-1">
-                    Emergency egress paths unobstructed, fire damper assemblies verified.
+                    Illustrative text only; no fire-safety inspection was performed.
                   </p>
                 </div>
 
@@ -877,7 +718,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     SECTION 03 / 03 · SPATIAL TRACEABILITY & EVIDENCE
                   </span>
                   <h2 className="text-lg font-bold text-slate-900">
-                    Visual Proof, Drone Telemetry & Blockchain Log
+                    Visual Evidence & Data Fingerprint
                   </h2>
                 </div>
                 <div className="text-end text-[10px] text-slate-500 font-mono">
@@ -921,7 +762,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                         referrerPolicy="no-referrer"
                       />
                       <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-cyan-300 border border-cyan-500/40">
-                        Autonomous Drone Aerial Survey
+                        Aerial view (illustration)
                       </div>
                       <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-emerald-600 text-[9px] font-bold text-white">
                         98% Photogrammetry Match
@@ -940,28 +781,28 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
               <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 text-xs font-mono my-3 space-y-1.5">
                 <div className="font-bold text-slate-800 flex items-center gap-1.5 font-sans">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>BLOCKCHAIN IMMUTABLE AUDIT TRAIL</span>
+                  <span>DATA FINGERPRINT (SHA-256)</span>
                 </div>
                 <div className="text-[10px] text-slate-600 divide-y divide-slate-200">
                   <div className="py-1 flex justify-between">
                     <span className="text-slate-500">Smart Contract:</span>
-                    <span className="text-slate-800">0x71C9...89b4 (InfathRegistryV2)</span>
+                    <span className="text-slate-800">None (prototype, not registered)</span>
                   </div>
                   <div className="py-1 flex justify-between">
                     <span className="text-slate-500">Block Number:</span>
                     <span className="text-slate-800">#19,842,109</span>
                   </div>
                   <div className="py-1 flex justify-between">
-                    <span className="text-slate-500">Payload Merkle Root:</span>
-                    <span className="text-slate-800">{mockSha256}</span>
+                    <span className="text-slate-500">Passport SHA-256:</span>
+                    <span className="text-slate-800">{shaShown}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-              <span>Tamper-evident verification certified</span>
-              <span>End of Certified Due Diligence Dossier</span>
+              <span>Fingerprint detects changes to the exported data only</span>
+              <span>End of prototype dossier</span>
               <span>Page 4 of 4</span>
             </div>
           </div>
@@ -982,10 +823,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm sm:text-base font-bold text-white font-mono">
-                    {isArabic ? "ملف التصفية العقاري المعتمد (Due Diligence Dossier)" : "Certified Asset Liquidation Dossier"}
+                    {isArabic ? "ملف التصفية العقاري (نموذج تجريبي)" : "Asset Liquidation Dossier (prototype)"}
                   </span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                    FR-16 · TAQEEM & INFATH READY
+                    FR-16 · PROTOTYPE EXPORT
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -1040,7 +881,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                 <ShieldCheck className="w-4 h-4" />
                 <span>SHA-256:</span>
                 <code className="text-[11px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                  {mockSha256.slice(0, 14)}...{mockSha256.slice(-6)}
+                  {shaShown.slice(0, 14)}…{shaShown.slice(-6)}
                 </code>
               </span>
               <button
@@ -1076,7 +917,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     </button>
                   </div>
 
-                  {/* Certified PDF Vault Quick Link */}
+                  {/* Specimen documents quick link */}
                   {onOpenPdfViewer && (
                     <button
                       onClick={() => {
@@ -1084,10 +925,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                         onOpenPdfViewer();
                       }}
                       className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      title="Open Official Certified Title Deeds & Audit PDFs"
+                      title="Open specimen (illustrative) documents"
                     >
                       <FileCheck2 className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="hidden md:inline">{isArabic ? "خزينة الصكوك والوثائق المعتمدة" : "Certified Docs Vault"}</span>
+                      <span className="hidden md:inline">{isArabic ? "نماذج المستندات التوضيحية" : "Specimen documents"}</span>
                     </button>
                   )}
 
@@ -1109,7 +950,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                 onClick={handleDownloadPdf}
                 disabled={isGeneratingPdf}
                 className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold font-mono text-xs transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.35)] cursor-pointer disabled:opacity-50"
-                title="Download High-Resolution Official Certified PDF Document"
+                title="Download prototype PDF"
               >
                 {isGeneratingPdf ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-950" />
@@ -1122,8 +963,8 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                       ? "جاري إنشاء PDF..."
                       : "Generating PDF..."
                     : isArabic
-                    ? "تحميل التقرير المعتمد (.PDF)"
-                    : "Download Certified (.PDF)"}
+                    ? "تحميل التقرير (.PDF)"
+                    : "Download (.PDF)"}
                 </span>
               </button>
 
@@ -1199,12 +1040,12 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                       <div>Structure: <strong className="text-emerald-800">{scores.conditionIndex}%</strong></div>
                     </div>
                     <div className="flex justify-between items-center text-[4.5px] text-slate-600 pt-0.5 border-t border-slate-300">
-                      <span>Infath Accredited</span>
-                      <span>SCE Certified</span>
+                      <span>Not an Infath document</span>
+                      <span>Demo data</span>
                     </div>
                   </div>
                   <div className="text-[11px] font-semibold text-slate-200 truncate">
-                    {isArabic ? "١. غلاف التقرير المعتمد" : "1. Client Ready Cover"}
+                    {isArabic ? "١. غلاف التقرير" : "1. Client Ready Cover"}
                   </div>
                 </button>
 
@@ -1241,11 +1082,11 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                     </div>
                     <div className="flex justify-between items-center text-[5px] text-slate-500 pt-0.5 border-t border-slate-200">
                       <span>SBC-304 Pass</span>
-                      <span>TAQEEM-Accredited</span>
+                      <span>Not accredited (demo)</span>
                     </div>
                   </div>
                   <div className="text-[11px] font-semibold text-slate-200 truncate">
-                    {isArabic ? "٢. شهادة الجاهزية والتقييم" : "2. Liquidation Certificate"}
+                    {isArabic ? "٢. ملخص الجاهزية" : "2. Readiness Summary"}
                   </div>
                 </button>
 
@@ -1305,7 +1146,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                   {/* Miniature Visual Mock of Page 4 */}
                   <div className="w-full h-24 bg-slate-100 rounded-md p-1.5 flex flex-col justify-between overflow-hidden shadow-inner text-[6px] text-slate-800 font-sans border border-slate-300">
                     <div className="font-bold text-slate-700 border-b border-slate-300 pb-0.5">
-                      SPATIAL PROOF & DRONE
+                      EVIDENCE (DEMO)
                     </div>
                     <div className="grid grid-cols-2 gap-1 my-0.5">
                       <div className="h-8 bg-slate-300 rounded overflow-hidden relative">
@@ -1320,7 +1161,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[5px] text-slate-500">
-                      <span>Blockchain Ledger</span>
+                      <span>SHA-256 fingerprint</span>
                       <span className="text-emerald-700 font-bold">Verified</span>
                     </div>
                   </div>
@@ -1337,13 +1178,23 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                   style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
                   className="w-full max-w-[760px] min-h-[960px] bg-white text-slate-900 rounded-xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(6,182,212,0.15)] p-8 sm:p-12 transition-all duration-300 relative border border-slate-200 flex flex-col justify-between select-text"
                 >
+                  <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center overflow-hidden" aria-hidden="true">
+                    <span className="-rotate-30 select-none whitespace-nowrap text-center text-[38px] font-black leading-tight tracking-widest text-red-600/15">
+                      DEMO · NOT AN OFFICIAL DOCUMENT
+                      <br />
+                      نموذج تجريبي · ليس مستنداً رسمياً
+                    </span>
+                  </div>
+                  <div className="relative z-10 mb-3 rounded border border-amber-400 bg-amber-50 px-3 py-1.5 text-center text-[10px] font-bold text-amber-800">
+                    Prototype export with demo data — not an official document of Infath or any government body; not a certified inspection or valuation. · نموذج تجريبي ببيانات توضيحية، ليس مستنداً رسمياً ولا فحصاً أو تقييماً معتمداً.
+                  </div>
                   {/* Subtle Document Security Background Grid & Watermark */}
                   <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
                   
                   {/* Watermark in Arabic/English */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.035] select-none">
                     <span className="text-8xl font-black rotate-[-30deg] tracking-widest text-slate-950 font-sans">
-                      INFATH · CERTIFIED
+                      DEMO · NOT CERTIFIED
                     </span>
                   </div>
 
@@ -1370,10 +1221,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
                           <div className="text-end">
                             <div className="text-[10.5px] font-bold text-slate-900 font-arabic">
-                              المملكة العربية السعودية · منظومة التصفية والإنفاذ
+                              مرآة · نموذج تجريبي مقدَّم لبرنامج ابتكار إنفاذ
                             </div>
                             <div className="text-[9px] font-mono font-bold text-cyan-900">
-                              Doc Ref: INFATH-DSP-{asset.id}-2026-CR
+                              Doc Ref: MIRAAH-DEMO-{asset.id}-2026-CR
                             </div>
                             <div className="text-[8.5px] text-slate-500 font-mono">
                               Issuance: {asset.inspectionDate} · Form FR-16
@@ -1388,7 +1239,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                             <span>OFFICIAL ACCREDITED DUE DILIGENCE DOSSIER & SPATIAL ASSET PASSPORT</span>
                           </div>
                           <h1 className="text-lg font-extrabold text-slate-900 tracking-tight font-arabic">
-                            جواز الأصل المكاني وملف الفحص النافي للجهالة المعتمد للتصفية
+                            جواز الأصل المكاني وملف الفحص (نموذج تجريبي ببيانات توضيحية)
                           </h1>
                         </div>
 
@@ -1417,7 +1268,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
                             <div className="text-end bg-white border border-slate-300 rounded-lg p-2 shadow-xs shrink-0">
                               <div className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider">
-                                Certified Valuation (Taqeem)
+                                Entered valuation (demo, not Taqeem)
                               </div>
                               <div className="text-sm font-black text-emerald-800">
                                 SAR {asset.valuationSar.toLocaleString()}
@@ -1492,10 +1343,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                           <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-300 text-center">
                             <div className="text-[8.5px] font-bold text-slate-900 flex items-center justify-center gap-1">
                               <Award className="w-3 h-3 text-amber-600" />
-                              <span>Infath Innovation</span>
+                              <span>Submitted to Infath Innovation (prototype)</span>
                             </div>
                             <div className="text-[7.5px] text-slate-500 mt-0.5">
-                              Accredited Liquidation Twin
+                              Prototype · Demo data
                             </div>
                           </div>
 
@@ -1505,14 +1356,14 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                               <span>Saudi Council of Engineers</span>
                             </div>
                             <div className="text-[7.5px] text-slate-500 mt-0.5">
-                              Certified Technical Inspection
+                              Prototype inspection record
                             </div>
                           </div>
 
                           <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-300 text-center">
                             <div className="text-[8.5px] font-bold text-slate-900 flex items-center justify-center gap-1">
                               <Scale className="w-3 h-3 text-emerald-700" />
-                              <span>Taqeem Accredited</span>
+                              <span>Not accredited (demo)</span>
                             </div>
                             <div className="text-[7.5px] text-slate-500 mt-0.5">
                               Real Estate Valuation Standard
@@ -1529,20 +1380,20 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                               <QrCode className="w-9 h-9 text-slate-900" />
                             </div>
                             <div className="text-[8.5px] text-slate-600">
-                              <div className="font-bold text-slate-900">Cryptographic Due Diligence QR & Audit Seal</div>
+                              <div className="font-bold text-slate-900">Data fingerprint (SHA-256) · not a seal</div>
                               <div>Scan for interactive BIM 3D viewer & raw sensor telemetry</div>
                               <div className="font-mono text-[7.5px] text-slate-500 mt-0.5">
-                                Merkle Root: {mockSha256.slice(0, 24)}...
+                                SHA-256: {shaShown.slice(0, 24)}…
                               </div>
                             </div>
                           </div>
 
                           <div className="text-end">
                             <div className="text-[8.5px] font-mono font-bold text-slate-900 uppercase">
-                              Security Stamp: VERIFIED · GENUINE
+                              Demo data · not verified by any authority
                             </div>
                             <div className="text-[7.5px] text-slate-500">
-                              Official Infath Liquidation Passport · Page 1 of 4
+                              Prototype liquidation passport (demo) · Page 1 of 4
                             </div>
                           </div>
                         </div>
@@ -1573,10 +1424,10 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                           <div className="text-end">
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-800">
                               <Award className="w-3.5 h-3.5 text-amber-600" />
-                              <span>مبادرة ابتكار إنفاذ · Infath Innovation</span>
+                              <span>مقدَّم لبرنامج ابتكار إنفاذ · prototype</span>
                             </div>
                             <div className="text-[10px] text-slate-500 font-mono mt-1">
-                              Doc Ref: INFATH-DSP-{asset.id}-2026
+                              Doc Ref: MIRAAH-DEMO-{asset.id}-2026
                             </div>
                           </div>
                         </div>
@@ -1628,7 +1479,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                               {scores.coveragePct}%
                             </div>
                             <div className="text-[9px] font-semibold text-blue-800 bg-blue-100/60 rounded px-1 mt-1">
-                              Drone & 3D LiDAR
+                              Coverage (demo)
                             </div>
                           </div>
 
@@ -1667,7 +1518,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                               <span className="font-semibold text-slate-900">{asset.buildYear}</span>
                             </div>
                             <div className="p-2.5 flex justify-between">
-                              <span className="text-slate-500">Certified Valuation:</span>
+                              <span className="text-slate-500">Entered valuation (demo):</span>
                               <span className="font-bold text-emerald-800">{asset.valuationSar.toLocaleString()} SAR</span>
                             </div>
                             <div className="p-2.5 flex justify-between">
@@ -1703,14 +1554,14 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                             <div className="font-bold text-slate-900">Cryptographic Verification QR</div>
                             <div>Scan to audit live spatial digital twin & telemetry</div>
                             <div className="font-mono text-[9px] text-slate-400 mt-0.5">
-                              Hash: {mockSha256.slice(0, 20)}...
+                              Hash: {shaShown.slice(0, 20)}…
                             </div>
                           </div>
                         </div>
 
                         <div className="text-end">
                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                            Certified Endorsement
+                            Reviewer sign-off (not signed)
                           </div>
                           <div className="font-serif italic font-bold text-sm text-slate-900 mt-0.5">
                             Eng. Zaid Al-Harthy
@@ -1775,11 +1626,11 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                             <div className="flex justify-between items-center text-xs font-bold text-slate-800">
                               <span>SBC 801: Fire & Life Safety</span>
                               <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800">
-                                100% CLEAR
+                                DEMO VALUE
                               </span>
                             </div>
                             <p className="text-[10px] text-slate-600 mt-1">
-                              Emergency egress paths unobstructed, fire damper assemblies verified.
+                              Illustrative text only; no fire-safety inspection was performed.
                             </p>
                           </div>
 
@@ -1876,7 +1727,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                               SECTION 03 / 04 · SPATIAL TRACEABILITY & EVIDENCE
                             </span>
                             <h2 className="text-lg font-bold text-slate-900">
-                              Visual Proof, Drone Telemetry & Blockchain Log
+                              Visual Evidence & Data Fingerprint
                             </h2>
                           </div>
                           <div className="text-end text-[10px] text-slate-500 font-mono">
@@ -1921,7 +1772,7 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                                   referrerPolicy="no-referrer"
                                 />
                                 <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-slate-950/80 text-[9px] font-mono text-cyan-300 border border-cyan-500/40">
-                                  Autonomous Drone Aerial Survey
+                                  Aerial view (illustration)
                                 </div>
                                 <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-emerald-600 text-[9px] font-bold text-white">
                                   98% Photogrammetry Match
@@ -1941,20 +1792,20 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
                         <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 text-xs font-mono my-3 space-y-1.5">
                           <div className="font-bold text-slate-800 flex items-center gap-1.5 font-sans">
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span>BLOCKCHAIN IMMUTABLE AUDIT TRAIL</span>
+                            <span>DATA FINGERPRINT (SHA-256)</span>
                           </div>
                           <div className="text-[10px] text-slate-600 divide-y divide-slate-200">
                             <div className="py-1 flex justify-between">
                               <span className="text-slate-500">Smart Contract:</span>
-                              <span className="text-slate-800">0x71C9...89b4 (InfathRegistryV2)</span>
+                              <span className="text-slate-800">None (prototype, not registered)</span>
                             </div>
                             <div className="py-1 flex justify-between">
                               <span className="text-slate-500">Block Number:</span>
                               <span className="text-slate-800">#19,842,109</span>
                             </div>
                             <div className="py-1 flex justify-between">
-                              <span className="text-slate-500">Payload Merkle Root:</span>
-                              <span className="text-slate-800">{mockSha256}</span>
+                              <span className="text-slate-500">Passport SHA-256:</span>
+                              <span className="text-slate-800">{shaShown}</span>
                             </div>
                           </div>
                         </div>
@@ -1962,8 +1813,8 @@ export const ExportPassportModal: React.FC<ExportPassportModalProps> = ({
 
                       {/* Page 4 Footer */}
                       <div className="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                        <span>Tamper-evident verification certified</span>
-                        <span>End of Certified Due Diligence Dossier</span>
+                        <span>Fingerprint detects changes to the exported data only</span>
+                        <span>End of prototype dossier</span>
                         <span>Page 4 of 4</span>
                       </div>
                     </div>

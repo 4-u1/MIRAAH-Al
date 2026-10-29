@@ -80,14 +80,12 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
 
   const totalPages = selectedDoc === "title_deed" ? 3 : selectedDoc === "sbc_audit" ? 4 : 2;
 
-  const sha256VerificationHash = `0x9E7F${Array.from(asset.id + selectedDoc + "SA_2026")
-    .map((c) => c.charCodeAt(0).toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 32)}C84F1`;
+  // Specimen documents carry no fingerprint: they are illustrations, not exported data.
+  const sha256VerificationHash = "—";
 
-  const electronicDeedNumber = `31010400${asset.id}91`;
-  const municipalLicNumber = `BLD-RYD-2026-${asset.id}`;
-  const taqeemLicNumber = "TAQEEM-LIC-1210008432";
+  const electronicDeedNumber = `SPECIMEN-${asset.id}`;
+  const municipalLicNumber = "SPECIMEN (no licence)";
+  const taqeemLicNumber = "SPECIMEN (no licence)";
   const issueDateHijri = "15 شعبان 1447 هـ";
   const issueDateGregorian = "2026-03-04";
 
@@ -95,44 +93,44 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
   const documentsList = [
     {
       id: "title_deed" as DocumentType,
-      title: "صك الملكية العقاري الإلكتروني الموثق",
-      titleEn: "Certified Electronic Title Deed & Registry",
-      badge: "وزارة العدل · منصة عقار",
-      badgeEn: "Ministry of Justice",
-      code: "DEED-SA-20481",
+      title: "نموذج توضيحي لصك ملكية (ليس صكاً حقيقياً)",
+      titleEn: "Specimen title deed (not a real deed)",
+      badge: "نموذج · لم يصدر عن وزارة العدل",
+      badgeEn: "Specimen · not issued by MoJ",
+      code: "SPECIMEN-DEED",
       icon: FileCheck2,
       pages: 3,
       color: "#D4AF37",
     },
     {
       id: "sbc_audit" as DocumentType,
-      title: "شهادة الفحص الهندسي لكود البناء السعودي",
-      titleEn: "Saudi Building Code (SBC) Compliance Certificate",
-      badge: "كود البناء SBC 201/304",
-      badgeEn: "SBC 201/304 Audit",
-      code: "SBC-ENG-9941",
+      title: "نموذج توضيحي لتقرير فحص هندسي",
+      titleEn: "Specimen engineering inspection report",
+      badge: "نموذج · ليست شهادة مطابقة",
+      badgeEn: "Specimen · not a compliance certificate",
+      code: "SPECIMEN-SBC",
       icon: ShieldCheck,
       pages: 4,
       color: "#00E5B9",
     },
     {
       id: "taqeem_valuation" as DocumentType,
-      title: "تقرير التقييم العقاري المعتمد للتصفية القضائية",
-      titleEn: "Taqeem Accredited Judicial Liquidation Valuation",
-      badge: "الهيئة السعودية للمقيمين",
-      badgeEn: "Taqeem Certified",
-      code: "VAL-TAQEEM-8820",
+      title: "نموذج توضيحي لتقرير تقييم",
+      titleEn: "Specimen valuation report",
+      badge: "نموذج · لم يصدر عن تقييم",
+      badgeEn: "Specimen · not issued by Taqeem",
+      code: "SPECIMEN-VAL",
       icon: Scale,
       pages: 2,
       color: "#60A5FA",
     },
     {
       id: "liquidation_clearance" as DocumentType,
-      title: "تصريح المزاد وتصفية الأصل القضائي (إنفاذ)",
-      titleEn: "Infath Judicial Auction & Liquidation Clearance",
-      badge: "مركز الإسناد والتصفية إنفاذ",
-      badgeEn: "Infath Clearance",
-      code: "INFATH-CLR-7731",
+      title: "نموذج مقترح لملف جاهزية المزاد",
+      titleEn: "Proposed auction-readiness summary (specimen)",
+      badge: "نموذج · لم يصدر عن إنفاذ",
+      badgeEn: "Specimen · not issued by Infath",
+      code: "SPECIMEN-AUCTION",
       icon: Award,
       pages: 2,
       color: "#A855F7",
@@ -165,7 +163,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      pdf.save(`MIRAAH_${selectedDoc.toUpperCase()}_${asset.id}_OFFICIAL.pdf`);
+      pdf.save(`MIRAAH_${selectedDoc.toUpperCase()}_${asset.id}_SPECIMEN.pdf`);
     } catch (err) {
       console.error("PDF generation failed, triggering browser print fallback:", err);
       window.print();
@@ -273,7 +271,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
             className="px-2.5 py-1.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden lg:inline">{isArabic ? "ختم التوثيق الرقمي" : "VERIFIED SEAL"}</span>
+            <span className="hidden lg:inline">{isArabic ? "نموذج توضيحي" : "SPECIMEN"}</span>
           </button>
 
           {/* Print */}
@@ -299,8 +297,8 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                   ? "جارٍ استخراج PDF..."
                   : "Exporting PDF..."
                 : isArabic
-                ? "تحميل ملف PDF المعتمد"
-                : "Download Certified PDF"}
+                ? "تحميل النموذج (PDF)"
+                : "Download specimen (PDF)"}
             </span>
           </button>
 
@@ -319,7 +317,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
       <div className="w-full bg-[#05070D] border-b border-slate-800/80 px-4 sm:px-6 py-2 flex items-center justify-between gap-3 overflow-x-auto select-none shrink-0 z-10 font-mono text-xs">
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-slate-500 hidden sm:inline">
-            {isArabic ? "المستندات المعتمدة للأصل:" : "Certified Asset Records:"}
+            {isArabic ? "نماذج مستندات توضيحية (ليست حقيقية):" : "Specimen documents (not real):"}
           </span>
           {documentsList.map((doc) => {
             const Icon = doc.icon;
@@ -350,7 +348,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
         {/* Security watermark notification */}
         <div className="hidden xl:flex items-center gap-2 text-[10px] text-slate-400 font-mono">
           <Lock className="w-3 h-3 text-emerald-400" />
-          <span>SBC 201/304 COMPLIANT · SHA-256 VERIFIED</span>
+          <span>SPECIMEN · NOT AN OFFICIAL DOCUMENT · نموذج توضيحي</span>
         </div>
       </div>
 
@@ -394,15 +392,15 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
             />
 
             {/* Subtle Diagonal Security Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none opacity-[0.035]">
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none overflow-hidden select-none opacity-[0.12] text-red-600">
               <div className="text-8xl font-black rotate-[-35deg] uppercase tracking-widest text-center">
-                OFFICIAL CERTIFIED DOCUMENT · المملكة العربية السعودية
+                SPECIMEN · NOT OFFICIAL · نموذج توضيحي
               </div>
             </div>
 
             {/* ══ PAGE CONTENT BY SELECTED TYPE ══ */}
             <div className="relative z-10 space-y-6">
-              {/* ── 1. OFFICIAL ROYAL SAUDI EMBLEM & TOP HEADER ── */}
+              {/* ── 1. SPECIMEN HEADER ── */}
               <div
                 className={`flex items-start justify-between border-b pb-5 ${
                   isFormal ? "border-slate-300" : "border-slate-800"
@@ -410,22 +408,22 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
               >
                 {/* Right: National Authority / Emblem */}
                 <div className="space-y-1 text-right">
-                  <div className="text-xs font-bold text-slate-500 tracking-wider">المملكة العربية السعودية</div>
+                  <div className="text-xs font-bold text-red-600 tracking-wider">نموذج توضيحي — لم يصدر عن الجهة المذكورة</div>
                   <div className="text-sm font-black text-slate-900 dark:text-white">
                     {selectedDoc === "title_deed"
-                      ? "الهيئة العامة للعقار · السجل العقاري"
+                      ? "مثال: السجل العقاري (للتوضيح فقط)"
                       : selectedDoc === "sbc_audit"
-                      ? "اللجنة الوطنية لكود البناء السعودي (SBC)"
+                      ? "مثال: تقرير فحص هندسي (للتوضيح فقط)"
                       : selectedDoc === "taqeem_valuation"
-                      ? "الهيئة السعودية للمقيمين المعتمدين (تقييم)"
-                      : "مركز الإسناد والتصفية (إنفاذ)"}
+                      ? "مثال: تقرير مقيّم (للتوضيح فقط)"
+                      : "مثال: ملف جاهزية مزاد (للتوضيح فقط)"}
                   </div>
                   <div className="text-[10px] font-mono text-slate-500">
                     منظومة التوثيق الرقمي والذكاء المكاني · مرآة MIRAAH 2026
                   </div>
                 </div>
 
-                {/* Center: Saudi Palm & Crossed Swords Emblem */}
+                {/* Center: specimen marker */}
                 <div className="flex flex-col items-center justify-center space-y-1">
                   <div
                     className={`w-14 h-14 rounded-full flex items-center justify-center border shadow-inner ${
@@ -437,7 +435,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                     <Building className="w-7 h-7" />
                   </div>
                   <span className="text-[9px] font-mono font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400">
-                    ACCREDITED RECORD
+                    SPECIMEN
                   </span>
                 </div>
 
@@ -461,12 +459,12 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
               >
                 <div className="text-xs font-mono font-bold text-amber-700 dark:text-amber-400 tracking-widest uppercase">
                   {selectedDoc === "title_deed"
-                    ? "ELECTRONIC REAL ESTATE TITLE DEED CERTIFICATE"
+                    ? "SPECIMEN TITLE DEED · ILLUSTRATION ONLY"
                     : selectedDoc === "sbc_audit"
-                    ? "SAUDI BUILDING CODE (SBC) ENGINEERING COMPLIANCE CERTIFICATE"
+                    ? "SPECIMEN INSPECTION REPORT · ILLUSTRATION ONLY"
                     : selectedDoc === "taqeem_valuation"
-                    ? "CERTIFIED JUDICIAL LIQUIDATION VALUATION DOSSIER"
-                    : "INFATH JUDICIAL AUCTION CLEARANCE CERTIFICATE"}
+                    ? "SPECIMEN VALUATION REPORT · ILLUSTRATION ONLY"
+                    : "SPECIMEN AUCTION-READINESS SUMMARY · ILLUSTRATION ONLY"}
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-950 dark:text-white">
                   {isArabic
@@ -475,8 +473,8 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                 </h1>
                 <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                   {isArabic
-                    ? "وثيقة رسمية صادرة بموجب الأنظمة واللوائح العقارية المعتمدة في المملكة العربية السعودية ومطابقة لقواعد التصفية."
-                    : "Official certified document issued pursuant to Kingdom of Saudi Arabia real estate regulations and liquidation rules."}
+                    ? "نموذج توضيحي ببيانات تجريبية يوضح الشكل المقترح للمستند داخل المنصة. ليس مستنداً رسمياً ولا يحمل أي صفة نظامية."
+                    : "Illustrative specimen with demo data showing the proposed in-platform layout. Not an official document and has no legal standing."}
                 </p>
               </div>
 
@@ -520,7 +518,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                       isFormal ? "bg-slate-50 border-slate-200" : "bg-slate-900/60 border-slate-800"
                     }`}
                   >
-                    <span className="text-[10px] text-slate-500 block">مساحة الأرض المعتمدة</span>
+                    <span className="text-[10px] text-slate-500 block">مساحة الأرض (بيانات توضيحية)</span>
                     <span className="font-bold text-amber-600 dark:text-amber-400 block mt-0.5">
                       {asset.sizeSqm?.toLocaleString() || "1,400"} م² (SQM)
                     </span>
@@ -627,7 +625,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                         <td className="py-2 px-3 font-bold text-amber-600 dark:text-amber-400">SBC 801</td>
                         <td className="py-2 px-3">أنظمة الإطفاء والسلامة العامة</td>
                         <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400 font-bold">
-                          مكتمل 100% معتمد
+                          قيمة توضيحية
                         </td>
                         <td className="py-2 px-3 text-slate-500">خلو تام من الملاحظات</td>
                       </tr>
@@ -636,7 +634,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                 </div>
               </div>
 
-              {/* ── 5. OFFICIAL ACCREDITATION SEAL & VERIFICATION SIGNATURE BLOCK ── */}
+              {/* ── 5. SPECIMEN SIGNATURE BLOCK ── */}
               <div
                 className={`p-4 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-6 ${
                   isFormal
@@ -648,26 +646,26 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                 <div className="space-y-2 text-xs font-mono text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                     <BadgeCheck className="w-4 h-4 text-emerald-500" />
-                    <span>الاعتماد والتحقق الرسمي المصرح:</span>
+                    <span>بيانات توقيع توضيحية (غير موقّع):</span>
                   </div>
                   <div className="text-[11px] space-y-1">
                     <div>
-                      المقيم المعتمد: <span className="font-bold text-slate-900 dark:text-white">{asset.inspectorName}</span>
+                      المقيّم (مثال): <span className="font-bold text-slate-900 dark:text-white">{asset.inspectorName}</span>
                     </div>
                     <div>
-                      ترخيص تقييم: <span className="font-bold text-amber-600 dark:text-amber-400">{taqeemLicNumber}</span>
+                      ترخيص (مثال): <span className="font-bold text-amber-600 dark:text-amber-400">{taqeemLicNumber}</span>
                     </div>
                     <div>
-                      رخصة الفحص البلدي: <span className="font-bold text-slate-900 dark:text-white">{municipalLicNumber}</span>
+                      رخصة (مثال): <span className="font-bold text-slate-900 dark:text-white">{municipalLicNumber}</span>
                     </div>
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 text-[10px] text-slate-500">
                       <Lock className="w-3 h-3 text-emerald-500" />
-                      <span>توقيع رقمي موثق وغير قابل للتعديل (Blockchain Secured)</span>
+                      <span>غير موقّع رقمياً · نموذج توضيحي</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: THE ACCREDITATION SEAL (ختم الاعتماد الذهبي) */}
+                {/* Right: specimen seal */}
                 <div className="flex flex-col items-center justify-center shrink-0">
                   <AccreditationSeal
                     serialNumber={`SA-2026-${asset.id}`}
@@ -679,7 +677,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                     isArabic={isArabic}
                   />
                   <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 font-bold mt-1">
-                    ختم الاعتماد الرسمي للمملكة
+                    نموذج توضيحي · ليس ختماً رسمياً
                   </span>
                 </div>
               </div>
@@ -700,7 +698,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
                     امسح الرمز للتحقق الفوري من الصك
                   </div>
                   <div className="text-[9px] text-slate-500 truncate max-w-xs">
-                    Hash: {sha256VerificationHash.slice(0, 22)}...
+                    No fingerprint · specimen
                   </div>
                 </div>
               </div>
@@ -740,7 +738,7 @@ export const AccreditedPdfViewerModal: React.FC<AccreditedPdfViewerModalProps> =
             <div className="space-y-3 font-mono text-xs text-slate-300">
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center text-slate-400 text-[11px]">
-                  <span>{isArabic ? "رمز البصمة الرقمية (SHA-256):" : "Cryptographic Hash (SHA-256):"}</span>
+                  <span>{isArabic ? "البصمة الرقمية: لا توجد (نموذج توضيحي، والبصمة الحقيقية في تصدير جواز الأصل)" : "Fingerprint: none (specimen; the real SHA-256 is in the passport export)"}</span>
                   <button
                     onClick={handleCopyHash}
                     className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer text-[10px]"

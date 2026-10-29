@@ -130,6 +130,24 @@ html.light .glass-panel-hover:hover {
    PRINT-FRIENDLY STYLING FOR CERTIFIED DOSSIER
    ══════════════════════════════════════════════════ */
 @media print {
+  /* Every printed dossier page carries a visible prototype watermark. */
+  .dossier-print-page { position: relative !important; }
+  .dossier-print-page::after {
+    content: "DEMO · NOT AN OFFICIAL DOCUMENT · نموذج تجريبي" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: rotate(-30deg) !important;
+    font-size: 34px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.15em !important;
+    color: rgba(220, 38, 38, 0.14) !important;
+    pointer-events: none !important;
+    z-index: 50 !important;
+  }
+
   @page {
     size: A4 portrait;
     margin: 6mm;

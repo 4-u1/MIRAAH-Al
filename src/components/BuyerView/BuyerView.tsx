@@ -32,11 +32,11 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
   const [copied, setCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  const verificationHash = `MIRAAH-PUB-ASSET-${assetId}-VERIFIED-2026-SCE`;
+  const verificationHash = `MIRAAH-DEMO-REF-${assetId}`;
 
   const handleCopyLink = () => {
     navigator.clipboard?.writeText?.(
-      `https://miraah.sa/verify/${assetId}?token=ev_84920`
+      `MIRAAH-DEMO-REF-${assetId} (public verification page is planned, not live)`
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -317,7 +317,7 @@ export const BuyerView: React.FC<BuyerViewProps> = ({
               <p className={`text-xs ${
                 isDark ? "text-[#94A3B8]" : "text-slate-500"
               }`}>
-                Scan to access real-time tamper-evident evidence frames, condition ratings, and certified engineer stamps.
+                Planned feature: a public verification page. Not live in this prototype; the QR code is illustrative.
               </p>
             </div>
 
