@@ -13,5 +13,5 @@ mkdirSync(out, { recursive: true });
 const db = new Database(path.join(dataDir, "miraah.db"), { readonly: true });
 await db.backup(path.join(out, "miraah.db"));
 db.close();
-if (existsSync(path.join(dataDir, "evidence"))) cpSync(path.join(dataDir, "evidence"), path.join(out, "evidence"), { recursive: true });
+if (existsSync(path.join(dataDir, "evidence"))) cpSync(path.join(dataDir, "evidence"), path.join(out, "evidence"), { recursive: true, filter: (src) => !src.endsWith(".tmp") });
 console.log(`Backup written to ${out}`);

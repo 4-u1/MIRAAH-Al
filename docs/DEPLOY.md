@@ -21,6 +21,7 @@ An alternative backend (Firestore + Cloud Storage on Cloud Run) is described at 
 ## 3. Get the code and create secrets on the server
 ```bash
 git clone https://github.com/4-u1/MIRAAH-Al.git miraah && cd miraah
+mkdir -p backups
 docker run --rm -v "$PWD":/w -w /w node:22-slim node scripts/gen-signing-key.mjs
 ```
 Create `.env` next to `docker-compose.yml`. Never commit it, and never paste keys into chats.
@@ -51,15 +52,25 @@ Caddy obtains the HTTPS certificate automatically.
 
 ## 6. Backups (do this on day one)
 ```bash
-docker compose exec miraah node scripts/backup.mjs      # writes ./backups/<timestamp>/ (database + photos)
+docker compose exec -u node miraah node scripts/backup.mjs   # writes ./backups/<timestamp>/ (database + photos)
 ```
-Schedule it every night with `crontab -e`:
+Schedule it every night with `crontab -e`. Replace `/path/to/miraah` with the folder where you cloned the repo. The second line deletes backups older than 14 days:
 ```
-0 2 * * * cd /root/miraah && docker compose exec -T miraah node scripts/backup.mjs >> backups/backup.log 2>&1
+0 2 * * * cd /path/to/miraah && docker compose exec -T -u node miraah node scripts/backup.mjs >> backups/backup.log 2>&1
+30 2 * * * find /path/to/miraah/backups -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf {} +
 ```
+Check `backups/backup.log` now and then.
 Then copy `./backups` off the server, for example with `rsync` to another machine or object storage. A backup that stays on the same disk does not protect you from losing the server.
 
-**To restore:** stop the service with `docker compose stop miraah`, then copy `miraah.db` and the `evidence/` folder from a backup into the `miraah-data` volume and start it again.
+**To restore**, run this from the repo folder:
+```bash
+./scripts/restore.sh backups/<timestamp>
+```
+The script does four things:
+1. Stops the service.
+2. Removes the current database and any leftover SQLite `-wal`/`-shm` files. Leftover files could corrupt a restored copy.
+3. Copies the backup in and gives ownership to the app user.
+4. Starts the service again.
 
 ## 7. Updates
 ```bash
@@ -69,6 +80,8 @@ Data is in the `miraah-data` volume and survives rebuilds.
 
 ## Rules for this setup
 - **Run one instance only.** SQLite and the in-memory rate limits assume a single server process.
+- **The container starts as root only long enough to fix folder ownership, then runs as the `node` user.** On stop, it finishes in-flight requests and closes the database cleanly.
+- **SQLite does not work on Cloud Run.** Its filesystem is temporary, so the server refuses to start there with SQLite.
 - **Keep `TRUST_PROXY=1`.** `docker-compose.yml` already sets it, because the app sits behind Caddy.
 - **Never set test-only variables in production.** These are `FIREBASE_AUTH_EMULATOR_HOST`, `E2E_FAKE_VISION` and `MIRAAH_E2E`. If either of the first two is set without `MIRAAH_E2E=1`, the server refuses to start.
 

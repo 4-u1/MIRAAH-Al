@@ -102,7 +102,7 @@ Baseline: commit `f6508d8` (before this work).
 | # | Claim | Where | Status | Evidence |
 |---|---|---|---|---|
 | C57 | Full inspection cycle on real data (asset → photos → AI suggestion → inspector finding → reviewer → signed export) | Live Workspace tab, `server/workspace/` | REAL | `scripts/e2e.mjs` in CI (`e2e` job): 3 accounts on Auth/Firestore/Storage emulators, 11/11 |
-| C58 | Roles cannot be self-assigned | `routes.ts`, `firestore.rules` | REAL | `tests/workspace.test.ts`; rules deny client access to `roles` (emulator test) |
+| C58 | Roles cannot be self-assigned | `routes.ts`, `firestore.rules` | REAL | `tests/workspaceSuite.ts`; rules deny client access to `roles` (emulator test) |
 | C59 | Uploaded files are images, type checked from bytes, SHA-256 recorded | `sniffImage` | REAL | Upload tests (415 on a fake PNG, 413 over 8 MB) |
 | C60 | AI suggests defects from photos; inspector decides; confidence is the model's own, uncalibrated estimate and is kept only if the inspector keeps the model's defect type | `vision.ts`, UI | REAL (code); **live model output not yet evaluated** | Structured output validated by zod; e2e uses a fake model. Owner must check with real photos and a key |
 | C61 | Signed JSON passport proves origin and integrity (the PDF is a rendering and cannot be verified) | `signing.ts`, `/api/passport/verify` | REAL | Signature counts only if the data matches its hash (`valid` field). Tests: edited data → valid=false, signatureValid=false; re-hashed data, signer, time all detected |

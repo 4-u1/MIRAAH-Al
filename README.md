@@ -20,7 +20,7 @@
 ### 🟢 مساحة العمل الفعلية (Live Workspace) — بيانات حقيقية
 | الخطوة | ما يحدث | الدليل |
 |---|---|---|
-| الأدوار | المسؤول (`ADMIN_EMAILS`) يعيّن: مفتش، مراجع، مطّلع. الدور مرتبط ببريد موثّق، ولا يستطيع المستخدم منح نفسه دوراً | `server/workspace/routes.ts`، `tests/workspace.test.ts` |
+| الأدوار | المسؤول (`ADMIN_EMAILS`) يعيّن: مفتش، مراجع، مطّلع. الدور مرتبط ببريد موثّق، ولا يستطيع المستخدم منح نفسه دوراً | `server/workspace/routes.ts`، `tests/workspaceSuite.ts` |
 | تسجيل الأصل | المفتش يدخل بيانات العقار ومناطق التغطية | قاعدة **SQLite** على الخادم (افتراضياً) أو Firestore — عبر الخادم فقط |
 | رفع الصور | JPEG/PNG/WebP حتى 8MB، يُتحقق من النوع من محتوى الملف، وتُحفظ بصمة SHA-256 لكل صورة على قرص الخادم (أو Cloud Storage) | `sniffImage`، اختبارات الرفع |
 | اقتراح العيب | Gemini Vision يعيد تصنيفاً منظّماً (نوع، خطورة، ثقة، تعليل) يُتحقق منه بـ zod. **المفتش يقرر**: يقبل أو يعدّل أو يتجاهل | `server/workspace/vision.ts` |
@@ -108,7 +108,7 @@ npm run dev             # http://localhost:3000
 | `npm run eval:live` | تقييم سلوك المساعد على نموذج حقيقي (يتطلب `GEMINI_API_KEY`؛ لا يعمل في CI) |
 | `npm run build` | بناء الإنتاج (`dist/`) |
 | `docker compose up -d --build` | تشغيل الإنتاج على خادم واحد مع HTTPS (Caddy) وقرص دائم للبيانات — الخطوات في [`docs/DEPLOY.md`](docs/DEPLOY.md) |
-| `npm run backup` | نسخة احتياطية للقاعدة والصور (آمنة أثناء التشغيل) |
+| `docker compose exec -u node miraah node scripts/backup.mjs` | نسخة احتياطية للقاعدة والصور (آمنة أثناء التشغيل)؛ الاسترجاع: `scripts/restore.sh` |
 | `npm start` | تشغيل نسخة الإنتاج (`NODE_ENV=production`، بيئة Linux) |
 
 متغيرات البيئة موثقة في [`.env.example`](.env.example). يشغّل CI ‏(GitHub Actions) فحص الأنواع والاختبارات والبناء وفحص الأسرار في ملفات البناء واختبارات قواعد Firestore على كل دفع.
